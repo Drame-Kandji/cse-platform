@@ -1,0 +1,30 @@
+{
+  "eventId": "0b9b2f7e-7f4f-4bb4-8f7a-1f3c5d6e7a80",
+  "type": "LIVRAISON_EFFECTUEE",
+  "version": 1,
+  "occurredAt": "2026-10-30T10:00:00Z",
+  "source": "ms-achats",
+  "aggregateType": "ContratAchat",
+  "aggregateId": "a0000000-0000-0000-0000-000000000001",
+  "correlationId": null,
+  "actor": null,
+  "payload": {
+    "contratId": "a0000000-0000-0000-0000-000000000001",
+    "numero": "CTR-2026-001",
+    "appelOffreId": "d0000000-0000-0000-0000-000000000001",
+    "besoinId": "b0000000-0000-0000-0000-000000000001",
+    "chantierId": "c0000000-0000-0000-0000-000000000001",
+    "chantierNom": "Extension autoroute Dakar–AIBD",
+    "fournisseurId": "f0000000-0000-0000-0000-000000000001",
+    "fournisseurNom": "Sahel Engins SA",
+    "designation": "Pelle hydraulique 20 t",
+    "categorie": "MATERIEL_ROULANT",
+    "quantite": 2,
+    "montant": 245000000,
+    "statut": "LIVRE",
+    "dateSignature": "2026-09-01",
+    "dateLivraisonPrevue": "2026-10-01",
+    "dateLivraisonReelle": "2026-10-04",
+    "tarifJournalierEstime": 350000
+  }
+}

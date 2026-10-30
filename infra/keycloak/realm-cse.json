@@ -1,47 +1,458 @@
 {
   "realm": "cse",
+  "displayName": "CSE — Gestion du matériel",
   "enabled": true,
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "fr"
+  ],
+  "defaultLocale": "fr",
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 900,
+  "ssoSessionIdleTimeout": 3600,
+  "ssoSessionMaxLifespan": 36000,
+  "passwordPolicy": "length(8) and notUsername",
   "roles": {
     "realm": [
-      {"name": "CHEF_CHANTIER"},
-      {"name": "RESPONSABLE_MATERIEL"},
-      {"name": "RESPONSABLE_ACHATS"},
-      {"name": "DAF"},
-      {"name": "DIRECTION_GENERALE"},
-      {"name": "ADMIN_SYSTEME"},
-      {"name": "FOURNISSEUR"}
+      {
+        "name": "CHEF_CHANTIER",
+        "description": "Chef de chantier : expression des besoins, réception, pannes"
+      },
+      {
+        "name": "RESPONSABLE_MATERIEL",
+        "description": "Responsable de la Direction du Matériel : validation, affectation, maintenance"
+      },
+      {
+        "name": "RESPONSABLE_ACHATS",
+        "description": "Responsable des Achats : appels d'offres, contrats, fournisseurs"
+      },
+      {
+        "name": "DAF",
+        "description": "Direction Administrative et Financière : engagements, paiements"
+      },
+      {
+        "name": "DIRECTION_GENERALE",
+        "description": "Direction Générale : pilotage, approbations stratégiques"
+      },
+      {
+        "name": "ADMIN_SYSTEME",
+        "description": "Administrateur système : comptes, rôles, référentiels, audit"
+      },
+      {
+        "name": "FOURNISSEUR",
+        "description": "Fournisseur (portail externe)"
+      }
     ]
   },
   "clients": [
     {
       "clientId": "cse-web-interne",
+      "name": "Application interne CSE",
+      "enabled": true,
       "publicClient": true,
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": false,
-      "redirectUris": ["http://localhost:5173/*"],
-      "webOrigins": ["http://localhost:5173"],
-      "attributes": {"pkce.code.challenge.method": "S256"}
+      "implicitFlowEnabled": false,
+      "redirectUris": [
+        "http://localhost:5173/*",
+        "https://localhost/*"
+      ],
+      "webOrigins": [
+        "http://localhost:5173",
+        "https://localhost"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "+"
+      },
+      "protocolMappers": [
+        {
+          "name": "chantier_ids",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "chantier_ids",
+            "claim.name": "chantier_ids",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "fournisseur_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "fournisseur_id",
+            "claim.name": "fournisseur_id",
+            "jsonType.label": "String",
+            "multivalued": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
     },
     {
       "clientId": "cse-portail-fournisseur",
+      "name": "Portail fournisseurs CSE",
+      "enabled": true,
       "publicClient": true,
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": false,
-      "redirectUris": ["http://localhost:5174/*"],
-      "webOrigins": ["http://localhost:5174"],
-      "attributes": {"pkce.code.challenge.method": "S256"}
+      "implicitFlowEnabled": false,
+      "redirectUris": [
+        "http://localhost:5174/*"
+      ],
+      "webOrigins": [
+        "http://localhost:5174"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "+"
+      },
+      "protocolMappers": [
+        {
+          "name": "chantier_ids",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "chantier_ids",
+            "claim.name": "chantier_ids",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "fournisseur_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "fournisseur_id",
+            "claim.name": "fournisseur_id",
+            "jsonType.label": "String",
+            "multivalued": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "cse-swagger",
+      "name": "Swagger UI (documentation API)",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "redirectUris": [
+        "http://localhost:8080/swagger-ui/oauth2-redirect.html",
+        "http://localhost:8081/swagger-ui/oauth2-redirect.html",
+        "http://localhost:8082/swagger-ui/oauth2-redirect.html",
+        "http://localhost:8083/swagger-ui/oauth2-redirect.html",
+        "http://localhost:8084/swagger-ui/oauth2-redirect.html",
+        "http://localhost:8085/swagger-ui/oauth2-redirect.html",
+        "http://localhost:8086/swagger-ui/oauth2-redirect.html",
+        "http://localhost:8087/swagger-ui/oauth2-redirect.html",
+        "http://localhost:8088/swagger-ui/oauth2-redirect.html",
+        "http://localhost:8089/swagger-ui/oauth2-redirect.html"
+      ],
+      "webOrigins": [
+        "+"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "+"
+      },
+      "protocolMappers": [
+        {
+          "name": "chantier_ids",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "chantier_ids",
+            "claim.name": "chantier_ids",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "fournisseur_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "fournisseur_id",
+            "claim.name": "fournisseur_id",
+            "jsonType.label": "String",
+            "multivalued": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "cse-admin-api",
+      "name": "ms-auth : API d'administration Keycloak",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "dev-cse-admin-api-secret-a-changer",
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true
     }
   ],
   "users": [
-    {"username":"chef.chantier@cse.sn","email":"chef.chantier@cse.sn","firstName":"Mamadou","lastName":"Diop","enabled":true,"emailVerified":true,"credentials":[{"type":"password","value":"cse2026","temporary":false}],"realmRoles":["CHEF_CHANTIER"]},
-    {"username":"resp.materiel@cse.sn","email":"resp.materiel@cse.sn","firstName":"Aminata","lastName":"Fall","enabled":true,"emailVerified":true,"credentials":[{"type":"password","value":"cse2026","temporary":false}],"realmRoles":["RESPONSABLE_MATERIEL"]},
-    {"username":"resp.achats@cse.sn","email":"resp.achats@cse.sn","firstName":"Ousmane","lastName":"Ndiaye","enabled":true,"emailVerified":true,"credentials":[{"type":"password","value":"cse2026","temporary":false}],"realmRoles":["RESPONSABLE_ACHATS"]},
-    {"username":"daf@cse.sn","email":"daf@cse.sn","firstName":"Fatou","lastName":"Sarr","enabled":true,"emailVerified":true,"credentials":[{"type":"password","value":"cse2026","temporary":false}],"realmRoles":["DAF"]},
-    {"username":"dg@cse.sn","email":"dg@cse.sn","firstName":"Ibrahima","lastName":"Ba","enabled":true,"emailVerified":true,"credentials":[{"type":"password","value":"cse2026","temporary":false}],"realmRoles":["DIRECTION_GENERALE"]},
-    {"username":"admin@cse.sn","email":"admin@cse.sn","firstName":"Cheikh","lastName":"Gueye","enabled":true,"emailVerified":true,"credentials":[{"type":"password","value":"cse2026","temporary":false}],"realmRoles":["ADMIN_SYSTEME"]},
-    {"username":"fournisseur@cse.sn","email":"fournisseur@cse.sn","firstName":"Compte","lastName":"Fournisseur","enabled":true,"emailVerified":true,"credentials":[{"type":"password","value":"cse2026","temporary":false}],"realmRoles":["FOURNISSEUR"]}
+    {
+      "id": "00000000-0000-0000-0000-000000000101",
+      "username": "chef.chantier@cse.sn",
+      "email": "chef.chantier@cse.sn",
+      "firstName": "Mamadou",
+      "lastName": "Diop",
+      "enabled": true,
+      "emailVerified": true,
+      "attributes": {
+        "chantier_ids": [
+          "c0000000-0000-0000-0000-000000000001",
+          "c0000000-0000-0000-0000-000000000002"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Cse@2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "CHEF_CHANTIER",
+        "default-roles-cse"
+      ]
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000102",
+      "username": "awa.ndiaye@cse.sn",
+      "email": "awa.ndiaye@cse.sn",
+      "firstName": "Awa",
+      "lastName": "Ndiaye",
+      "enabled": true,
+      "emailVerified": true,
+      "attributes": {
+        "chantier_ids": [
+          "c0000000-0000-0000-0000-000000000003",
+          "c0000000-0000-0000-0000-000000000004"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Cse@2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "CHEF_CHANTIER",
+        "default-roles-cse"
+      ]
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000201",
+      "username": "resp.materiel@cse.sn",
+      "email": "resp.materiel@cse.sn",
+      "firstName": "Ibrahima",
+      "lastName": "Fall",
+      "enabled": true,
+      "emailVerified": true,
+      "attributes": {
+        "perimetre_parc": [
+          "NATIONAL"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Cse@2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "RESPONSABLE_MATERIEL",
+        "default-roles-cse"
+      ]
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000301",
+      "username": "resp.achats@cse.sn",
+      "email": "resp.achats@cse.sn",
+      "firstName": "Fatou",
+      "lastName": "Sarr",
+      "enabled": true,
+      "emailVerified": true,
+      "attributes": {
+        "seuil_delegation": [
+          "150000000"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Cse@2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "RESPONSABLE_ACHATS",
+        "default-roles-cse"
+      ]
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000401",
+      "username": "daf@cse.sn",
+      "email": "daf@cse.sn",
+      "firstName": "Ousmane",
+      "lastName": "Ba",
+      "enabled": true,
+      "emailVerified": true,
+      "attributes": {
+        "budget_gere": [
+          "5000000000"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Cse@2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "DAF",
+        "default-roles-cse"
+      ]
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000501",
+      "username": "dg@cse.sn",
+      "email": "dg@cse.sn",
+      "firstName": "Aminata",
+      "lastName": "Sow",
+      "enabled": true,
+      "emailVerified": true,
+      "attributes": {},
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Cse@2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "DIRECTION_GENERALE",
+        "default-roles-cse"
+      ]
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000601",
+      "username": "admin@cse.sn",
+      "email": "admin@cse.sn",
+      "firstName": "Cheikh",
+      "lastName": "Ndiaye",
+      "enabled": true,
+      "emailVerified": true,
+      "attributes": {},
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Cse@2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "ADMIN_SYSTEME",
+        "default-roles-cse"
+      ]
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000701",
+      "username": "fournisseur@cse.sn",
+      "email": "fournisseur@cse.sn",
+      "firstName": "Moussa",
+      "lastName": "Kane",
+      "enabled": true,
+      "emailVerified": true,
+      "attributes": {
+        "fournisseur_id": [
+          "f0000000-0000-0000-0000-000000000001"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Cse@2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "FOURNISSEUR",
+        "default-roles-cse"
+      ]
+    },
+    {
+      "username": "service-account-cse-admin-api",
+      "enabled": true,
+      "serviceAccountClientId": "cse-admin-api",
+      "realmRoles": [
+        "default-roles-cse"
+      ],
+      "clientRoles": {
+        "realm-management": [
+          "manage-users",
+          "view-users",
+          "query-users",
+          "view-realm"
+        ]
+      }
+    }
   ],
-  "requiredActions": [
-    {"alias": "CONFIGURE_TOTP", "name": "Configure OTP", "providerId": "CONFIGURE_TOTP", "enabled": true, "defaultAction": false}
-  ]
+  "components": {
+    "org.keycloak.userprofile.UserProfileProvider": [
+      {
+        "providerId": "declarative-user-profile",
+        "subComponents": {},
+        "config": {
+          "kc.user.profile.config": [
+            "{\"unmanagedAttributePolicy\": \"ADMIN_EDIT\", \"attributes\": [{\"name\": \"username\", \"displayName\": \"${username}\", \"validations\": {\"length\": {\"min\": 3, \"max\": 255}, \"username-prohibited-characters\": {}, \"up-username-not-idn-homograph\": {}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false}, {\"name\": \"email\", \"displayName\": \"${email}\", \"validations\": {\"email\": {}, \"length\": {\"max\": 255}}, \"required\": {\"roles\": [\"user\"]}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false}, {\"name\": \"firstName\", \"displayName\": \"${firstName}\", \"validations\": {\"length\": {\"max\": 255}, \"person-name-prohibited-characters\": {}}, \"required\": {\"roles\": [\"user\"]}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false}, {\"name\": \"lastName\", \"displayName\": \"${lastName}\", \"validations\": {\"length\": {\"max\": 255}, \"person-name-prohibited-characters\": {}}, \"required\": {\"roles\": [\"user\"]}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false}], \"groups\": [{\"name\": \"user-metadata\", \"displayHeader\": \"User metadata\", \"displayDescription\": \"Attributes, which refer to user metadata\"}]}"
+          ]
+        }
+      }
+    ]
+  }
 }

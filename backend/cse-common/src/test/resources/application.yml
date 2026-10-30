@@ -1,0 +1,6 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:1
+logging:
+  level:
+    org.apache.kafka: WARN

@@ -1,18 +1,14 @@
 package sn.cse.common.exception;
 
-import lombok.Getter;
+/** Violation d'une règle de gestion (ex. R02, R04, R08) : HTTP 422. */
+public class BusinessRuleException extends CseException {
 
-@Getter
-public class BusinessRuleException extends RuntimeException {
-    private final String errorCode;
+  public BusinessRuleException(String code, String message) {
+    super(code, message);
+  }
 
-    public BusinessRuleException(String errorCode, String message) {
-        super(message);
-        this.errorCode = errorCode;
-    }
-
-    public BusinessRuleException(String message) {
-        super(message);
-        this.errorCode = "BUSINESS_RULE_VIOLATION";
-    }
+  @Override
+  public int status() {
+    return 422;
+  }
 }

@@ -1,0 +1,29 @@
+{
+  "eventId": "6f1c2b9e-3c1a-4c55-9a51-0d2b8e2f4a10",
+  "type": "BESOIN_EN_ACHAT",
+  "version": 1,
+  "occurredAt": "2026-10-30T09:15:00Z",
+  "source": "ms-besoins",
+  "aggregateType": "BesoinMateriel",
+  "aggregateId": "b0000000-0000-0000-0000-000000000001",
+  "correlationId": "c-123",
+  "actor": { "id": "00000000-0000-0000-0000-000000000201", "nom": "Ibrahima Fall", "roles": ["RESPONSABLE_MATERIEL"] },
+  "payload": {
+    "besoinId": "b0000000-0000-0000-0000-000000000001",
+    "reference": "BES-2026-0001",
+    "chantierId": "c0000000-0000-0000-0000-000000000001",
+    "chantierNom": "Extension autoroute Dakar–AIBD",
+    "demandeurId": "00000000-0000-0000-0000-000000000101",
+    "demandeurNom": "Mamadou Diop",
+    "designation": "Pelle hydraulique 20 t",
+    "categorie": "MATERIEL_ROULANT",
+    "quantite": 2,
+    "specifications": "Godet 1,2 m3",
+    "priorite": "URGENT",
+    "statut": "EN_ACHAT",
+    "dateBesoin": "2026-11-15",
+    "dureeUtilisationJours": 90,
+    "motif": null,
+    "materielIds": []
+  }
+}

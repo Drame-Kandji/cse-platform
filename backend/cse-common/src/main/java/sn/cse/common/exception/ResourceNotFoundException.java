@@ -1,18 +1,20 @@
 package sn.cse.common.exception;
 
-import lombok.Getter;
+/** Ressource introuvable : HTTP 404. */
+public class ResourceNotFoundException extends CseException {
 
-@Getter
-public class ResourceNotFoundException extends RuntimeException {
-    private final String errorCode;
+  /**
+   * @param entite nom métier de l'entité (ex. {@code "Besoin"})
+   * @param id identifiant recherché
+   */
+  public ResourceNotFoundException(String entite, Object id) {
+    super(
+        entite.toUpperCase(java.util.Locale.ROOT) + "_INTROUVABLE",
+        entite + " introuvable : " + id);
+  }
 
-    public ResourceNotFoundException(String errorCode, String message) {
-        super(message);
-        this.errorCode = errorCode;
-    }
-
-    public ResourceNotFoundException(String message) {
-        super(message);
-        this.errorCode = "RESOURCE_NOT_FOUND";
-    }
+  @Override
+  public int status() {
+    return 404;
+  }
 }

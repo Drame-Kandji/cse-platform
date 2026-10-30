@@ -1,0 +1,8 @@
+sn.cse.common.config.CseCoreAutoConfiguration
+sn.cse.common.security.CseSecurityAutoConfiguration
+sn.cse.common.web.CseWebAutoConfiguration
+sn.cse.common.outbox.OutboxAutoConfiguration
+sn.cse.common.messaging.MessagingAutoConfiguration
+sn.cse.common.crypto.CryptoAutoConfiguration
+sn.cse.common.client.ServiceClientAutoConfiguration
+sn.cse.common.openapi.OpenApiAutoConfiguration

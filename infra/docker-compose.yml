@@ -1,62 +1,198 @@
+# Plateforme CSE — orchestration Docker Compose.
+#   Infrastructure seule (développement local) : docker compose -f infra/docker-compose.yml up -d
+#   Plateforme complète                        : docker compose -f infra/docker-compose.yml --profile apps up -d --build
+# Variables : copier .env.example vers .env à la racine du dépôt (jamais commité).
+name: cse
+
+x-service: &service
+  build:
+    context: ../backend
+    dockerfile: Dockerfile
+  restart: unless-stopped
+  profiles: ["apps"]
+  networks: [interne]
+  depends_on:
+    postgres: { condition: service_healthy }
+    kafka: { condition: service_healthy }
+    keycloak: { condition: service_healthy }
+
+x-service-env: &service-env
+  SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+  DB_URL: jdbc:postgresql://postgres:5432/cse
+  KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+  JWK_SET_URI: http://keycloak:8080/realms/cse/protocol/openid-connect/certs
+  JWT_ISSUER_URI: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8180}/realms/cse
+  CSE_CRYPTO_KEY: ${CSE_CRYPTO_KEY:?CSE_CRYPTO_KEY manquante dans .env}
+  JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=70
+
 services:
   postgres:
-    image: postgres:15
+    image: postgres:15-alpine
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeit}
-      POSTGRES_DB: ${POSTGRES_DB:-cse}
-    ports:
-      - "5433:5432"
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant dans .env}
+      POSTGRES_DB: cse
+      CSE_DB_PASSWORD: ${CSE_DB_PASSWORD:?CSE_DB_PASSWORD manquant dans .env}
+      KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?KEYCLOAK_DB_PASSWORD manquant dans .env}
+    ports: ["5433:5432"]
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init:/docker-entrypoint-initdb.d
+      - postgres_data_v2:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d:ro
+    networks: [interne]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d cse"]
+      interval: 5s
       timeout: 5s
-      retries: 5
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      retries: 20
 
   kafka:
     image: bitnamilegacy/kafka:3.7.0
     environment:
-      - KAFKA_CFG_NODE_ID=0
-      - KAFKA_CFG_PROCESS_ROLES=controller,broker
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
-      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-    ports:
-      - "9092:9092"
-
-  mailhog:
-    image: mailhog/mailhog
-    ports:
-      - "1025:1025"
-      - "8025:8025"
+      KAFKA_CFG_NODE_ID: "0"
+      KAFKA_CFG_PROCESS_ROLES: controller,broker
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@kafka:9093
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      # EXTERNE pour les services lancés sur l'hôte, INTERNE pour les conteneurs.
+      KAFKA_CFG_LISTENERS: EXTERNE://:9092,INTERNE://:29092,CONTROLLER://:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: EXTERNE://localhost:9092,INTERNE://kafka:29092
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,EXTERNE:PLAINTEXT,INTERNE:PLAINTEXT
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: INTERNE
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_HEAP_OPTS: -Xmx384m -Xms256m
+    ports: ["9092:9092"]
+    volumes: [kafka_data:/bitnami/kafka]
+    networks: [interne]
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:29092 --list >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
 
   keycloak:
     image: quay.io/keycloak/keycloak:25.0
-    command: start-dev --import-realm
+    command: start-dev --import-realm --health-enabled=true
     environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
-      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-changeit}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?KEYCLOAK_ADMIN_PASSWORD manquant dans .env}
+      KC_HOSTNAME: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8180}
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
     volumes:
       - ./keycloak/realm-cse.json:/opt/keycloak/data/import/realm-cse.json:ro
-    ports:
-      - "8180:8080"
+    ports: ["8180:8080"]
+    networks: [interne]
     depends_on:
-      postgres:
-        condition: service_healthy
+      postgres: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q '\"UP\"' <&3"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    networks: [interne]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    ports: ["1025:1025", "8025:8025"]
+    networks: [interne]
+
+  # ---- Microservices (profil "apps") ----
+  ms-gateway:
+    <<: *service
+    build: { context: ../backend, dockerfile: Dockerfile, args: { SERVICE: ms-gateway } }
+    environment:
+      <<: *service-env
+      REDIS_HOST: redis
+      SERVICES_HOST_PREFIX: ""
+    ports: ["8080:8080"]
+  ms-auth:
+    <<: *service
+    build: { context: ../backend, dockerfile: Dockerfile, args: { SERVICE: ms-auth } }
+    environment:
+      <<: *service-env
+      DB_PASSWORD: ${DB_PASSWORD_AUTH:-${CSE_DB_PASSWORD}}
+      KEYCLOAK_ADMIN_URL: http://keycloak:8080
+      KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:-dev-cse-admin-api-secret-a-changer}
+  ms-besoins:
+    <<: *service
+    build: { context: ../backend, dockerfile: Dockerfile, args: { SERVICE: ms-besoins } }
+    environment:
+      <<: *service-env
+      DB_PASSWORD: ${DB_PASSWORD_BESOINS:-${CSE_DB_PASSWORD}}
+      MS_SUIVI_URL: http://ms-suivi:8085
+  ms-achats:
+    <<: *service
+    build: { context: ../backend, dockerfile: Dockerfile, args: { SERVICE: ms-achats } }
+    environment:
+      <<: *service-env
+      DB_PASSWORD: ${DB_PASSWORD_ACHATS:-${CSE_DB_PASSWORD}}
+      MS_FOURNISSEURS_URL: http://ms-fournisseurs:8084
+  ms-fournisseurs:
+    <<: *service
+    build: { context: ../backend, dockerfile: Dockerfile, args: { SERVICE: ms-fournisseurs } }
+    environment:
+      <<: *service-env
+      DB_PASSWORD: ${DB_PASSWORD_FOURNISSEURS:-${CSE_DB_PASSWORD}}
+  ms-suivi:
+    <<: *service
+    build: { context: ../backend, dockerfile: Dockerfile, args: { SERVICE: ms-suivi } }
+    environment:
+      <<: *service-env
+      DB_PASSWORD: ${DB_PASSWORD_SUIVI:-${CSE_DB_PASSWORD}}
+  ms-reporting:
+    <<: *service
+    build: { context: ../backend, dockerfile: Dockerfile, args: { SERVICE: ms-reporting } }
+    environment:
+      <<: *service-env
+      DB_PASSWORD: ${DB_PASSWORD_REPORTING:-${CSE_DB_PASSWORD}}
+  ms-chatbot:
+    <<: *service
+    build: { context: ../backend, dockerfile: Dockerfile, args: { SERVICE: ms-chatbot } }
+    environment:
+      <<: *service-env
+      DB_PASSWORD: ${DB_PASSWORD_CHATBOT:-${CSE_DB_PASSWORD}}
+      MS_SUIVI_URL: http://ms-suivi:8085
+      MS_BESOINS_URL: http://ms-besoins:8082
+      MS_ACHATS_URL: http://ms-achats:8083
+      MS_FOURNISSEURS_URL: http://ms-fournisseurs:8084
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+  ms-notification:
+    <<: *service
+    build: { context: ../backend, dockerfile: Dockerfile, args: { SERVICE: ms-notification } }
+    environment:
+      <<: *service-env
+      DB_PASSWORD: ${DB_PASSWORD_NOTIFICATION:-${CSE_DB_PASSWORD}}
+      MAIL_HOST: mailhog
+  ms-audit:
+    <<: *service
+    build: { context: ../backend, dockerfile: Dockerfile, args: { SERVICE: ms-audit } }
+    environment:
+      <<: *service-env
+      DB_PASSWORD: ${DB_PASSWORD_AUDIT:-${CSE_DB_PASSWORD}}
+
+  web-interne:
+    profiles: ["apps"]
+    build: { context: ../frontend, dockerfile: apps/web-interne/Dockerfile }
+    ports: ["8443:443", "8081:80"]
+    networks: [interne]
+    depends_on: [ms-gateway]
+
+networks:
+  interne: {}
 
 volumes:
-  postgres_data:
+  postgres_data_v2: {}
+  kafka_data: {}
