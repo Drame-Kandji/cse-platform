@@ -1,0 +1,21 @@
+# Build
+target/
+dist/
+node_modules/
+.pnpm-store/
+*.log
+logs/
+backend/logs/
+# Env / secrets
+.env
+*.pem
+*.key
+# IDE
+.idea/
+.vscode/
+*.iml
+.DS_Store
+# Tests
+coverage/
+playwright-report/
+test-results/

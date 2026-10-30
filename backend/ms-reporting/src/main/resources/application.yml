@@ -1,0 +1,33 @@
+server:
+  port: 8086
+spring:
+  application:
+    name: ms-reporting
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/cse?stringtype=unspecified}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:changeit}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+    schemas: reporting
+    baseline-on-migrate: true
+    validate-on-migrate: false
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/cse}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

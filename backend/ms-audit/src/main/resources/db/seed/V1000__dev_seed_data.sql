@@ -1,0 +1,2 @@
+-- Seed données de développement pour ms-audit (profil dev uniquement)
+-- Chantiers Dakar/Thiès/Saint-Louis/Kaolack/Ziguinchor, engins réalistes

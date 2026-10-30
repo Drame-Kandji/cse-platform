@@ -1,0 +1,47 @@
+{
+  "realm": "cse",
+  "enabled": true,
+  "roles": {
+    "realm": [
+      {"name": "CHEF_CHANTIER"},
+      {"name": "RESPONSABLE_MATERIEL"},
+      {"name": "RESPONSABLE_ACHATS"},
+      {"name": "DAF"},
+      {"name": "DIRECTION_GENERALE"},
+      {"name": "ADMIN_SYSTEME"},
+      {"name": "FOURNISSEUR"}
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "cse-web-interne",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": ["http://localhost:5173/*"],
+      "webOrigins": ["http://localhost:5173"],
+      "attributes": {"pkce.code.challenge.method": "S256"}
+    },
+    {
+      "clientId": "cse-portail-fournisseur",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": ["http://localhost:5174/*"],
+      "webOrigins": ["http://localhost:5174"],
+      "attributes": {"pkce.code.challenge.method": "S256"}
+    }
+  ],
+  "users": [
+    {"username":"chef.chantier@cse.sn","email":"chef.chantier@cse.sn","firstName":"Mamadou","lastName":"Diop","enabled":true,"emailVerified":true,"credentials":[{"type":"password","value":"cse2026","temporary":false}],"realmRoles":["CHEF_CHANTIER"]},
+    {"username":"resp.materiel@cse.sn","email":"resp.materiel@cse.sn","firstName":"Aminata","lastName":"Fall","enabled":true,"emailVerified":true,"credentials":[{"type":"password","value":"cse2026","temporary":false}],"realmRoles":["RESPONSABLE_MATERIEL"]},
+    {"username":"resp.achats@cse.sn","email":"resp.achats@cse.sn","firstName":"Ousmane","lastName":"Ndiaye","enabled":true,"emailVerified":true,"credentials":[{"type":"password","value":"cse2026","temporary":false}],"realmRoles":["RESPONSABLE_ACHATS"]},
+    {"username":"daf@cse.sn","email":"daf@cse.sn","firstName":"Fatou","lastName":"Sarr","enabled":true,"emailVerified":true,"credentials":[{"type":"password","value":"cse2026","temporary":false}],"realmRoles":["DAF"]},
+    {"username":"dg@cse.sn","email":"dg@cse.sn","firstName":"Ibrahima","lastName":"Ba","enabled":true,"emailVerified":true,"credentials":[{"type":"password","value":"cse2026","temporary":false}],"realmRoles":["DIRECTION_GENERALE"]},
+    {"username":"admin@cse.sn","email":"admin@cse.sn","firstName":"Cheikh","lastName":"Gueye","enabled":true,"emailVerified":true,"credentials":[{"type":"password","value":"cse2026","temporary":false}],"realmRoles":["ADMIN_SYSTEME"]},
+    {"username":"fournisseur@cse.sn","email":"fournisseur@cse.sn","firstName":"Compte","lastName":"Fournisseur","enabled":true,"emailVerified":true,"credentials":[{"type":"password","value":"cse2026","temporary":false}],"realmRoles":["FOURNISSEUR"]}
+  ],
+  "requiredActions": [
+    {"alias": "CONFIGURE_TOTP", "name": "Configure OTP", "providerId": "CONFIGURE_TOTP", "enabled": true, "defaultAction": false}
+  ]
+}

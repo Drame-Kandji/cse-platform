@@ -1,0 +1,138 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: ms-gateway
+  main:
+    web-application-type: reactive
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+      routes:
+        - id: ms-auth
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/admin/utilisateurs/**
+        - id: ms-auth-openapi
+          uri: http://localhost:8081
+          predicates:
+            - Path=/v3/api-docs/ms-auth
+          filters:
+            - RewritePath=/v3/api-docs/ms-auth, /v3/api-docs
+        - id: ms-besoins
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/besoins/**
+        - id: ms-besoins-openapi
+          uri: http://localhost:8082
+          predicates:
+            - Path=/v3/api-docs/ms-besoins
+          filters:
+            - RewritePath=/v3/api-docs/ms-besoins, /v3/api-docs
+        - id: ms-achats
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/appels-offres/**,/api/contrats/**,/api/commandes/**,/api/engagements/**,/api/factures/**,/api/besoins-a-acheter/**
+        - id: ms-achats-openapi
+          uri: http://localhost:8083
+          predicates:
+            - Path=/v3/api-docs/ms-achats
+          filters:
+            - RewritePath=/v3/api-docs/ms-achats, /v3/api-docs
+        - id: ms-fournisseurs
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/fournisseurs/**,/api/litiges/**
+        - id: ms-fournisseurs-openapi
+          uri: http://localhost:8084
+          predicates:
+            - Path=/v3/api-docs/ms-fournisseurs
+          filters:
+            - RewritePath=/v3/api-docs/ms-fournisseurs, /v3/api-docs
+        - id: ms-suivi
+          uri: http://localhost:8085
+          predicates:
+            - Path=/api/materiels/**,/api/maintenances/**,/api/chantiers/**,/api/affectations/**,/api/pannes/**,/api/referentiels/**
+        - id: ms-suivi-openapi
+          uri: http://localhost:8085
+          predicates:
+            - Path=/v3/api-docs/ms-suivi
+          filters:
+            - RewritePath=/v3/api-docs/ms-suivi, /v3/api-docs
+        - id: ms-reporting
+          uri: http://localhost:8086
+          predicates:
+            - Path=/api/reporting/**
+        - id: ms-reporting-openapi
+          uri: http://localhost:8086
+          predicates:
+            - Path=/v3/api-docs/ms-reporting
+          filters:
+            - RewritePath=/v3/api-docs/ms-reporting, /v3/api-docs
+        - id: ms-chatbot
+          uri: http://localhost:8087
+          predicates:
+            - Path=/api/chatbot/**
+        - id: ms-chatbot-openapi
+          uri: http://localhost:8087
+          predicates:
+            - Path=/v3/api-docs/ms-chatbot
+          filters:
+            - RewritePath=/v3/api-docs/ms-chatbot, /v3/api-docs
+        - id: ms-notification
+          uri: http://localhost:8088
+          predicates:
+            - Path=/api/notifications/**
+        - id: ms-notification-openapi
+          uri: http://localhost:8088
+          predicates:
+            - Path=/v3/api-docs/ms-notification
+          filters:
+            - RewritePath=/v3/api-docs/ms-notification, /v3/api-docs
+        - id: ms-audit
+          uri: http://localhost:8089
+          predicates:
+            - Path=/api/audit/**
+        - id: ms-audit-openapi
+          uri: http://localhost:8089
+          predicates:
+            - Path=/v3/api-docs/ms-audit
+          filters:
+            - RewritePath=/v3/api-docs/ms-audit, /v3/api-docs
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/cse}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: 1. ms-auth (Utilisateurs)
+        url: /v3/api-docs/ms-auth
+      - name: 2. ms-besoins (Expressions de besoins)
+        url: /v3/api-docs/ms-besoins
+      - name: 3. ms-suivi (Parc matériel & Chantiers)
+        url: /v3/api-docs/ms-suivi
+      - name: 4. ms-fournisseurs
+        url: /v3/api-docs/ms-fournisseurs
+      - name: 5. ms-achats
+        url: /v3/api-docs/ms-achats
+      - name: 6. ms-reporting
+        url: /v3/api-docs/ms-reporting
+      - name: 7. ms-chatbot
+        url: /v3/api-docs/ms-chatbot
+      - name: 8. ms-notification
+        url: /v3/api-docs/ms-notification
+      - name: 9. ms-audit
+        url: /v3/api-docs/ms-audit

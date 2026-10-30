@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-surface font-sans text-ink-900;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-panel border border-ink-200 bg-white shadow-card;
+  }
+  .card-pad {
+    @apply rounded-panel border border-ink-200 bg-white p-5 shadow-card;
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-500;
+  }
+  .input {
+    @apply h-10 w-full rounded-lg border border-ink-200 bg-white px-3 text-sm text-ink-900 outline-none transition placeholder:text-ink-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-ink-100;
+  }
+  .textarea {
+    @apply min-h-[96px] w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm text-ink-900 outline-none transition placeholder:text-ink-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-100;
+  }
+  .btn {
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-brand-900 text-white hover:bg-brand-800 focus:ring-brand-300;
+  }
+  .btn-accent {
+    @apply btn bg-accent-500 text-brand-950 hover:bg-accent-400 focus:ring-accent-200;
+  }
+  .btn-success {
+    @apply btn bg-success-600 text-white hover:bg-success-700 focus:ring-success-200;
+  }
+  .btn-danger {
+    @apply btn bg-danger-600 text-white hover:bg-danger-700 focus:ring-danger-200;
+  }
+  .btn-outline {
+    @apply btn border border-ink-200 bg-white text-ink-700 hover:border-brand-300 hover:bg-brand-50 focus:ring-brand-200;
+  }
+  .btn-ghost {
+    @apply btn bg-transparent text-ink-600 hover:bg-ink-100 focus:ring-ink-200;
+  }
+  .btn-sm {
+    @apply h-8 px-3 text-xs;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide;
+  }
+  .table-wrap {
+    @apply overflow-x-auto;
+  }
+  .data-table {
+    @apply min-w-full text-left text-sm;
+  }
+  .data-table thead th {
+    @apply border-b border-ink-200 bg-ink-100/70 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-ink-500;
+  }
+  .data-table tbody td {
+    @apply border-b border-ink-100 px-4 py-3 align-middle text-ink-700;
+  }
+  .data-table tbody tr:hover {
+    @apply bg-brand-50/50;
+  }
+  .section-title {
+    @apply text-lg font-semibold text-brand-950;
+  }
+  .muted {
+    @apply text-sm text-ink-500;
+  }
+}
+
+.leaflet-container {
+  font-family: inherit;
+  z-index: 0;
+}
+
+.leaflet-control-attribution {
+  font-size: 10px;
+}
+
+.map-shell .leaflet-popup-content-wrapper {
+  border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(10, 31, 68, 0.18);
+}
+
+.map-shell .leaflet-popup-content {
+  margin: 12px 14px;
+  min-width: 190px;
+}

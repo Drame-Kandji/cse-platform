@@ -1,0 +1,35 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: ms-auth
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/cse?stringtype=unspecified}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:changeit}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+    schemas: auth
+    baseline-on-migrate: true
+    validate-on-migrate: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/cse}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+keycloak:
+  auth-server-url: ${KEYCLOAK_AUTH_SERVER_URL:http://localhost:8180}
+  realm: cse
+  client-id: ${KEYCLOAK_ADMIN_CLIENT_ID:admin-cli}
