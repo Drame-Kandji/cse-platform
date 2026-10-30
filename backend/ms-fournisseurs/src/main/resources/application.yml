@@ -1,33 +1,88 @@
 server:
-  port: 8084
+  port: ${SERVER_PORT:8084}
+  shutdown: graceful
 spring:
   application:
     name: ms-fournisseurs
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/cse?stringtype=unspecified}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:changeit}
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/cse}
+    username: ${DB_USERNAME:ms_fournisseurs}
+    password: ${DB_PASSWORD:changeit-services}
+    hikari:
+      # Garantit l'isolement du schéma même si l'utilisateur n'a pas de search_path (tests).
+      connection-init-sql: SET search_path TO fournisseurs
+      maximum-pool-size: 10
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: validate
-    open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: UTC
   flyway:
-    enabled: true
     schemas: fournisseurs
-    baseline-on-migrate: true
-    validate-on-migrate: false
+    default-schema: fournisseurs
+    locations: classpath:db/migration,classpath:db/common
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${spring.application.name}
+      auto-offset-reset: earliest
+    producer:
+      acks: all
   security:
     oauth2:
       resourceserver:
         jwt:
+          jwk-set-uri: ${JWK_SET_URI:http://localhost:8180/realms/cse/protocol/openid-connect/certs}
           issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/cse}
+  web:
+    locale: fr
+    locale-resolver: fixed
+cse:
+  openapi:
+    title: ms-fournisseurs — Référentiel fournisseurs
+    description: >-
+      Référentiel des fournisseurs de la CSE : cycle de vie (EN_ATTENTE_VALIDATION → ACTIF ⇄ SUSPENDU
+      → BLACKLISTE), blacklistage en deux étapes (R09), documents administratifs, évaluations et score
+      de performance (R07), catalogue de prix avec historique, comparaison de prix et litiges.
+  crypto:
+    # Clé AES-256 (Base64, 32 octets) chiffrant les coordonnées bancaires : obligatoire.
+    key: ${CSE_CRYPTO_KEY:}
+  fournisseurs:
+    score:
+      # Poids relatifs des cinq critères d'évaluation (note globale 0..100).
+      poids-qualite: ${CSE_SCORE_POIDS_QUALITE:30}
+      poids-delais: ${CSE_SCORE_POIDS_DELAIS:25}
+      poids-conformite: ${CSE_SCORE_POIDS_CONFORMITE:20}
+      poids-sav: ${CSE_SCORE_POIDS_SAV:10}
+      poids-prix: ${CSE_SCORE_POIDS_PRIX:15}
+      # Part (%) du taux de livraison à l'heure dans le score lorsque des livraisons sont suivies.
+      poids-livraison-a-l-heure: ${CSE_SCORE_POIDS_LIVRAISON:20}
+      # Points retirés par litige ouvert (OUVERT/EN_COURS) et par litige résolu ; CLASSE ne pénalise pas.
+      penalite-litige-ouvert: ${CSE_SCORE_PENALITE_LITIGE_OUVERT:5}
+      penalite-litige-resolu: ${CSE_SCORE_PENALITE_LITIGE_RESOLU:2}
+      score-initial: ${CSE_SCORE_INITIAL:50}
+      seuil-alerte: ${CSE_SCORE_SEUIL_ALERTE:40}
+    surveillance:
+      enabled: ${CSE_FOURNISSEURS_SURVEILLANCE_ENABLED:true}
+      # Tous les jours à 06h00 : documents expirés (DOCUMENT_EXPIRE) et scores sous le seuil.
+      cron: ${CSE_FOURNISSEURS_SURVEILLANCE_CRON:0 0 6 * * *}
+      zone: ${CSE_FOURNISSEURS_SURVEILLANCE_ZONE:Africa/Dakar}
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics
+  endpoints.web.exposure.include: health,info,metrics,prometheus
+  endpoint.health.probes.enabled: true
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+    oauth:
+      client-id: cse-swagger
+      use-pkce-with-authorization-code-grant: true
+logging:
+  pattern:
+    level: "%5p [${spring.application.name},%X{correlationId:-}]"
+---
+spring.config.activate.on-profile: dev
+cse.seed.enabled: true
+---
+spring.config.activate.on-profile: prod
+logging.structured.format.console: ecs

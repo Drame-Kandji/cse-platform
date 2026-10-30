@@ -1,0 +1,25 @@
+# Profil « test » : aucun courtier Kafka ni Keycloak requis.
+spring:
+  kafka:
+    bootstrap-servers: localhost:1
+    admin:
+      auto-create: false
+    listener:
+      auto-startup: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:1/certs
+cse:
+  crypto:
+    # Clé AES-256 fixe réservée aux tests (32 octets en Base64) — jamais utilisée hors tests.
+    key: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
+  outbox:
+    relay-enabled: false
+  fournisseurs:
+    surveillance:
+      enabled: false
+logging:
+  level:
+    org.apache.kafka: WARN

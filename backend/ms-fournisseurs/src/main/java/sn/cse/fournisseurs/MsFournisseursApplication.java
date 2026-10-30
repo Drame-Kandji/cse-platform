@@ -2,12 +2,15 @@ package sn.cse.fournisseurs;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
 
+/** Point d'entrée du microservice ms-fournisseurs (port 8084, schéma {@code fournisseurs}). */
 @SpringBootApplication
-@ComponentScan(basePackages = {"sn.cse.fournisseurs", "sn.cse.common"})
 public class MsFournisseursApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(MsFournisseursApplication.class, args);
-    }
+
+  /**
+   * @param args arguments de la ligne de commande
+   */
+  public static void main(String[] args) {
+    SpringApplication.run(MsFournisseursApplication.class, args);
+  }
 }
