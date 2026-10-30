@@ -129,11 +129,15 @@ mois (relatives à l'horloge) pour alimenter les séries temporelles. Pas de see
 - Persistance / bout en bout : `@SpringBootTest` + `@Import(PostgresTestConfiguration.class)` (Testcontainers),
   `cse.outbox.relay-enabled=false`, Kafka non requis (`spring.kafka.listener.auto-startup=false`).
   **Machine de développement limitée en mémoire** : 1 à 2 classes d'intégration Spring par service, pas plus.
-- Architecture :
+- Architecture (la forme `@ArchTest ArchTests.in(...)` n'est PAS exécutée par Surefire : utiliser celle-ci) :
   ```java
-  @AnalyzeClasses(packages = "sn.cse.xxx", importOptions = ImportOption.DoNotIncludeTests.class)
   class ArchitectureTest {
-    @ArchTest static final ArchTests regles = ArchTests.in(HexagonalArchitectureRules.class);
+    @TestFactory
+    Stream<DynamicTest> regles() {
+      JavaClasses classes = HexagonalArchitectureRules.classesDe("sn.cse.xxx");
+      return HexagonalArchitectureRules.toutes().stream()
+          .map(r -> DynamicTest.dynamicTest(r.getDescription(), () -> r.check(classes)));
+    }
   }
   ```
 - Contrat OpenAPI : test de snapshot comparant `/v3/api-docs` à `src/test/resources/openapi.json`

@@ -114,7 +114,15 @@ services:
     environment:
       <<: *service-env
       REDIS_HOST: redis
-      SERVICES_HOST_PREFIX: ""
+      MS_AUTH_URL: http://ms-auth:8081
+      MS_BESOINS_URL: http://ms-besoins:8082
+      MS_ACHATS_URL: http://ms-achats:8083
+      MS_FOURNISSEURS_URL: http://ms-fournisseurs:8084
+      MS_SUIVI_URL: http://ms-suivi:8085
+      MS_REPORTING_URL: http://ms-reporting:8086
+      MS_CHATBOT_URL: http://ms-chatbot:8087
+      MS_NOTIFICATION_URL: http://ms-notification:8088
+      MS_AUDIT_URL: http://ms-audit:8089
     ports: ["8080:8080"]
   ms-auth:
     <<: *service

@@ -3,16 +3,25 @@ package sn.cse.common.archunit;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
+import com.tngtech.archunit.core.domain.JavaClasses;
+import com.tngtech.archunit.core.importer.ClassFileImporter;
+import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
+import java.util.List;
 
 /**
- * Règles d'architecture hexagonale communes (AGENTS.md A.4). Usage dans chaque service :
+ * Règles d'architecture hexagonale communes (AGENTS.md A.4). Usage dans chaque service (forme JUnit
+ * Jupiter explicite : chaque règle devient un test, exécuté par Surefire) :
  *
  * <pre>{@code
- * @AnalyzeClasses(packages = "sn.cse.suivi", importOptions = ImportOption.DoNotIncludeTests.class)
  * class ArchitectureTest {
- *   @ArchTest static final ArchTests regles = ArchTests.in(HexagonalArchitectureRules.class);
+ *   @TestFactory
+ *   Stream<DynamicTest> regles() {
+ *     JavaClasses classes = HexagonalArchitectureRules.classesDe("sn.cse.suivi");
+ *     return HexagonalArchitectureRules.toutes().stream()
+ *         .map(r -> DynamicTest.dynamicTest(r.getDescription(), () -> r.check(classes)));
+ *   }
  * }
  * }</pre>
  */
@@ -80,6 +89,28 @@ public final class HexagonalArchitectureRules {
           .areAnnotatedWith("jakarta.persistence.Entity")
           .should()
           .resideInAPackage("..infrastructure..");
+
+  /**
+   * @return toutes les règles, dans l'ordre de déclaration
+   */
+  public static List<ArchRule> toutes() {
+    return List.of(
+        DOMAINE_PUR,
+        APPLICATION_SANS_ADAPTATEURS,
+        API_SANS_INFRASTRUCTURE,
+        CONTROLEURS_DANS_API,
+        ENTITES_JPA_DANS_INFRASTRUCTURE);
+  }
+
+  /**
+   * @param paquetRacine paquet du service (ex. {@code sn.cse.suivi})
+   * @return les classes de production du service
+   */
+  public static JavaClasses classesDe(String paquetRacine) {
+    return new ClassFileImporter()
+        .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
+        .importPackages(paquetRacine);
+  }
 
   private HexagonalArchitectureRules() {}
 }

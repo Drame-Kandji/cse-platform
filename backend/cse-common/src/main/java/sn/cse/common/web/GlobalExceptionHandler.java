@@ -150,6 +150,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
       case CONFLICT -> "Conflit";
       case FORBIDDEN -> "Opération interdite";
       case BAD_REQUEST -> "Requête invalide";
+      case SERVICE_UNAVAILABLE -> "Service indisponible";
       default -> "Règle de gestion non respectée";
     };
   }
