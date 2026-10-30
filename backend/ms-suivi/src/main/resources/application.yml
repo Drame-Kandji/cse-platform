@@ -1,33 +1,83 @@
 server:
-  port: 8085
+  port: ${SERVER_PORT:8085}
+  shutdown: graceful
 spring:
   application:
     name: ms-suivi
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/cse?stringtype=unspecified}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:changeit}
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/cse}
+    username: ${DB_USERNAME:ms_suivi}
+    password: ${DB_PASSWORD:changeit-services}
+    hikari:
+      # Garantit l'isolement du schéma même si l'utilisateur n'a pas de search_path (tests).
+      connection-init-sql: SET search_path TO suivi
+      maximum-pool-size: ${DB_POOL_SIZE:10}
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: validate
-    open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: UTC
   flyway:
-    enabled: true
     schemas: suivi
-    baseline-on-migrate: true
-    validate-on-migrate: false
+    default-schema: suivi
+    locations: classpath:db/migration,classpath:db/common
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${spring.application.name}
+      auto-offset-reset: earliest
+    producer:
+      acks: all
   security:
     oauth2:
       resourceserver:
         jwt:
+          jwk-set-uri: ${JWK_SET_URI:http://localhost:8180/realms/cse/protocol/openid-connect/certs}
           issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/cse}
+cse:
+  openapi:
+    title: ms-suivi — Suivi du parc matériel
+    description: >-
+      Chantiers, parc de matériels, affectations (règle R04, détection des chevauchements),
+      réceptions, maintenances (ordres de travail), pannes, réforme (R13), carte GeoJSON et planning.
+  suivi:
+    alertes:
+      actives: ${SUIVI_ALERTES_ACTIVES:true}
+      maintenance-cron: ${SUIVI_ALERTE_MAINTENANCE_CRON:0 0 6 * * *}
+      fin-affectation-cron: ${SUIVI_ALERTE_FIN_AFFECTATION_CRON:0 15 6 * * *}
+      fin-affectation-jours-avant: ${SUIVI_FIN_AFFECTATION_JOURS_AVANT:3}
+      rappel-maintenance-jours: ${SUIVI_RAPPEL_MAINTENANCE_JOURS:7}
+    historique:
+      taille: 20
+    disponibilite:
+      max-resultats: 50
+    planning:
+      max-jours: 366
+      jours-avant-par-defaut: 30
+      jours-apres-par-defaut: 90
+    livraison:
+      duree-affectation-jours: ${SUIVI_LIVRAISON_DUREE_AFFECTATION_JOURS:180}
+      ratio-tarif-journalier: 0.002
+    numerotation:
+      prefixe-ordre-travail: OT
+      prefixes-code-materiel:
+        MATERIEL_ROULANT: ENG
+        OUTILLAGE: OUT
+        EQUIPEMENT_INFORMATIQUE: INF
+        CONSOMMABLE: CSM
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,prometheus
+  endpoints.web.exposure.include: health,info,metrics,prometheus
+  endpoint.health.probes.enabled: true
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+    oauth:
+      client-id: cse-swagger
+      use-pkce-with-authorization-code-grant: true
+logging:
+  pattern:
+    level: "%5p [${spring.application.name},%X{correlationId:-}]"
+---
+spring.config.activate.on-profile: dev
+cse.seed.enabled: true

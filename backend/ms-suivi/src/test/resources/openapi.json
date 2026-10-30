@@ -1,0 +1,4110 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "ms-suivi — Suivi du parc matériel",
+    "description" : "Chantiers, parc de matériels, affectations (règle R04, détection des chevauchements), réceptions, maintenances (ordres de travail), pannes, réforme (R13), carte GeoJSON et planning.",
+    "contact" : {
+      "name" : "Équipe plateforme CSE",
+      "email" : "support@cse.sn"
+    },
+    "version" : "2.0.0"
+  },
+  "security" : [ {
+    "bearerAuth" : [ ]
+  }, {
+    "keycloak" : [ ]
+  } ],
+  "tags" : [ {
+    "name" : "Pannes",
+    "description" : "Pannes signalées sur les matériels"
+  }, {
+    "name" : "Affectations",
+    "description" : "Affectations des matériels aux chantiers"
+  }, {
+    "name" : "Matériels",
+    "description" : "Parc matériel de la CSE"
+  }, {
+    "name" : "Matériels — opérations",
+    "description" : "Cycle de vie d'un matériel"
+  }, {
+    "name" : "Maintenances",
+    "description" : "Ordres de travail de maintenance (OT-AAAA-NNNN)"
+  }, {
+    "name" : "Chantiers",
+    "description" : "Chantiers de la CSE (lieux d'affectation du parc)"
+  }, {
+    "name" : "Référentiels",
+    "description" : "Types d'engins et seuils de maintenance préventive"
+  } ],
+  "paths" : {
+    "/api/referentiels/types-engins/{id}" : {
+      "put" : {
+        "tags" : [ "Référentiels" ],
+        "summary" : "Modifier un type d'engin",
+        "description" : "Les nouveaux seuils de maintenance sont répercutés sur les matériels du type.",
+        "operationId" : "modifier",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "example" : "e0000000-0000-0000-0000-000000000001"
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TypeEnginRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Type modifié",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TypeEngin"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Type introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Code déjà utilisé",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Changement de catégorie impossible (matériels rattachés)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/materiels/{id}" : {
+      "get" : {
+        "tags" : [ "Matériels" ],
+        "summary" : "Consulter la fiche d'un matériel",
+        "description" : "Champs du matériel et 20 derniers éléments de chaque historique.",
+        "operationId" : "detail",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "example" : "7b1e5c3a-2d4f-4a6b-8c9d-0e1f2a3b4c5d"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Fiche du matériel",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MaterielDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Matériel introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "Matériels" ],
+        "summary" : "Modifier un matériel",
+        "description" : "Champs descriptifs uniquement (le compteur se met à jour par relevé) ; version obligatoire.",
+        "operationId" : "modifier_1",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MaterielRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Matériel modifié",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Materiel"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Matériel ou type d'engin introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Version obsolète ou code déjà utilisé",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Matériel réformé ou type incompatible",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chantiers/{id}" : {
+      "get" : {
+        "tags" : [ "Chantiers" ],
+        "summary" : "Consulter un chantier",
+        "operationId" : "consulter",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "example" : "c0000000-0000-0000-0000-000000000001"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Chantier",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Chantier"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Chantier introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "Chantiers" ],
+        "summary" : "Modifier un chantier",
+        "description" : "Verrou optimiste : version obligatoire ; émet CHANTIER_MODIFIE.",
+        "operationId" : "modifier_2",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ChantierRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Chantier modifié",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Chantier"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Chantier introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Version obsolète, code déjà utilisé ou chantier terminé",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/referentiels/types-engins" : {
+      "get" : {
+        "tags" : [ "Référentiels" ],
+        "summary" : "Lister les types d'engins",
+        "operationId" : "lister",
+        "responses" : {
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Types d'engins par libellé",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/TypeEngin"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Référentiels" ],
+        "summary" : "Créer un type d'engin",
+        "operationId" : "creer",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TypeEnginRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Type créé",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TypeEngin"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Code déjà utilisé",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Seuils invalides",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pannes" : {
+      "get" : {
+        "tags" : [ "Pannes" ],
+        "summary" : "Lister les pannes",
+        "operationId" : "lister_1",
+        "parameters" : [ {
+          "name" : "statut",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "SIGNALEE", "PRISE_EN_CHARGE", "RESOLUE" ]
+          },
+          "example" : "SIGNALEE"
+        }, {
+          "name" : "chantierId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "example" : "c0000000-0000-0000-0000-000000000001"
+        }, {
+          "name" : "materielId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "example" : "7b1e5c3a-2d4f-4a6b-8c9d-0e1f2a3b4c5d"
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "example" : 0
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "example" : 20
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Tri : dateSignalement, gravite, statut",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "dateSignalement,desc"
+        } ],
+        "responses" : {
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Page de pannes",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponsePanne"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Pannes" ],
+        "summary" : "Signaler une panne",
+        "description" : "Un chef de chantier ne peut signaler que sur un matériel présent sur ses chantiers ; émet PANNE_SIGNALEE.",
+        "operationId" : "signaler",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PanneRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Panne signalée",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Panne"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Matériel introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Matériel réformé",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/materiels" : {
+      "get" : {
+        "tags" : [ "Matériels" ],
+        "summary" : "Lister les matériels",
+        "description" : "Un chef de chantier ne voit que les matériels présents sur ses chantiers.",
+        "operationId" : "lister_2",
+        "parameters" : [ {
+          "name" : "etat",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "DISPONIBLE", "AFFECTE", "EN_MAINTENANCE", "REFORME" ]
+          },
+          "example" : "DISPONIBLE"
+        }, {
+          "name" : "categorie",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "MATERIEL_ROULANT", "OUTILLAGE", "EQUIPEMENT_INFORMATIQUE", "CONSOMMABLE" ]
+          },
+          "example" : "MATERIEL_ROULANT"
+        }, {
+          "name" : "chantierId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "example" : "c0000000-0000-0000-0000-000000000001"
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "description" : "Code, désignation, immatriculation ou marque",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "pelle"
+        }, {
+          "name" : "maintenanceDue",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          },
+          "example" : true
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "example" : 0
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "example" : 20
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Tri : code, designation, categorie, etat, heuresFonctionnement, tarifJournalier, prochaineMaintenance",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "designation,asc"
+        } ],
+        "responses" : {
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Page de matériels",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseMateriel"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Matériels" ],
+        "summary" : "Enregistrer un matériel",
+        "description" : "Entrée dans le parc à l'état DISPONIBLE ; émet MATERIEL_ENREGISTRE.",
+        "operationId" : "enregistrer",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MaterielRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Matériel enregistré",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Materiel"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Type d'engin introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Code déjà utilisé",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Type d'engin inactif ou incompatible",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/materiels/{id}/reforme/demande" : {
+      "post" : {
+        "tags" : [ "Matériels — opérations" ],
+        "summary" : "Demander la réforme (R13, étape 1)",
+        "description" : "Émet MATERIEL_REFORME_DEMANDEE ; le matériel n'est plus affectable.",
+        "operationId" : "demanderReforme",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/DemandeReformeRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Demande enregistrée",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Materiel"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "REFORME_DEJA_DEMANDEE",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Matériel déjà réformé",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Matériel (ou chantier, affectation) introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/materiels/{id}/liberer" : {
+      "post" : {
+        "tags" : [ "Matériels — opérations" ],
+        "summary" : "Libérer un matériel",
+        "description" : "Termine l'affectation active ; le matériel redevient DISPONIBLE (ou reste EN_MAINTENANCE) ; émet AFFECTATION_TERMINEE et MATERIEL_ETAT_CHANGE.",
+        "operationId" : "liberer",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/LibererRequest"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Affectation terminée",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Affectation"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Aucune affectation active",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Date de fin incohérente",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Matériel (ou chantier, affectation) introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/materiels/{id}/heures" : {
+      "post" : {
+        "tags" : [ "Matériels — opérations" ],
+        "summary" : "Relever le compteur horaire",
+        "description" : "Le relevé ne peut pas être inférieur au compteur actuel.",
+        "operationId" : "releverHeures",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ReleveHeuresRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Matériel mis à jour",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Materiel"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "RELEVE_HEURES_INVALIDE ou matériel réformé",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Matériel (ou chantier, affectation) introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/materiels/{id}/confirmer-reception" : {
+      "post" : {
+        "tags" : [ "Matériels — opérations" ],
+        "summary" : "Confirmer la réception sur chantier",
+        "description" : "Chef de chantier (uniquement sur ses chantiers) ou RM ; l'affectation passe EN_COURS ; émet RECEPTION_CONFIRMEE.",
+        "operationId" : "confirmerReception",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ConfirmerReceptionRequest"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Affectation en cours",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Affectation"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Aucune affectation active ou réception déjà confirmée",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Matériel (ou chantier, affectation) introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/materiels/{id}/affecter" : {
+      "post" : {
+        "tags" : [ "Matériels — opérations" ],
+        "summary" : "Affecter un matériel à un chantier",
+        "description" : "Règle R04 : le matériel doit être DISPONIBLE (422 MATERIEL_NON_DISPONIBLE). Une affectation active chevauchant la période renvoie 409 CONFLIT_AFFECTATION (y compris en cas de demandes simultanées). L'affectation est créée EN_ATTENTE_RECEPTION ; émet MATERIEL_AFFECTE.",
+        "operationId" : "affecter",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "example" : "7b1e5c3a-2d4f-4a6b-8c9d-0e1f2a3b4c5d"
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AffecterRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Affectation créée",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Affectation"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "CONFLIT_AFFECTATION ou CONFLIT_CONCURRENCE",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "MATERIEL_NON_DISPONIBLE (R04), CHANTIER_TERMINE ou PERIODE_INVALIDE",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Matériel (ou chantier, affectation) introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/maintenances" : {
+      "get" : {
+        "tags" : [ "Maintenances" ],
+        "summary" : "Lister les ordres de travail",
+        "description" : "Un chef de chantier ne voit que les interventions de ses chantiers.",
+        "operationId" : "lister_3",
+        "parameters" : [ {
+          "name" : "statut",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "PLANIFIEE", "EN_COURS", "CLOTUREE" ]
+          },
+          "example" : "PLANIFIEE"
+        }, {
+          "name" : "type",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "PREVENTIVE", "CORRECTIVE", "LOURDE" ]
+          },
+          "example" : "PREVENTIVE"
+        }, {
+          "name" : "materielId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "example" : "7b1e5c3a-2d4f-4a6b-8c9d-0e1f2a3b4c5d"
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "example" : 0
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "example" : 20
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Tri : datePlanifiee, numeroOt, statut, type",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "datePlanifiee,desc"
+        } ],
+        "responses" : {
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Page d'ordres de travail",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseMaintenance"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Maintenances" ],
+        "summary" : "Planifier un ordre de travail",
+        "description" : "Numéro OT-AAAA-NNNN attribué par séquence ; une panne liée passe PRISE_EN_CHARGE ; émet MAINTENANCE_PLANIFIEE.",
+        "operationId" : "planifier",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MaintenanceRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Ordre de travail planifié",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Maintenance"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Matériel ou panne introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Panne déjà prise en charge",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Matériel réformé ou panne d'un autre matériel",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chantiers" : {
+      "get" : {
+        "tags" : [ "Chantiers" ],
+        "summary" : "Lister les chantiers",
+        "description" : "Un chef de chantier ne voit que les chantiers de son claim chantier_ids.",
+        "operationId" : "lister_4",
+        "parameters" : [ {
+          "name" : "statut",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "EN_COURS", "TERMINE" ]
+          },
+          "example" : "EN_COURS"
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "description" : "Code, nom, localisation ou région",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "Dakar"
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "example" : 0
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "example" : 20
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Tri : code, nom, region, statut, dateDebut, budget",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "nom,asc"
+        } ],
+        "responses" : {
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Page de chantiers",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseChantier"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Chantiers" ],
+        "summary" : "Créer un chantier",
+        "description" : "Statut initial EN_COURS ; émet CHANTIER_CREE.",
+        "operationId" : "creer_1",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ChantierRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Chantier créé",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Chantier"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Code déjà utilisé",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Règle de gestion non respectée (dates, montants)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/materiels/{id}/reforme/valider" : {
+      "patch" : {
+        "tags" : [ "Matériels — opérations" ],
+        "summary" : "Décider de la réforme (R13, étape 2)",
+        "description" : "Direction Générale : approuvé → REFORME (terminal, émet MATERIEL_REFORME) ; refusé → la demande est levée. Le matériel doit être libéré et hors maintenance.",
+        "operationId" : "validerReforme",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/DecisionReformeRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Décision appliquée",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Materiel"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "REFORME_NON_DEMANDEE",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "REFORME_IMPOSSIBLE (affecté ou en maintenance)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Matériel (ou chantier, affectation) introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/materiels/{id}/etat" : {
+      "patch" : {
+        "tags" : [ "Matériels — opérations" ],
+        "summary" : "Changer l'état d'un matériel",
+        "description" : "EN_MAINTENANCE (immobilisation) ou DISPONIBLE (remise en service : retour AFFECTE si une affectation est en cours). Jamais REFORME ici. Émet MATERIEL_ETAT_CHANGE.",
+        "operationId" : "changerEtat",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ChangementEtatRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Matériel mis à jour",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Materiel"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "TRANSITION_INVALIDE",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "ETAT_CIBLE_INTERDIT, AFFECTATION_EN_COURS, MAINTENANCE_EN_COURS",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Matériel (ou chantier, affectation) introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/maintenances/{id}/demarrer" : {
+      "patch" : {
+        "tags" : [ "Maintenances" ],
+        "summary" : "Démarrer une intervention",
+        "description" : "Le matériel passe EN_MAINTENANCE ; émet MAINTENANCE_DEMARREE.",
+        "operationId" : "demarrer",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "example" : "3e4f5a6b-7c8d-4e9f-0a1b-2c3d4e5f6a7b"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ordre de travail en cours",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Maintenance"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ordre de travail introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "TRANSITION_INVALIDE",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Matériel réformé",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/maintenances/{id}/cloturer" : {
+      "patch" : {
+        "tags" : [ "Maintenances" ],
+        "summary" : "Clôturer une intervention",
+        "description" : "Le matériel redevient AFFECTE si une affectation est en cours, sinon DISPONIBLE ; le cycle de maintenance préventive repart ; émet MAINTENANCE_CLOTUREE.",
+        "operationId" : "cloturer",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ClotureMaintenanceRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Ordre de travail clôturé",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Maintenance"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ordre de travail introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "TRANSITION_INVALIDE",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Coût ou relevé de compteur invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chantiers/{id}/terminer" : {
+      "patch" : {
+        "tags" : [ "Chantiers" ],
+        "summary" : "Terminer un chantier",
+        "description" : "Refusé (422 CHANTIER_MATERIELS_AFFECTES) si des matériels y sont encore affectés.",
+        "operationId" : "terminer",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Chantier terminé",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Chantier"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Chantier introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Chantier déjà terminé",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Matériels encore affectés",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/materiels/disponibilite" : {
+      "get" : {
+        "tags" : [ "Matériels" ],
+        "summary" : "Vérifier la disponibilité",
+        "description" : "Matériels DISPONIBLE sans demande de réforme ni maintenance planifiée sur la période (utilisé par ms-besoins pour orienter un besoin).",
+        "operationId" : "disponibilite",
+        "parameters" : [ {
+          "name" : "categorie",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "MATERIEL_ROULANT", "OUTILLAGE", "EQUIPEMENT_INFORMATIQUE", "CONSOMMABLE" ]
+          },
+          "example" : "MATERIEL_ROULANT"
+        }, {
+          "name" : "designation",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "Pelle"
+        }, {
+          "name" : "quantite",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "example" : 2
+        }, {
+          "name" : "du",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "example" : "2026-11-02"
+        }, {
+          "name" : "au",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "example" : "2027-02-28"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Disponibilité",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Disponibilite"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Période incohérente",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/materiels/carte" : {
+      "get" : {
+        "tags" : [ "Matériels" ],
+        "summary" : "Carte du parc (GeoJSON)",
+        "description" : "FeatureCollection des chantiers (kind=CHANTIER) et des matériels géolocalisés (kind=MATERIEL) ; les matériels réformés sont exclus sauf filtre etat=REFORME.",
+        "operationId" : "carte",
+        "parameters" : [ {
+          "name" : "categorie",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "MATERIEL_ROULANT", "OUTILLAGE", "EQUIPEMENT_INFORMATIQUE", "CONSOMMABLE" ]
+          },
+          "example" : "MATERIEL_ROULANT"
+        }, {
+          "name" : "etat",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "DISPONIBLE", "AFFECTE", "EN_MAINTENANCE", "REFORME" ]
+          },
+          "example" : "AFFECTE"
+        } ],
+        "responses" : {
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "FeatureCollection GeoJSON",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Carte"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/affectations" : {
+      "get" : {
+        "tags" : [ "Affectations" ],
+        "summary" : "Lister les affectations",
+        "operationId" : "lister_5",
+        "parameters" : [ {
+          "name" : "chantierId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "example" : "c0000000-0000-0000-0000-000000000001"
+        }, {
+          "name" : "materielId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "example" : "7b1e5c3a-2d4f-4a6b-8c9d-0e1f2a3b4c5d"
+        }, {
+          "name" : "statut",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "EN_ATTENTE_RECEPTION", "EN_COURS", "TERMINEE" ]
+          },
+          "example" : "EN_COURS"
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "example" : 0
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "example" : 20
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Tri : dateDebut, dateFinPrevue, statut",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "dateDebut,desc"
+        } ],
+        "responses" : {
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Page d'affectations",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseAffectation"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/affectations/planning" : {
+      "get" : {
+        "tags" : [ "Affectations" ],
+        "summary" : "Planning des affectations",
+        "description" : "Affectations dont la période (réelle si terminée) chevauche [du, au] ; amplitude maximale 366 jours (400 PERIODE_TROP_LONGUE). Défaut : J-30 à J+90.",
+        "operationId" : "planning",
+        "parameters" : [ {
+          "name" : "chantierId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "example" : "c0000000-0000-0000-0000-000000000001"
+        }, {
+          "name" : "categorie",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "MATERIEL_ROULANT", "OUTILLAGE", "EQUIPEMENT_INFORMATIQUE", "CONSOMMABLE" ]
+          },
+          "example" : "MATERIEL_ROULANT"
+        }, {
+          "name" : "du",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "example" : "2026-10-01"
+        }, {
+          "name" : "au",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "example" : "2026-12-31"
+        } ],
+        "responses" : {
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier hors périmètre",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Probleme"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Affectations triées par date de début",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Affectation"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "TypeEnginRequest" : {
+        "type" : "object",
+        "description" : "Données d'un type d'engin",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "example" : "NIVELEUSE",
+            "maxLength" : 40,
+            "minLength" : 0
+          },
+          "libelle" : {
+            "type" : "string",
+            "example" : "Niveleuse",
+            "maxLength" : 150,
+            "minLength" : 0
+          },
+          "categorie" : {
+            "type" : "string",
+            "enum" : [ "MATERIEL_ROULANT", "OUTILLAGE", "EQUIPEMENT_INFORMATIQUE", "CONSOMMABLE" ],
+            "example" : "MATERIEL_ROULANT"
+          },
+          "seuilMaintenanceHeures" : {
+            "type" : "integer",
+            "format" : "int32",
+            "example" : 500
+          },
+          "seuilMaintenanceJours" : {
+            "type" : "integer",
+            "format" : "int32",
+            "example" : 180
+          },
+          "actif" : {
+            "type" : "boolean",
+            "example" : true
+          }
+        },
+        "required" : [ "actif", "categorie", "code", "libelle" ]
+      },
+      "TypeEngin" : {
+        "type" : "object",
+        "description" : "Type d'engin et seuils de maintenance préventive",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "e0000000-0000-0000-0000-000000000001"
+          },
+          "code" : {
+            "type" : "string",
+            "example" : "PELLE_HYD"
+          },
+          "libelle" : {
+            "type" : "string",
+            "example" : "Pelle hydraulique"
+          },
+          "categorie" : {
+            "type" : "string",
+            "enum" : [ "MATERIEL_ROULANT", "OUTILLAGE", "EQUIPEMENT_INFORMATIQUE", "CONSOMMABLE" ],
+            "example" : "MATERIEL_ROULANT"
+          },
+          "seuilMaintenanceHeures" : {
+            "type" : "integer",
+            "format" : "int32",
+            "example" : 500
+          },
+          "seuilMaintenanceJours" : {
+            "type" : "integer",
+            "format" : "int32",
+            "example" : 180
+          },
+          "actif" : {
+            "type" : "boolean",
+            "example" : true
+          }
+        }
+      },
+      "MaterielRequest" : {
+        "type" : "object",
+        "description" : "Caractéristiques d'un matériel",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "example" : "BUL-KOM-03",
+            "maxLength" : 40,
+            "minLength" : 0
+          },
+          "immatriculation" : {
+            "type" : "string",
+            "example" : "DK-8812-BJ",
+            "maxLength" : 40,
+            "minLength" : 0
+          },
+          "designation" : {
+            "type" : "string",
+            "example" : "Bulldozer sur chenilles 20 t",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "categorie" : {
+            "type" : "string",
+            "enum" : [ "MATERIEL_ROULANT", "OUTILLAGE", "EQUIPEMENT_INFORMATIQUE", "CONSOMMABLE" ],
+            "example" : "MATERIEL_ROULANT"
+          },
+          "typeEnginId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "e0000000-0000-0000-0000-000000000002"
+          },
+          "marque" : {
+            "type" : "string",
+            "example" : "Komatsu",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "modele" : {
+            "type" : "string",
+            "example" : "D65EX-18",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "tarifJournalier" : {
+            "type" : "number",
+            "description" : "Coût journalier en FCFA",
+            "example" : 420000
+          },
+          "valeurAcquisition" : {
+            "type" : "number",
+            "description" : "Valeur d'achat en FCFA",
+            "example" : 185000000
+          },
+          "dateAcquisition" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2024-05-20"
+          },
+          "heuresFonctionnement" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Compteur horaire initial (ignoré en modification : utiliser le relevé)",
+            "example" : 1250
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Version lue (obligatoire en modification)",
+            "example" : 5
+          }
+        },
+        "required" : [ "categorie", "code", "designation", "tarifJournalier" ]
+      },
+      "Materiel" : {
+        "type" : "object",
+        "description" : "Matériel du parc",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "7b1e5c3a-2d4f-4a6b-8c9d-0e1f2a3b4c5d"
+          },
+          "code" : {
+            "type" : "string",
+            "example" : "PEL-CAT320-01"
+          },
+          "immatriculation" : {
+            "type" : "string",
+            "example" : "DK-4521-BH"
+          },
+          "designation" : {
+            "type" : "string",
+            "example" : "Pelle hydraulique sur chenilles 20 t"
+          },
+          "categorie" : {
+            "type" : "string",
+            "enum" : [ "MATERIEL_ROULANT", "OUTILLAGE", "EQUIPEMENT_INFORMATIQUE", "CONSOMMABLE" ],
+            "example" : "MATERIEL_ROULANT"
+          },
+          "typeEnginId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "e0000000-0000-0000-0000-000000000001"
+          },
+          "typeEnginLibelle" : {
+            "type" : "string",
+            "example" : "Pelle hydraulique"
+          },
+          "marque" : {
+            "type" : "string",
+            "example" : "Caterpillar"
+          },
+          "modele" : {
+            "type" : "string",
+            "example" : 320
+          },
+          "etat" : {
+            "type" : "string",
+            "enum" : [ "DISPONIBLE", "AFFECTE", "EN_MAINTENANCE", "REFORME" ],
+            "example" : "AFFECTE"
+          },
+          "heuresFonctionnement" : {
+            "type" : "integer",
+            "format" : "int64",
+            "example" : 4820
+          },
+          "heuresDepuisMaintenance" : {
+            "type" : "integer",
+            "format" : "int64",
+            "example" : 312
+          },
+          "seuilMaintenanceHeures" : {
+            "type" : "integer",
+            "format" : "int32",
+            "example" : 500
+          },
+          "prochaineMaintenance" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2026-12-15"
+          },
+          "maintenanceDue" : {
+            "type" : "boolean",
+            "example" : false
+          },
+          "tarifJournalier" : {
+            "type" : "number",
+            "description" : "Coût journalier en FCFA",
+            "example" : 350000
+          },
+          "valeurAcquisition" : {
+            "type" : "number",
+            "description" : "Valeur d'achat en FCFA",
+            "example" : 145000000
+          },
+          "dateAcquisition" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2023-03-14"
+          },
+          "chantierActuelId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "c0000000-0000-0000-0000-000000000001"
+          },
+          "chantierActuelNom" : {
+            "type" : "string",
+            "example" : "Extension autoroute Dakar–AIBD"
+          },
+          "latitude" : {
+            "type" : "number",
+            "format" : "double",
+            "example" : 14.7171
+          },
+          "longitude" : {
+            "type" : "number",
+            "format" : "double",
+            "example" : -17.4682
+          },
+          "fournisseurId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "f0000000-0000-0000-0000-000000000001"
+          },
+          "contratId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "4d2a6e8f-1b3c-4e5a-9f7d-2c4b6a8e0f1d"
+          },
+          "reformeDemandee" : {
+            "type" : "boolean",
+            "example" : false
+          },
+          "motifReforme" : {
+            "type" : "string",
+            "example" : "Châssis fissuré, réparation non rentable"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "example" : 5
+          }
+        }
+      },
+      "ChantierRequest" : {
+        "type" : "object",
+        "description" : "Données d'un chantier",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "example" : "CH-DKR-02",
+            "maxLength" : 40,
+            "minLength" : 0
+          },
+          "nom" : {
+            "type" : "string",
+            "example" : "Échangeur de Keur Massar",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "localisation" : {
+            "type" : "string",
+            "example" : "Keur Massar, Dakar",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "region" : {
+            "type" : "string",
+            "example" : "Dakar",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "latitude" : {
+            "type" : "number",
+            "format" : "double",
+            "example" : 14.7833,
+            "maximum" : 90,
+            "minimum" : -90
+          },
+          "longitude" : {
+            "type" : "number",
+            "format" : "double",
+            "example" : -17.3167,
+            "maximum" : 180,
+            "minimum" : -180
+          },
+          "budget" : {
+            "type" : "number",
+            "description" : "Budget en FCFA",
+            "example" : 4500000000
+          },
+          "montantMarche" : {
+            "type" : "number",
+            "description" : "Montant du marché en FCFA",
+            "example" : 5200000000
+          },
+          "dateDebut" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2026-11-02"
+          },
+          "dateFinPrevue" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2027-06-30"
+          },
+          "chefChantierId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "00000000-0000-0000-0000-000000000101"
+          },
+          "chefChantierNom" : {
+            "type" : "string",
+            "example" : "Mamadou Diop",
+            "maxLength" : 150,
+            "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Version lue (obligatoire en modification)",
+            "example" : 3
+          }
+        },
+        "required" : [ "budget", "code", "dateDebut", "latitude", "localisation", "longitude", "montantMarche", "nom", "region" ]
+      },
+      "Chantier" : {
+        "type" : "object",
+        "description" : "Chantier de la CSE",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "c0000000-0000-0000-0000-000000000001"
+          },
+          "code" : {
+            "type" : "string",
+            "example" : "CH-DKR-01"
+          },
+          "nom" : {
+            "type" : "string",
+            "example" : "Extension autoroute Dakar–AIBD"
+          },
+          "localisation" : {
+            "type" : "string",
+            "example" : "Diamniadio, Dakar"
+          },
+          "region" : {
+            "type" : "string",
+            "example" : "Dakar"
+          },
+          "latitude" : {
+            "type" : "number",
+            "format" : "double",
+            "example" : 14.7167
+          },
+          "longitude" : {
+            "type" : "number",
+            "format" : "double",
+            "example" : -17.4677
+          },
+          "statut" : {
+            "type" : "string",
+            "enum" : [ "EN_COURS", "TERMINE" ],
+            "example" : "EN_COURS"
+          },
+          "budget" : {
+            "type" : "number",
+            "description" : "Budget en FCFA",
+            "example" : 18500000000
+          },
+          "montantMarche" : {
+            "type" : "number",
+            "description" : "Montant du marché en FCFA",
+            "example" : 21000000000
+          },
+          "dateDebut" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2026-02-01"
+          },
+          "dateFinPrevue" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2027-12-31"
+          },
+          "chefChantierId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "00000000-0000-0000-0000-000000000101"
+          },
+          "chefChantierNom" : {
+            "type" : "string",
+            "example" : "Mamadou Diop"
+          },
+          "nombreMateriels" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Matériels présents sur le chantier",
+            "example" : 8
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "example" : 3
+          }
+        }
+      },
+      "PanneRequest" : {
+        "type" : "object",
+        "description" : "Signalement d'une panne",
+        "properties" : {
+          "materielId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "7b1e5c3a-2d4f-4a6b-8c9d-0e1f2a3b4c5d"
+          },
+          "gravite" : {
+            "type" : "string",
+            "enum" : [ "MINEURE", "MAJEURE", "BLOQUANTE" ],
+            "example" : "MAJEURE"
+          },
+          "description" : {
+            "type" : "string",
+            "example" : "Fuite hydraulique sur le vérin de flèche",
+            "maxLength" : 1000,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "description", "gravite", "materielId" ]
+      },
+      "Panne" : {
+        "type" : "object",
+        "description" : "Panne signalée sur un matériel",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "5a6b7c8d-9e0f-4a1b-2c3d-4e5f6a7b8c9d"
+          },
+          "materielId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "7b1e5c3a-2d4f-4a6b-8c9d-0e1f2a3b4c5d"
+          },
+          "materielCode" : {
+            "type" : "string",
+            "example" : "PEL-CAT320-01"
+          },
+          "materielDesignation" : {
+            "type" : "string",
+            "example" : "Pelle hydraulique sur chenilles 20 t"
+          },
+          "chantierId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "c0000000-0000-0000-0000-000000000001"
+          },
+          "chantierNom" : {
+            "type" : "string",
+            "example" : "Extension autoroute Dakar–AIBD"
+          },
+          "gravite" : {
+            "type" : "string",
+            "enum" : [ "MINEURE", "MAJEURE", "BLOQUANTE" ],
+            "example" : "MAJEURE"
+          },
+          "description" : {
+            "type" : "string",
+            "example" : "Fuite hydraulique sur le vérin de flèche"
+          },
+          "statut" : {
+            "type" : "string",
+            "enum" : [ "SIGNALEE", "PRISE_EN_CHARGE", "RESOLUE" ],
+            "example" : "SIGNALEE"
+          },
+          "signaleParId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "00000000-0000-0000-0000-000000000101"
+          },
+          "signaleParNom" : {
+            "type" : "string",
+            "example" : "Mamadou Diop"
+          },
+          "dateSignalement" : {
+            "type" : "string",
+            "format" : "date-time",
+            "example" : "2026-10-29T15:20:00Z"
+          },
+          "maintenanceId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "3e4f5a6b-7c8d-4e9f-0a1b-2c3d4e5f6a7b"
+          }
+        }
+      },
+      "DemandeReformeRequest" : {
+        "type" : "object",
+        "description" : "Demande de réforme d'un matériel",
+        "properties" : {
+          "motif" : {
+            "type" : "string",
+            "example" : "Châssis fissuré, réparation estimée à 60 % de la valeur à neuf",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "motif" ]
+      },
+      "LibererRequest" : {
+        "type" : "object",
+        "description" : "Fin d'affectation et retour au parc",
+        "properties" : {
+          "dateFinReelle" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2026-10-30"
+          },
+          "commentaire" : {
+            "type" : "string",
+            "example" : "Terrassements achevés",
+            "maxLength" : 1000,
+            "minLength" : 0
+          }
+        }
+      },
+      "Affectation" : {
+        "type" : "object",
+        "description" : "Affectation d'un matériel à un chantier",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
+          },
+          "materielId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "7b1e5c3a-2d4f-4a6b-8c9d-0e1f2a3b4c5d"
+          },
+          "materielCode" : {
+            "type" : "string",
+            "example" : "PEL-CAT320-01"
+          },
+          "materielDesignation" : {
+            "type" : "string",
+            "example" : "Pelle hydraulique sur chenilles 20 t"
+          },
+          "categorie" : {
+            "type" : "string",
+            "enum" : [ "MATERIEL_ROULANT", "OUTILLAGE", "EQUIPEMENT_INFORMATIQUE", "CONSOMMABLE" ],
+            "example" : "MATERIEL_ROULANT"
+          },
+          "chantierId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "c0000000-0000-0000-0000-000000000001"
+          },
+          "chantierNom" : {
+            "type" : "string",
+            "example" : "Extension autoroute Dakar–AIBD"
+          },
+          "besoinId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "b0000000-0000-0000-0000-000000000004"
+          },
+          "dateDebut" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2026-11-02"
+          },
+          "dateFinPrevue" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2027-02-28"
+          },
+          "dateFinReelle" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2027-02-20"
+          },
+          "statut" : {
+            "type" : "string",
+            "enum" : [ "EN_ATTENTE_RECEPTION", "EN_COURS", "TERMINEE" ],
+            "example" : "EN_ATTENTE_RECEPTION"
+          },
+          "dateReception" : {
+            "type" : "string",
+            "format" : "date-time",
+            "example" : "2026-11-03T08:40:00Z"
+          },
+          "observationsReception" : {
+            "type" : "string",
+            "example" : "Reçu en bon état, plein effectué"
+          },
+          "fournisseurId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "f0000000-0000-0000-0000-000000000001"
+          },
+          "contratId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "4d2a6e8f-1b3c-4e5a-9f7d-2c4b6a8e0f1d"
+          }
+        }
+      },
+      "ReleveHeuresRequest" : {
+        "type" : "object",
+        "description" : "Relevé du compteur horaire",
+        "properties" : {
+          "heuresFonctionnement" : {
+            "type" : "integer",
+            "format" : "int64",
+            "example" : 4870
+          }
+        },
+        "required" : [ "heuresFonctionnement" ]
+      },
+      "ConfirmerReceptionRequest" : {
+        "type" : "object",
+        "description" : "Confirmation de réception sur chantier",
+        "properties" : {
+          "affectationId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
+          },
+          "observations" : {
+            "type" : "string",
+            "example" : "Reçu en bon état, plein effectué",
+            "maxLength" : 1000,
+            "minLength" : 0
+          }
+        }
+      },
+      "AffecterRequest" : {
+        "type" : "object",
+        "description" : "Affectation d'un matériel à un chantier",
+        "properties" : {
+          "chantierId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "c0000000-0000-0000-0000-000000000002"
+          },
+          "besoinId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "b0000000-0000-0000-0000-000000000004"
+          },
+          "dateDebut" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2026-11-02"
+          },
+          "dateFinPrevue" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2027-02-28"
+          }
+        },
+        "required" : [ "chantierId", "dateDebut", "dateFinPrevue" ]
+      },
+      "MaintenanceRequest" : {
+        "type" : "object",
+        "description" : "Planification d'un ordre de travail",
+        "properties" : {
+          "materielId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "7b1e5c3a-2d4f-4a6b-8c9d-0e1f2a3b4c5d"
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "PREVENTIVE", "CORRECTIVE", "LOURDE" ],
+            "example" : "PREVENTIVE"
+          },
+          "description" : {
+            "type" : "string",
+            "example" : "Vidange moteur, remplacement des filtres à huile et à gasoil",
+            "maxLength" : 1000,
+            "minLength" : 0
+          },
+          "datePlanifiee" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2026-11-05"
+          },
+          "technicien" : {
+            "type" : "string",
+            "example" : "Atelier central — Moustapha Gueye",
+            "maxLength" : 150,
+            "minLength" : 0
+          },
+          "panneId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "5a6b7c8d-9e0f-4a1b-2c3d-4e5f6a7b8c9d"
+          }
+        },
+        "required" : [ "datePlanifiee", "description", "materielId", "type" ]
+      },
+      "Maintenance" : {
+        "type" : "object",
+        "description" : "Ordre de travail de maintenance",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "3e4f5a6b-7c8d-4e9f-0a1b-2c3d4e5f6a7b"
+          },
+          "numeroOt" : {
+            "type" : "string",
+            "example" : "OT-2026-0042"
+          },
+          "materielId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "7b1e5c3a-2d4f-4a6b-8c9d-0e1f2a3b4c5d"
+          },
+          "materielCode" : {
+            "type" : "string",
+            "example" : "PEL-CAT320-01"
+          },
+          "materielDesignation" : {
+            "type" : "string",
+            "example" : "Pelle hydraulique sur chenilles 20 t"
+          },
+          "chantierId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "c0000000-0000-0000-0000-000000000001"
+          },
+          "chantierNom" : {
+            "type" : "string",
+            "example" : "Extension autoroute Dakar–AIBD"
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "PREVENTIVE", "CORRECTIVE", "LOURDE" ],
+            "example" : "PREVENTIVE"
+          },
+          "statut" : {
+            "type" : "string",
+            "enum" : [ "PLANIFIEE", "EN_COURS", "CLOTUREE" ],
+            "example" : "PLANIFIEE"
+          },
+          "description" : {
+            "type" : "string",
+            "example" : "Vidange moteur, remplacement des filtres à huile et à gasoil"
+          },
+          "datePlanifiee" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2026-11-05"
+          },
+          "dateDebut" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2026-11-05"
+          },
+          "dateFin" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2026-11-06"
+          },
+          "technicien" : {
+            "type" : "string",
+            "example" : "Atelier central — Moustapha Gueye"
+          },
+          "cout" : {
+            "type" : "number",
+            "description" : "Coût en FCFA",
+            "example" : 685000
+          },
+          "heuresCompteur" : {
+            "type" : "integer",
+            "format" : "int64",
+            "example" : 4830
+          },
+          "observations" : {
+            "type" : "string",
+            "example" : "RAS, prochaine vidange à 5330 h"
+          },
+          "panneId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "5a6b7c8d-9e0f-4a1b-2c3d-4e5f6a7b8c9d"
+          }
+        }
+      },
+      "DecisionReformeRequest" : {
+        "type" : "object",
+        "description" : "Validation ou refus d'une réforme",
+        "properties" : {
+          "approuve" : {
+            "type" : "boolean",
+            "example" : true
+          },
+          "commentaire" : {
+            "type" : "string",
+            "example" : "Accord : mise en vente aux enchères",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "approuve" ]
+      },
+      "ChangementEtatRequest" : {
+        "type" : "object",
+        "description" : "Changement d'état manuel d'un matériel",
+        "properties" : {
+          "etat" : {
+            "type" : "string",
+            "enum" : [ "DISPONIBLE", "EN_MAINTENANCE" ],
+            "example" : "EN_MAINTENANCE"
+          },
+          "motif" : {
+            "type" : "string",
+            "example" : "Immobilisation pour contrôle réglementaire",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "etat", "motif" ]
+      },
+      "ClotureMaintenanceRequest" : {
+        "type" : "object",
+        "description" : "Clôture d'un ordre de travail",
+        "properties" : {
+          "cout" : {
+            "type" : "number",
+            "description" : "Coût total en FCFA",
+            "example" : 685000
+          },
+          "observations" : {
+            "type" : "string",
+            "example" : "Filtres remplacés, niveaux faits",
+            "maxLength" : 1000,
+            "minLength" : 0
+          },
+          "heuresCompteur" : {
+            "type" : "integer",
+            "format" : "int64",
+            "example" : 4830
+          }
+        },
+        "required" : [ "cout" ]
+      },
+      "PageResponsePanne" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Panne"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "PageResponseMateriel" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Materiel"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "MaterielDetail" : {
+        "type" : "object",
+        "description" : "Matériel et historiques récents",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "7b1e5c3a-2d4f-4a6b-8c9d-0e1f2a3b4c5d"
+          },
+          "code" : {
+            "type" : "string",
+            "example" : "PEL-CAT320-01"
+          },
+          "immatriculation" : {
+            "type" : "string",
+            "example" : "DK-4521-BH"
+          },
+          "designation" : {
+            "type" : "string",
+            "example" : "Pelle hydraulique sur chenilles 20 t"
+          },
+          "categorie" : {
+            "type" : "string",
+            "enum" : [ "MATERIEL_ROULANT", "OUTILLAGE", "EQUIPEMENT_INFORMATIQUE", "CONSOMMABLE" ],
+            "example" : "MATERIEL_ROULANT"
+          },
+          "typeEnginId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "e0000000-0000-0000-0000-000000000001"
+          },
+          "typeEnginLibelle" : {
+            "type" : "string",
+            "example" : "Pelle hydraulique"
+          },
+          "marque" : {
+            "type" : "string",
+            "example" : "Caterpillar"
+          },
+          "modele" : {
+            "type" : "string",
+            "example" : 320
+          },
+          "etat" : {
+            "type" : "string",
+            "enum" : [ "DISPONIBLE", "AFFECTE", "EN_MAINTENANCE", "REFORME" ],
+            "example" : "AFFECTE"
+          },
+          "heuresFonctionnement" : {
+            "type" : "integer",
+            "format" : "int64",
+            "example" : 4820
+          },
+          "heuresDepuisMaintenance" : {
+            "type" : "integer",
+            "format" : "int64",
+            "example" : 312
+          },
+          "seuilMaintenanceHeures" : {
+            "type" : "integer",
+            "format" : "int32",
+            "example" : 500
+          },
+          "prochaineMaintenance" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2026-12-15"
+          },
+          "maintenanceDue" : {
+            "type" : "boolean",
+            "example" : false
+          },
+          "tarifJournalier" : {
+            "type" : "number",
+            "description" : "Coût journalier en FCFA",
+            "example" : 350000
+          },
+          "valeurAcquisition" : {
+            "type" : "number",
+            "description" : "Valeur d'achat en FCFA",
+            "example" : 145000000
+          },
+          "dateAcquisition" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2023-03-14"
+          },
+          "chantierActuelId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "c0000000-0000-0000-0000-000000000001"
+          },
+          "chantierActuelNom" : {
+            "type" : "string",
+            "example" : "Extension autoroute Dakar–AIBD"
+          },
+          "latitude" : {
+            "type" : "number",
+            "format" : "double",
+            "example" : 14.7171
+          },
+          "longitude" : {
+            "type" : "number",
+            "format" : "double",
+            "example" : -17.4682
+          },
+          "fournisseurId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "f0000000-0000-0000-0000-000000000001"
+          },
+          "contratId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "4d2a6e8f-1b3c-4e5a-9f7d-2c4b6a8e0f1d"
+          },
+          "reformeDemandee" : {
+            "type" : "boolean",
+            "example" : false
+          },
+          "motifReforme" : {
+            "type" : "string",
+            "example" : "Châssis fissuré, réparation non rentable"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "example" : 5
+          },
+          "affectations" : {
+            "type" : "array",
+            "description" : "Dernières affectations",
+            "items" : {
+              "$ref" : "#/components/schemas/Affectation"
+            }
+          },
+          "maintenances" : {
+            "type" : "array",
+            "description" : "Derniers ordres de travail",
+            "items" : {
+              "$ref" : "#/components/schemas/Maintenance"
+            }
+          },
+          "pannes" : {
+            "type" : "array",
+            "description" : "Dernières pannes",
+            "items" : {
+              "$ref" : "#/components/schemas/Panne"
+            }
+          },
+          "mouvements" : {
+            "type" : "array",
+            "description" : "Derniers mouvements",
+            "items" : {
+              "$ref" : "#/components/schemas/Mouvement"
+            }
+          }
+        }
+      },
+      "Mouvement" : {
+        "type" : "object",
+        "description" : "Mouvement tracé d'un matériel",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "9c8b7a6d-5e4f-4a3b-2c1d-0e9f8a7b6c5d"
+          },
+          "materielId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "7b1e5c3a-2d4f-4a6b-8c9d-0e1f2a3b4c5d"
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "AFFECTATION", "RECEPTION", "LIBERATION", "MAINTENANCE", "REFORME", "ENREGISTREMENT" ],
+            "example" : "AFFECTATION"
+          },
+          "chantierOrigineNom" : {
+            "type" : "string",
+            "example" : "Contournement de Thiès RN2"
+          },
+          "chantierDestinationNom" : {
+            "type" : "string",
+            "example" : "Extension autoroute Dakar–AIBD"
+          },
+          "date" : {
+            "type" : "string",
+            "format" : "date-time",
+            "example" : "2026-10-30T09:15:00Z"
+          },
+          "auteurNom" : {
+            "type" : "string",
+            "example" : "Ibrahima Fall"
+          },
+          "commentaire" : {
+            "type" : "string",
+            "example" : "Affectation du 2026-11-02 au 2027-02-28"
+          }
+        }
+      },
+      "Disponibilite" : {
+        "type" : "object",
+        "description" : "Disponibilité de matériels",
+        "properties" : {
+          "disponible" : {
+            "type" : "boolean",
+            "example" : true
+          },
+          "quantiteDemandee" : {
+            "type" : "integer",
+            "format" : "int32",
+            "example" : 2
+          },
+          "quantiteDisponible" : {
+            "type" : "integer",
+            "format" : "int64",
+            "example" : 3
+          },
+          "materiels" : {
+            "type" : "array",
+            "description" : "Matériels disponibles proposés",
+            "items" : {
+              "$ref" : "#/components/schemas/Materiel"
+            }
+          }
+        }
+      },
+      "Carte" : {
+        "type" : "object",
+        "description" : "FeatureCollection GeoJSON des chantiers et matériels",
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "example" : "FeatureCollection"
+          },
+          "features" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CarteFeature"
+            }
+          }
+        }
+      },
+      "CarteFeature" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "example" : "Feature"
+          },
+          "geometry" : {
+            "$ref" : "#/components/schemas/CarteGeometrie"
+          },
+          "properties" : {
+            "$ref" : "#/components/schemas/CarteProprietes"
+          }
+        }
+      },
+      "CarteGeometrie" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "example" : "Point"
+          },
+          "coordinates" : {
+            "type" : "array",
+            "description" : "[longitude, latitude]",
+            "example" : [ -17.4677, 14.7167 ],
+            "items" : {
+              "type" : "number",
+              "format" : "double"
+            }
+          }
+        }
+      },
+      "CarteProprietes" : {
+        "type" : "object",
+        "properties" : {
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "CHANTIER", "MATERIEL" ],
+            "example" : "MATERIEL"
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "7b1e5c3a-2d4f-4a6b-8c9d-0e1f2a3b4c5d"
+          },
+          "code" : {
+            "type" : "string",
+            "example" : "PEL-CAT320-01"
+          },
+          "libelle" : {
+            "type" : "string",
+            "example" : "Pelle hydraulique sur chenilles 20 t"
+          },
+          "categorie" : {
+            "type" : "string",
+            "enum" : [ "MATERIEL_ROULANT", "OUTILLAGE", "EQUIPEMENT_INFORMATIQUE", "CONSOMMABLE" ],
+            "example" : "MATERIEL_ROULANT"
+          },
+          "etat" : {
+            "type" : "string",
+            "enum" : [ "DISPONIBLE", "AFFECTE", "EN_MAINTENANCE", "REFORME" ],
+            "example" : "AFFECTE"
+          },
+          "statut" : {
+            "type" : "string",
+            "enum" : [ "EN_COURS", "TERMINE" ],
+            "example" : "EN_COURS"
+          },
+          "chantierNom" : {
+            "type" : "string",
+            "example" : "Extension autoroute Dakar–AIBD"
+          },
+          "nombreMateriels" : {
+            "type" : "integer",
+            "format" : "int64",
+            "example" : 8
+          }
+        }
+      },
+      "PageResponseMaintenance" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Maintenance"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "PageResponseChantier" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Chantier"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "PageResponseAffectation" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Affectation"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "Probleme" : {
+        "description" : "Erreur au format RFC 7807 (ProblemDetail)",
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "example" : "https://cse.sn/erreurs/conflit-affectation"
+          },
+          "title" : {
+            "type" : "string",
+            "example" : "Conflit"
+          },
+          "status" : {
+            "type" : "integer",
+            "format" : "int32",
+            "example" : 409
+          },
+          "detail" : {
+            "type" : "string",
+            "example" : "Le matériel PEL-CAT320-01 est déjà affecté sur une période qui chevauche celle demandée."
+          },
+          "code" : {
+            "type" : "string",
+            "example" : "CONFLIT_AFFECTATION"
+          },
+          "traceId" : {
+            "type" : "string",
+            "example" : "6f1c2a7e-3b0d-4d8e-9a51-2f7c1b9e4d10"
+          },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "date-time",
+            "example" : "2026-10-30T09:15:00Z"
+          },
+          "errors" : {
+            "type" : "array",
+            "description" : "Erreurs de validation (400 uniquement)",
+            "items" : {
+              "$ref" : "#/components/schemas/ErreurChamp"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "bearerAuth" : {
+        "type" : "http",
+        "description" : "Jeton d'accès Keycloak (realm cse)",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
+      },
+      "keycloak" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "http://localhost:8180/realms/cse/protocol/openid-connect/auth",
+            "tokenUrl" : "http://localhost:8180/realms/cse/protocol/openid-connect/token"
+          }
+        }
+      }
+    }
+  }
+}

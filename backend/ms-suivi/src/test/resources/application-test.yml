@@ -1,0 +1,22 @@
+# Profil de test : pas de broker Kafka ni de Keycloak, relais d'outbox et jobs désactivés.
+spring:
+  kafka:
+    bootstrap-servers: localhost:1
+    listener:
+      auto-startup: false
+    admin:
+      auto-create: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:1/certs
+cse:
+  outbox:
+    relay-enabled: false
+  suivi:
+    alertes:
+      actives: false
+logging:
+  level:
+    org.apache.kafka: WARN

@@ -1,7 +1,14 @@
 package sn.cse.suivi.application.port.in;
 
-public interface VerifierDisponibiliteUseCase {
-    DisponibiliteResult verifier(String categorie, String designation, int quantite);
+import sn.cse.suivi.application.query.CritereDisponibilite;
+import sn.cse.suivi.application.query.DisponibiliteVue;
 
-    record DisponibiliteResult(boolean disponible, int quantiteDisponible) {}
+/** Vérification de la disponibilité de matériels (orientation des besoins). */
+public interface VerifierDisponibiliteUseCase {
+
+  /**
+   * @param critere critères
+   * @return la disponibilité et les matériels proposés
+   */
+  DisponibiliteVue verifier(CritereDisponibilite critere);
 }

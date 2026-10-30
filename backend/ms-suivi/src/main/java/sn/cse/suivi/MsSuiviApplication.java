@@ -2,12 +2,15 @@ package sn.cse.suivi;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
 
+/** Microservice de suivi du parc : chantiers, matériels, affectations, maintenances, pannes. */
 @SpringBootApplication
-@ComponentScan(basePackages = {"sn.cse.suivi", "sn.cse.common"})
 public class MsSuiviApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(MsSuiviApplication.class, args);
-    }
+
+  /**
+   * @param args arguments de la ligne de commande
+   */
+  public static void main(String[] args) {
+    SpringApplication.run(MsSuiviApplication.class, args);
+  }
 }
