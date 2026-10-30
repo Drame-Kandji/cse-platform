@@ -1,14 +1,16 @@
 package sn.cse.besoins.application.port.in;
 
-import sn.cse.besoins.domain.model.Priorite;
+import sn.cse.besoins.application.command.SoumettreBesoinCommand;
+import sn.cse.besoins.application.query.BesoinVue;
 
-import java.util.UUID;
-
+/**
+ * Soumission d'un besoin par un chef de chantier (sur ses chantiers) ou le Responsable Matériel.
+ */
 public interface SoumettreBesoinUseCase {
-    SoumissionResult soumettre(SoumettreBesoinCommand command);
 
-    record SoumettreBesoinCommand(String designation, int quantite, String specifications, Priorite priorite,
-                                  UUID chantierId, UUID demandeurId, Integer dureeUtilisationPrevue,
-                                  String justification) {}
-    record SoumissionResult(UUID id, String reference, String statut) {}
+  /**
+   * @param commande commande
+   * @return le besoin après l'opération
+   */
+  BesoinVue soumettre(SoumettreBesoinCommand commande);
 }

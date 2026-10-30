@@ -1,27 +1,36 @@
 package sn.cse.besoins.application.service;
 
-import lombok.RequiredArgsConstructor;
+import java.time.Clock;
+import java.time.Instant;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sn.cse.common.exception.BusinessRuleException;
+import sn.cse.besoins.application.command.RejeterBesoinCommand;
 import sn.cse.besoins.application.port.in.RejeterBesoinUseCase;
-import sn.cse.besoins.application.port.out.BesoinRepositoryPort;
+import sn.cse.besoins.application.query.BesoinVue;
+import sn.cse.besoins.domain.model.Acteur;
 import sn.cse.besoins.domain.model.BesoinMateriel;
+import sn.cse.besoins.domain.validation.ChaineValidation;
 
-import java.util.UUID;
-
+/** Rejet motivé d'un besoin (R01, R08), événement BESOIN_REJETE. */
 @Service
-@RequiredArgsConstructor
 public class RejeterBesoinService implements RejeterBesoinUseCase {
 
-    private final BesoinRepositoryPort besoinRepositoryPort;
+  private final EnregistrementBesoin enregistrement;
+  private final ChaineValidation chaine;
+  private final Clock clock;
 
-    @Override
-    @Transactional
-    public void rejeter(UUID besoinId, String motif, UUID rejetePar) {
-        BesoinMateriel besoin = besoinRepositoryPort.findById(besoinId)
-                .orElseThrow(() -> new BusinessRuleException("BESOIN_INTROUVABLE", "Besoin introuvable"));
-        besoin.rejeter(motif);
-        besoinRepositoryPort.save(besoin);
-    }
+  RejeterBesoinService(EnregistrementBesoin enregistrement, ChaineValidation chaine, Clock clock) {
+    this.enregistrement = enregistrement;
+    this.chaine = chaine;
+    this.clock = clock;
+  }
+
+  @Override
+  @Transactional
+  public BesoinVue rejeter(RejeterBesoinCommand commande) {
+    BesoinMateriel besoin = enregistrement.charger(commande.besoinId());
+    besoin.rejeter(
+        chaine, Acteur.depuis(commande.utilisateur()), commande.motif(), Instant.now(clock));
+    return BesoinVue.depuis(enregistrement.enregistrerEtPublier(besoin));
+  }
 }

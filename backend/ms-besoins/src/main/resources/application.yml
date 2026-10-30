@@ -1,33 +1,113 @@
 server:
-  port: 8082
+  port: ${SERVER_PORT:8082}
+  shutdown: graceful
 spring:
   application:
     name: ms-besoins
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/cse?stringtype=unspecified}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:changeit}
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/cse}
+    username: ${DB_USERNAME:ms_besoins}
+    password: ${DB_PASSWORD:changeit-services}
+    hikari:
+      # Garantit l'isolement du schéma même si l'utilisateur n'a pas de search_path (tests).
+      connection-init-sql: SET search_path TO besoins
+      maximum-pool-size: 10
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: validate
-    open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: UTC
   flyway:
-    enabled: true
     schemas: besoins
-    baseline-on-migrate: true
-    validate-on-migrate: false
+    default-schema: besoins
+    locations: classpath:db/migration,classpath:db/common
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${spring.application.name}
+      auto-offset-reset: earliest
+    producer:
+      acks: all
   security:
     oauth2:
       resourceserver:
         jwt:
+          jwk-set-uri: ${JWK_SET_URI:http://localhost:8180/realms/cse/protocol/openid-connect/certs}
           issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/cse}
+cse:
+  openapi:
+    title: ms-besoins — Besoins en matériel
+    description: >-
+      Expression des besoins en matériel par les chantiers, validation par le Responsable Matériel
+      (R01), orientation automatique vers l'affectation directe (ms-suivi) ou les achats,
+      consolidation et statistiques.
+  clients:
+    # Délai maximal d'un appel à ms-suivi (« timeout » de la résilience inter-services).
+    connect-timeout: ${CSE_CLIENT_CONNECT_TIMEOUT:2s}
+    read-timeout: ${CSE_CLIENT_READ_TIMEOUT:3s}
+  besoins:
+    reference:
+      prefixe: BES
+      chiffres: 4
+    consolidation:
+      # Deux besoins d'un même chantier pour la même désignation à moins de N jours : doublon potentiel.
+      fenetre-doublon-jours: ${CSE_BESOINS_FENETRE_DOUBLON_JOURS:30}
+      limite: 2000
+    validation:
+      # Chaîne de responsabilité (ADR-0010) : étapes dans l'ordre de franchissement.
+      etapes:
+        - code: RESPONSABLE_MATERIEL
+          role: RESPONSABLE_MATERIEL
+          actif: true
+        # Point d'extension : étape « Directeur de projet » au-delà d'un seuil (rôle à créer dans Keycloak).
+        - code: DIRECTEUR_PROJET
+          role: DIRECTEUR_PROJET
+          actif: false
+          quantite-minimale: 10
+          priorite-minimale: CRITIQUE
+    suivi:
+      base-url: ${SUIVI_BASE_URL:http://localhost:8085}
+resilience4j:
+  retry:
+    instances:
+      suivi:
+        max-attempts: 3
+        wait-duration: 300ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - org.springframework.web.client.ResourceAccessException
+          - sn.cse.besoins.infrastructure.client.SuiviErreurTechniqueException
+        ignore-exceptions:
+          - sn.cse.common.exception.CseException
+  circuitbreaker:
+    instances:
+      suivi:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 2
+        automatic-transition-from-open-to-half-open-enabled: true
+        ignore-exceptions:
+          - sn.cse.common.exception.CseException
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics
+  endpoints.web.exposure.include: health,info,metrics,prometheus
+  endpoint.health.probes.enabled: true
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+    oauth:
+      client-id: cse-swagger
+      use-pkce-with-authorization-code-grant: true
+logging:
+  pattern:
+    level: "%5p [${spring.application.name},%X{correlationId:-}]"
+---
+spring.config.activate.on-profile: dev
+cse.seed.enabled: true
+---
+spring.config.activate.on-profile: prod
+logging.structured.format.console: ecs

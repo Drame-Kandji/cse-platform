@@ -1,0 +1,1395 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "ms-besoins — Besoins en matériel",
+    "description" : "Expression des besoins en matériel par les chantiers, validation par le Responsable Matériel (R01), orientation automatique vers l'affectation directe (ms-suivi) ou les achats, consolidation et statistiques.",
+    "contact" : {
+      "name" : "Équipe plateforme CSE",
+      "email" : "support@cse.sn"
+    },
+    "version" : "2.0.0"
+  },
+  "security" : [ {
+    "bearerAuth" : [ ]
+  }, {
+    "keycloak" : [ ]
+  } ],
+  "tags" : [ {
+    "name" : "Besoins",
+    "description" : "Expression, validation (R01), rejet motivé (R08) et orientation des besoins en matériel des chantiers : affectation directe depuis le parc ou transmission aux achats."
+  } ],
+  "paths" : {
+    "/api/besoins/{id}" : {
+      "get" : {
+        "tags" : [ "Besoins" ],
+        "summary" : "Consulter un besoin",
+        "description" : "Un chef de chantier ne consulte que les besoins de ses chantiers.",
+        "operationId" : "obtenir",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "Identifiant du besoin",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Besoin",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Besoin"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier non attribué (ACCES_CHANTIER_REFUSE)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Besoin introuvable (BESOIN_INTROUVABLE)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "Besoins" ],
+        "summary" : "Modifier un besoin",
+        "description" : "Réservé au demandeur, uniquement tant que le besoin est EN_ATTENTE (règle R05). Publie BESOIN_MODIFIE.",
+        "operationId" : "modifier",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "Identifiant du besoin",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ModificationBesoin"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Besoin modifié",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Besoin"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Champs invalides",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Pas le demandeur (MODIFICATION_RESERVEE_DEMANDEUR) ou chantier non attribué",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Besoin introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "BESOIN_NON_MODIFIABLE (R05) ou CONFLIT_CONCURRENCE",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "JUSTIFICATION_OBLIGATOIRE (R08), CHANTIER_INACTIF…",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/besoins" : {
+      "get" : {
+        "tags" : [ "Besoins" ],
+        "summary" : "Rechercher des besoins",
+        "description" : "Liste paginée (taille max 50). Un chef de chantier ne voit que ses chantiers. Tri autorisé : createdAt, updatedAt, dateBesoin, priorite, statut, reference, quantite, designation (défaut : createdAt,desc). Les bornes du/au portent sur la date de soumission.",
+        "operationId" : "rechercher",
+        "parameters" : [ {
+          "name" : "chantierId",
+          "in" : "query",
+          "description" : "Chantier",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "example" : "c0000000-0000-0000-0000-000000000001"
+        }, {
+          "name" : "statut",
+          "in" : "query",
+          "description" : "Statut",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "EN_ATTENTE", "VALIDE", "REJETE", "AFFECTE_DIRECT", "EN_ACHAT" ]
+          },
+          "example" : "EN_ATTENTE"
+        }, {
+          "name" : "priorite",
+          "in" : "query",
+          "description" : "Priorité",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "NORMAL", "URGENT", "CRITIQUE" ]
+          },
+          "example" : "URGENT"
+        }, {
+          "name" : "categorie",
+          "in" : "query",
+          "description" : "Catégorie",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "MATERIEL_ROULANT", "OUTILLAGE", "EQUIPEMENT_INFORMATIQUE", "CONSOMMABLE" ]
+          },
+          "example" : "MATERIEL_ROULANT"
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "description" : "Texte recherché (référence, désignation, spécifications)",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "pelle"
+        }, {
+          "name" : "du",
+          "in" : "query",
+          "description" : "Soumis à partir du (inclus)",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "example" : "2026-01-01"
+        }, {
+          "name" : "au",
+          "in" : "query",
+          "description" : "Soumis jusqu'au (inclus)",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "example" : "2026-12-31"
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "description" : "Page (base 0)",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "example" : 0
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "description" : "Taille (max 50)",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "example" : 20
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Tri champ,asc|desc",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "createdAt,desc"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Page de besoins",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseBesoin"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Paramètre invalide ou tri non autorisé (TRI_NON_AUTORISE)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier non attribué",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Besoins" ],
+        "summary" : "Soumettre un besoin",
+        "description" : "Crée un besoin EN_ATTENTE. Un chef de chantier ne peut le rattacher qu'à un de ses chantiers ; le chantier doit exister et être EN_COURS (vérifié auprès de ms-suivi). Règle R08 : justification obligatoire si la priorité est URGENT ou CRITIQUE. Publie BESOIN_SOUMIS.",
+        "operationId" : "soumettre",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SoumissionBesoin"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Besoin créé",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Besoin"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Champs invalides",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier non attribué (CHANTIER_NON_ATTRIBUE)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "JUSTIFICATION_OBLIGATOIRE (R08), CHANTIER_INTROUVABLE, CHANTIER_INACTIF, DATE_BESOIN_PASSEE",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "ms-suivi indisponible (SERVICE_SUIVI_INDISPONIBLE)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/besoins/{id}/orienter" : {
+      "post" : {
+        "tags" : [ "Besoins" ],
+        "summary" : "Relancer l'orientation d'un besoin validé",
+        "description" : "Pour un besoin VALIDE dont orientationEnAttente=true (ms-suivi était indisponible) : même logique que la validation. Déclenché par un Responsable Matériel car l'affectation exige son JWT (pas de tâche système).",
+        "operationId" : "orienter",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "Identifiant du besoin",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/OrientationBesoin"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Besoin orienté (ou toujours en attente)",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Besoin"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Réservé au Responsable Matériel",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Besoin introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Aucune orientation en attente (ORIENTATION_NON_REQUISE)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/besoins/{id}/valider" : {
+      "patch" : {
+        "tags" : [ "Besoins" ],
+        "summary" : "Valider un besoin (Responsable Matériel, R01)",
+        "description" : "Valide un besoin EN_ATTENTE puis l'oriente : interrogation de la disponibilité du parc (ms-suivi) ; si elle suffit, affectation des matériels (ceux de materielIds en priorité) du dateBesoin au dateBesoin + dureeUtilisationJours → AFFECTE_DIRECT ; sinon → EN_ACHAT. Si ms-suivi est indisponible, le besoin reste VALIDE avec orientationEnAttente=true. Publie BESOIN_VALIDE puis BESOIN_AFFECTE_DIRECT ou BESOIN_EN_ACHAT.",
+        "operationId" : "valider",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "Identifiant du besoin",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ValidationBesoin"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Besoin validé (et orienté si possible)",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Besoin"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Champs invalides",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Réservé au Responsable Matériel (R01, VALIDATION_NON_AUTORISEE)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Besoin introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Besoin déjà traité (TRANSITION_STATUT_INTERDITE) ou CONFLIT_CONCURRENCE",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/besoins/{id}/rejeter" : {
+      "patch" : {
+        "tags" : [ "Besoins" ],
+        "summary" : "Rejeter un besoin (Responsable Matériel, R01)",
+        "description" : "Rejette un besoin EN_ATTENTE ; motif obligatoire (R08). Publie BESOIN_REJETE.",
+        "operationId" : "rejeter",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "Identifiant du besoin",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RejetBesoin"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Besoin rejeté",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Besoin"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Champs invalides",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Réservé au Responsable Matériel (R01)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Besoin introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Besoin déjà traité (TRANSITION_STATUT_INTERDITE)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Motif absent (MOTIF_REJET_OBLIGATOIRE, R08)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/besoins/{id}/historique" : {
+      "get" : {
+        "tags" : [ "Besoins" ],
+        "summary" : "Historique d'un besoin",
+        "description" : "Toutes les actions sur le besoin, dans l'ordre chronologique.",
+        "operationId" : "historique",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "Identifiant du besoin",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Historique",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/HistoriqueBesoin"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant ou chantier non attribué",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Besoin introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/besoins/statistiques" : {
+      "get" : {
+        "tags" : [ "Besoins" ],
+        "summary" : "Statistiques des besoins",
+        "description" : "Répartition par statut et priorité, délai moyen de décision. Restreint à ses chantiers pour un chef de chantier.",
+        "operationId" : "statistiques",
+        "responses" : {
+          "200" : {
+            "description" : "Statistiques",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StatistiquesBesoins"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/besoins/consolidation" : {
+      "get" : {
+        "tags" : [ "Besoins" ],
+        "summary" : "Consolider les besoins",
+        "description" : "Regroupe les besoins EN_ATTENTE et/ou VALIDE par catégorie et désignation normalisée (casse, accents, ponctuation ignorés) et signale les doublons potentiels : même chantier, même désignation, dates de besoin proches (fenêtre configurable).",
+        "operationId" : "consolidation",
+        "parameters" : [ {
+          "name" : "statut",
+          "in" : "query",
+          "description" : "EN_ATTENTE ou VALIDE (les deux si absent)",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "EN_ATTENTE", "VALIDE", "REJETE", "AFFECTE_DIRECT", "EN_ACHAT" ]
+          },
+          "example" : "EN_ATTENTE"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Regroupements",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Consolidation"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Statut non consolidable (STATUT_NON_CONSOLIDABLE)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Réservé au Responsable Matériel",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "ModificationBesoin" : {
+        "type" : "object",
+        "description" : "Modification d'un besoin en attente (R05)",
+        "properties" : {
+          "chantierId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Chantier demandeur",
+            "example" : "c0000000-0000-0000-0000-000000000001"
+          },
+          "designation" : {
+            "type" : "string",
+            "description" : "Désignation du matériel",
+            "example" : "Pelle hydraulique 20 t",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "categorie" : {
+            "type" : "string",
+            "description" : "Catégorie de matériel",
+            "enum" : [ "MATERIEL_ROULANT", "OUTILLAGE", "EQUIPEMENT_INFORMATIQUE", "CONSOMMABLE" ],
+            "example" : "MATERIEL_ROULANT"
+          },
+          "typeEnginId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Type d'engin du référentiel (optionnel)",
+            "example" : "e0000000-0000-0000-0000-000000000001"
+          },
+          "quantite" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Quantité demandée",
+            "example" : 3,
+            "minimum" : 1
+          },
+          "specifications" : {
+            "type" : "string",
+            "description" : "Spécifications techniques",
+            "example" : "Godet 1 m³, chenilles",
+            "maxLength" : 2000,
+            "minLength" : 0
+          },
+          "priorite" : {
+            "type" : "string",
+            "description" : "Priorité",
+            "enum" : [ "NORMAL", "URGENT", "CRITIQUE" ],
+            "example" : "NORMAL"
+          },
+          "dureeUtilisationJours" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Durée d'utilisation prévue (jours)",
+            "example" : 30,
+            "minimum" : 1
+          },
+          "dateBesoin" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Date à laquelle le matériel est requis",
+            "example" : "2026-11-20"
+          },
+          "justification" : {
+            "type" : "string",
+            "description" : "Justification (obligatoire si URGENT ou CRITIQUE, règle R08)",
+            "example" : "Accélération du planning imposée par le maître d'ouvrage",
+            "maxLength" : 2000,
+            "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Version connue du besoin (verrou optimiste)",
+            "example" : 0
+          }
+        },
+        "required" : [ "categorie", "chantierId", "dateBesoin", "designation", "dureeUtilisationJours", "priorite", "quantite", "version" ]
+      },
+      "ProblemDetail" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "format" : "uri"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "detail" : {
+            "type" : "string"
+          },
+          "instance" : {
+            "type" : "string",
+            "format" : "uri"
+          },
+          "properties" : {
+            "type" : "object",
+            "additionalProperties" : { }
+          }
+        }
+      },
+      "Besoin" : {
+        "type" : "object",
+        "description" : "Besoin en matériel exprimé par un chantier",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "3f2b8c1e-5d4a-4e8b-9c7d-1a2b3c4d5e6f"
+          },
+          "reference" : {
+            "type" : "string",
+            "description" : "Référence lisible",
+            "example" : "BES-2026-0001"
+          },
+          "designation" : {
+            "type" : "string",
+            "example" : "Pelle hydraulique 20 t"
+          },
+          "categorie" : {
+            "type" : "string",
+            "enum" : [ "MATERIEL_ROULANT", "OUTILLAGE", "EQUIPEMENT_INFORMATIQUE", "CONSOMMABLE" ],
+            "example" : "MATERIEL_ROULANT"
+          },
+          "typeEnginId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "e0000000-0000-0000-0000-000000000001"
+          },
+          "quantite" : {
+            "type" : "integer",
+            "format" : "int32",
+            "example" : 2
+          },
+          "specifications" : {
+            "type" : "string",
+            "example" : "Godet 1 m³, chenilles"
+          },
+          "priorite" : {
+            "type" : "string",
+            "enum" : [ "NORMAL", "URGENT", "CRITIQUE" ],
+            "example" : "URGENT"
+          },
+          "statut" : {
+            "type" : "string",
+            "enum" : [ "EN_ATTENTE", "VALIDE", "REJETE", "AFFECTE_DIRECT", "EN_ACHAT" ],
+            "example" : "EN_ATTENTE"
+          },
+          "chantierId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "c0000000-0000-0000-0000-000000000001"
+          },
+          "chantierNom" : {
+            "type" : "string",
+            "example" : "Extension autoroute Dakar–AIBD"
+          },
+          "demandeurId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "00000000-0000-0000-0000-000000000101"
+          },
+          "demandeurNom" : {
+            "type" : "string",
+            "example" : "Mamadou Diop"
+          },
+          "dureeUtilisationJours" : {
+            "type" : "integer",
+            "format" : "int32",
+            "example" : 45
+          },
+          "dateBesoin" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2026-11-15"
+          },
+          "justification" : {
+            "type" : "string",
+            "example" : "Terrassement du lot 3 bloqué"
+          },
+          "motifRejet" : {
+            "type" : "string",
+            "example" : "Doublon d'un besoin existant"
+          },
+          "validateurId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "00000000-0000-0000-0000-000000000201"
+          },
+          "validateurNom" : {
+            "type" : "string",
+            "example" : "Ibrahima Fall"
+          },
+          "dateValidation" : {
+            "type" : "string",
+            "format" : "date-time",
+            "example" : "2026-10-30T09:15:00Z"
+          },
+          "materielIdsAffectes" : {
+            "type" : "array",
+            "items" : {
+              "example" : "a1000000-0000-0000-0000-000000000001"
+            }
+          },
+          "orientationEnAttente" : {
+            "type" : "boolean",
+            "description" : "Vrai si le besoin est VALIDE mais pas encore orienté (ms-suivi indisponible) : relancer via POST /api/besoins/{id}/orienter",
+            "example" : false
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "example" : "2026-10-28T08:00:00Z"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "example" : "2026-10-30T09:15:00Z"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Version (verrou optimiste)",
+            "example" : 0
+          }
+        }
+      },
+      "SoumissionBesoin" : {
+        "type" : "object",
+        "description" : "Expression d'un nouveau besoin en matériel",
+        "properties" : {
+          "chantierId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Chantier demandeur",
+            "example" : "c0000000-0000-0000-0000-000000000001"
+          },
+          "designation" : {
+            "type" : "string",
+            "description" : "Désignation du matériel",
+            "example" : "Pelle hydraulique 20 t",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "categorie" : {
+            "type" : "string",
+            "description" : "Catégorie de matériel",
+            "enum" : [ "MATERIEL_ROULANT", "OUTILLAGE", "EQUIPEMENT_INFORMATIQUE", "CONSOMMABLE" ],
+            "example" : "MATERIEL_ROULANT"
+          },
+          "typeEnginId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Type d'engin du référentiel (optionnel)",
+            "example" : "e0000000-0000-0000-0000-000000000001"
+          },
+          "quantite" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Quantité demandée",
+            "example" : 2,
+            "minimum" : 1
+          },
+          "specifications" : {
+            "type" : "string",
+            "description" : "Spécifications techniques",
+            "example" : "Godet 1 m³, chenilles, conducteur fourni",
+            "maxLength" : 2000,
+            "minLength" : 0
+          },
+          "priorite" : {
+            "type" : "string",
+            "description" : "Priorité",
+            "enum" : [ "NORMAL", "URGENT", "CRITIQUE" ],
+            "example" : "URGENT"
+          },
+          "dureeUtilisationJours" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Durée d'utilisation prévue (jours)",
+            "example" : 45,
+            "minimum" : 1
+          },
+          "dateBesoin" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Date à laquelle le matériel est requis",
+            "example" : "2026-11-15"
+          },
+          "justification" : {
+            "type" : "string",
+            "description" : "Justification (obligatoire si URGENT ou CRITIQUE, règle R08)",
+            "example" : "Terrassement du lot 3 bloqué depuis la panne de la pelle principale",
+            "maxLength" : 2000,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "categorie", "chantierId", "dateBesoin", "designation", "dureeUtilisationJours", "priorite", "quantite" ]
+      },
+      "OrientationBesoin" : {
+        "type" : "object",
+        "description" : "Relance de l'orientation d'un besoin validé",
+        "properties" : {
+          "materielIds" : {
+            "type" : "array",
+            "items" : {
+              "example" : "a1000000-0000-0000-0000-000000000002"
+            },
+            "maxItems" : 100,
+            "minItems" : 0
+          }
+        }
+      },
+      "ValidationBesoin" : {
+        "type" : "object",
+        "description" : "Validation d'un besoin par le Responsable Matériel",
+        "properties" : {
+          "commentaire" : {
+            "type" : "string",
+            "description" : "Commentaire du validateur",
+            "example" : "Validé : priorité au lot terrassement",
+            "maxLength" : 2000,
+            "minLength" : 0
+          },
+          "materielIds" : {
+            "type" : "array",
+            "items" : {
+              "example" : "a1000000-0000-0000-0000-000000000001"
+            },
+            "maxItems" : 100,
+            "minItems" : 0
+          }
+        }
+      },
+      "RejetBesoin" : {
+        "type" : "object",
+        "description" : "Rejet motivé d'un besoin",
+        "properties" : {
+          "motif" : {
+            "type" : "string",
+            "description" : "Motif du rejet (obligatoire, règle R08)",
+            "example" : "Doublon du besoin BES-2026-0012 déjà validé pour ce chantier",
+            "maxLength" : 1000,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "motif" ]
+      },
+      "PageResponseBesoin" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Besoin"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "HistoriqueBesoin" : {
+        "type" : "object",
+        "description" : "Entrée de l'historique d'un besoin",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "7a1c2d3e-4f50-4617-8293-a4b5c6d7e8f9"
+          },
+          "statut" : {
+            "type" : "string",
+            "enum" : [ "EN_ATTENTE", "VALIDE", "REJETE", "AFFECTE_DIRECT", "EN_ACHAT" ],
+            "example" : "VALIDE"
+          },
+          "action" : {
+            "type" : "string",
+            "enum" : [ "SOUMISSION", "MODIFICATION", "APPROBATION_ETAPE", "VALIDATION", "REJET", "ORIENTATION_EN_ATTENTE", "AFFECTATION_DIRECTE", "ORIENTATION_ACHAT", "MATERIEL_AFFECTE" ],
+            "example" : "VALIDATION"
+          },
+          "auteurId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "00000000-0000-0000-0000-000000000201"
+          },
+          "auteurNom" : {
+            "type" : "string",
+            "example" : "Ibrahima Fall"
+          },
+          "commentaire" : {
+            "type" : "string",
+            "example" : "Validé : priorité au lot terrassement"
+          },
+          "date" : {
+            "type" : "string",
+            "format" : "date-time",
+            "example" : "2026-10-30T09:15:00Z"
+          }
+        }
+      },
+      "StatistiquesBesoins" : {
+        "type" : "object",
+        "description" : "Indicateurs des besoins visibles",
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "format" : "int64",
+            "example" : 42
+          },
+          "parStatut" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "integer",
+              "format" : "int64"
+            },
+            "description" : "Nombre de besoins par statut (toutes les clés présentes)",
+            "example" : {
+              "EN_ATTENTE" : 9,
+              "VALIDE" : 2,
+              "REJETE" : 6,
+              "AFFECTE_DIRECT" : 14,
+              "EN_ACHAT" : 11
+            }
+          },
+          "parPriorite" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "integer",
+              "format" : "int64"
+            },
+            "description" : "Nombre de besoins par priorité (toutes les clés présentes)",
+            "example" : {
+              "NORMAL" : 24,
+              "URGENT" : 12,
+              "CRITIQUE" : 6
+            }
+          },
+          "delaiMoyenValidationHeures" : {
+            "type" : "number",
+            "format" : "double",
+            "description" : "Délai moyen entre soumission et décision (heures)",
+            "example" : 26.4
+          }
+        }
+      },
+      "ChantierResume" : {
+        "type" : "object",
+        "description" : "Chantier concerné par un regroupement",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "c0000000-0000-0000-0000-000000000001"
+          },
+          "nom" : {
+            "type" : "string",
+            "example" : "Extension autoroute Dakar–AIBD"
+          }
+        }
+      },
+      "Consolidation" : {
+        "type" : "object",
+        "description" : "Regroupement de besoins équivalents",
+        "properties" : {
+          "categorie" : {
+            "type" : "string",
+            "enum" : [ "MATERIEL_ROULANT", "OUTILLAGE", "EQUIPEMENT_INFORMATIQUE", "CONSOMMABLE" ],
+            "example" : "MATERIEL_ROULANT"
+          },
+          "designation" : {
+            "type" : "string",
+            "example" : "Pelle hydraulique 20 t"
+          },
+          "quantiteTotale" : {
+            "type" : "integer",
+            "format" : "int32",
+            "example" : 5
+          },
+          "nombreDemandes" : {
+            "type" : "integer",
+            "format" : "int32",
+            "example" : 3
+          },
+          "prioriteMax" : {
+            "type" : "string",
+            "enum" : [ "NORMAL", "URGENT", "CRITIQUE" ],
+            "example" : "CRITIQUE"
+          },
+          "chantiers" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ChantierResume"
+            }
+          },
+          "besoinIds" : {
+            "type" : "array",
+            "items" : {
+              "example" : "3f2b8c1e-5d4a-4e8b-9c7d-1a2b3c4d5e6f"
+            }
+          },
+          "doublonPotentiel" : {
+            "type" : "boolean",
+            "description" : "Vrai si un même chantier a exprimé ce besoin plusieurs fois dans la fenêtre configurée",
+            "example" : false
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "bearerAuth" : {
+        "type" : "http",
+        "description" : "Jeton d'accès Keycloak (realm cse)",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
+      },
+      "keycloak" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "http://localhost:8180/realms/cse/protocol/openid-connect/auth",
+            "tokenUrl" : "http://localhost:8180/realms/cse/protocol/openid-connect/token"
+          }
+        }
+      }
+    }
+  }
+}

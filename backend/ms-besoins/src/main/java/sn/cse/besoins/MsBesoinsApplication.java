@@ -2,12 +2,17 @@ package sn.cse.besoins;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
+/** Microservice ms-besoins : expression, validation et orientation des besoins en matériel. */
 @SpringBootApplication
-@ComponentScan(basePackages = {"sn.cse.besoins", "sn.cse.common"})
+@ConfigurationPropertiesScan
 public class MsBesoinsApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(MsBesoinsApplication.class, args);
-    }
+
+  /**
+   * @param args arguments de la ligne de commande
+   */
+  public static void main(String[] args) {
+    SpringApplication.run(MsBesoinsApplication.class, args);
+  }
 }

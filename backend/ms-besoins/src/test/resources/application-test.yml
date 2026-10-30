@@ -1,0 +1,24 @@
+# Profil de test : aucun Keycloak, aucun broker Kafka, aucun relais d'outbox.
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:1/certs
+  kafka:
+    listener:
+      auto-startup: false
+    admin:
+      auto-create: false
+      fail-fast: false
+cse:
+  outbox:
+    relay-enabled: false
+resilience4j:
+  retry:
+    instances:
+      suivi:
+        wait-duration: 20ms
+logging:
+  level:
+    org.apache.kafka: WARN
