@@ -1,0 +1,14 @@
+cse:
+  outbox:
+    relay-enabled: false
+  auth:
+    synchronisation:
+      au-demarrage: false
+      periodique: false
+spring:
+  kafka:
+    admin:
+      # Pas de broker en test : inutile d'attendre la création des topics.
+      auto-create: false
+    listener:
+      auto-startup: false

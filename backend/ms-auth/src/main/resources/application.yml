@@ -1,35 +1,84 @@
 server:
-  port: 8081
+  port: ${SERVER_PORT:8081}
+  shutdown: graceful
 spring:
   application:
     name: ms-auth
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/cse?stringtype=unspecified}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:changeit}
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/cse}
+    username: ${DB_USERNAME:ms_auth}
+    password: ${DB_PASSWORD:changeit-services}
+    hikari:
+      # Garantit l'isolement du schéma même si l'utilisateur n'a pas de search_path (tests).
+      connection-init-sql: SET search_path TO auth
+      maximum-pool-size: 10
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: validate
-    open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: UTC
   flyway:
-    enabled: true
     schemas: auth
-    baseline-on-migrate: true
-    validate-on-migrate: false
+    default-schema: auth
+    locations: classpath:db/migration,classpath:db/common
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${spring.application.name}
+      auto-offset-reset: earliest
+    producer:
+      acks: all
   security:
     oauth2:
       resourceserver:
         jwt:
+          jwk-set-uri: ${JWK_SET_URI:http://localhost:8180/realms/cse/protocol/openid-connect/certs}
           issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/cse}
+  messages:
+    basename: messages_fr
+    fallback-to-system-locale: false
+  task:
+    scheduling:
+      # Relais de l'outbox + synchronisation Keycloak : deux tâches concurrentes au plus.
+      pool:
+        size: 2
+cse:
+  openapi:
+    title: ms-auth — Utilisateurs et rôles
+    description: >-
+      Profils utilisateurs de la plateforme CSE (hiérarchie Utilisateur) et administration des
+      comptes Keycloak : création, rôles, statut, réinitialisation du mot de passe.
+  auth:
+    # Rôles soumis à l'authentification forte (TOTP) — décision D6.
+    otp-obligatoire: ${AUTH_OTP_OBLIGATOIRE:DAF,DIRECTION_GENERALE,RESPONSABLE_ACHATS,ADMIN_SYSTEME}
+    synchronisation:
+      au-demarrage: ${AUTH_SYNC_AU_DEMARRAGE:true}
+      relance: ${AUTH_SYNC_RELANCE:PT30S}
+      periodique: ${AUTH_SYNC_PERIODIQUE:true}
+      intervalle: ${AUTH_SYNC_INTERVALLE:PT15M}
+    keycloak:
+      url: ${KEYCLOAK_ADMIN_URL:http://localhost:8180}
+      realm: ${KEYCLOAK_REALM:cse}
+      client-id: ${KEYCLOAK_ADMIN_CLIENT_ID:cse-admin-api}
+      client-secret: ${KEYCLOAK_ADMIN_CLIENT_SECRET:}
+      connect-timeout: ${KEYCLOAK_ADMIN_CONNECT_TIMEOUT:PT2S}
+      read-timeout: ${KEYCLOAK_ADMIN_READ_TIMEOUT:PT5S}
+      marge-expiration-jeton: PT30S
+      taille-page: 100
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,prometheus
+  endpoints.web.exposure.include: health,info,metrics,prometheus
+  endpoint.health.probes.enabled: true
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
-keycloak:
-  auth-server-url: ${KEYCLOAK_AUTH_SERVER_URL:http://localhost:8180}
-  realm: cse
-  client-id: ${KEYCLOAK_ADMIN_CLIENT_ID:admin-cli}
+    oauth:
+      client-id: cse-swagger
+      use-pkce-with-authorization-code-grant: true
+logging:
+  pattern:
+    level: "%5p [${spring.application.name},%X{correlationId:-}]"
+---
+spring.config.activate.on-profile: dev
+# Secret de développement du client cse-admin-api, identique à infra/keycloak/realm-cse.json.
+cse.auth.keycloak.client-secret: ${KEYCLOAK_ADMIN_CLIENT_SECRET:dev-cse-admin-api-secret-a-changer}

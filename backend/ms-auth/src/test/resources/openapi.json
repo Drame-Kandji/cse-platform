@@ -1,0 +1,1017 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "ms-auth — Utilisateurs et rôles",
+    "description" : "Profils utilisateurs de la plateforme CSE (hiérarchie Utilisateur) et administration des comptes Keycloak : création, rôles, statut, réinitialisation du mot de passe.",
+    "contact" : {
+      "name" : "Équipe plateforme CSE",
+      "email" : "support@cse.sn"
+    },
+    "version" : "2.0.0"
+  },
+  "security" : [ {
+    "bearerAuth" : [ ]
+  }, {
+    "keycloak" : [ ]
+  } ],
+  "tags" : [ {
+    "name" : "Administration des rôles",
+    "description" : "Rôles, effectifs et exigence d'OTP (ADMIN)"
+  }, {
+    "name" : "Administration des utilisateurs",
+    "description" : "Comptes Keycloak et profils (ADMIN)"
+  }, {
+    "name" : "Mon profil",
+    "description" : "Profil de l'utilisateur connecté"
+  } ],
+  "paths" : {
+    "/api/admin/utilisateurs/{id}" : {
+      "get" : {
+        "tags" : [ "Administration des utilisateurs" ],
+        "summary" : "Consulter un utilisateur",
+        "operationId" : "consulter",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Utilisateur",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Utilisateur"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Utilisateur introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Jeton absent ou invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle ADMIN_SYSTEME requis",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Keycloak indisponible (IDENTITE_INDISPONIBLE)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "Administration des utilisateurs" ],
+        "summary" : "Modifier un utilisateur",
+        "description" : "Met à jour identité, rôle et attributs (profil et Keycloak). Un administrateur ne peut pas modifier son propre rôle. Publie UTILISATEUR_MODIFIE.",
+        "operationId" : "modifier",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ModifierUtilisateur"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Utilisateur modifié",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Utilisateur"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Données invalides",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Utilisateur introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "E-mail déjà utilisé",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Opération sur son propre compte interdite",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Jeton absent ou invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle ADMIN_SYSTEME requis",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Keycloak indisponible (IDENTITE_INDISPONIBLE)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/utilisateurs" : {
+      "get" : {
+        "tags" : [ "Administration des utilisateurs" ],
+        "summary" : "Lister les utilisateurs",
+        "description" : "Recherche paginée. Tri autorisé : nom, prenom, email, role, createdAt.",
+        "operationId" : "lister",
+        "parameters" : [ {
+          "name" : "role",
+          "in" : "query",
+          "description" : "Rôle",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "ADMIN_SYSTEME", "DIRECTION_GENERALE", "DAF", "RESPONSABLE_ACHATS", "RESPONSABLE_MATERIEL", "CHEF_CHANTIER", "FOURNISSEUR" ]
+          },
+          "example" : "CHEF_CHANTIER"
+        }, {
+          "name" : "actif",
+          "in" : "query",
+          "description" : "Statut du compte",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          },
+          "example" : true
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "description" : "Recherche sur e-mail, prénom, nom",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "diop"
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "example" : 0
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "example" : 20
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "nom,asc"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Page d'utilisateurs",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseUtilisateur"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Paramètre invalide (tri non autorisé…)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Jeton absent ou invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle ADMIN_SYSTEME requis",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Keycloak indisponible (IDENTITE_INDISPONIBLE)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Administration des utilisateurs" ],
+        "summary" : "Créer un utilisateur",
+        "description" : "Crée le compte Keycloak (mot de passe temporaire, changement exigé à la première connexion, TOTP exigé pour les rôles concernés), attribue le rôle et enregistre le profil. Publie UTILISATEUR_CREE.",
+        "operationId" : "creer",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreerUtilisateur"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Utilisateur créé",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Utilisateur"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Données invalides",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "E-mail déjà utilisé (EMAIL_DEJA_UTILISE)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Mot de passe non conforme ou attribut invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Jeton absent ou invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle ADMIN_SYSTEME requis",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Keycloak indisponible (IDENTITE_INDISPONIBLE)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/utilisateurs/{id}/reinitialiser-mot-de-passe" : {
+      "post" : {
+        "tags" : [ "Administration des utilisateurs" ],
+        "summary" : "Réinitialiser le mot de passe",
+        "description" : "Impose un mot de passe temporaire, à changer à la prochaine connexion.",
+        "operationId" : "reinitialiserMotDePasse",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ReinitialiserMotDePasse"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "Mot de passe réinitialisé"
+          },
+          "404" : {
+            "description" : "Utilisateur introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Mot de passe non conforme",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Jeton absent ou invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle ADMIN_SYSTEME requis",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Keycloak indisponible (IDENTITE_INDISPONIBLE)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/utilisateurs/{id}/statut" : {
+      "patch" : {
+        "tags" : [ "Administration des utilisateurs" ],
+        "summary" : "Activer / désactiver un utilisateur",
+        "description" : "Un compte désactivé ne peut plus se connecter. Publie UTILISATEUR_MODIFIE.",
+        "operationId" : "changerStatut",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/StatutUtilisateur"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Statut modifié",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Utilisateur"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Utilisateur introuvable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Désactivation de son propre compte interdite",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Jeton absent ou invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle ADMIN_SYSTEME requis",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Keycloak indisponible (IDENTITE_INDISPONIBLE)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me" : {
+      "get" : {
+        "tags" : [ "Mon profil" ],
+        "summary" : "Mon profil",
+        "description" : "Profil de l'utilisateur connecté (identité, rôle, attributs, état du second facteur). Créé à la volée depuis le jeton s'il n'a pas encore été synchronisé.",
+        "operationId" : "moi",
+        "responses" : {
+          "200" : {
+            "description" : "Profil courant",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Utilisateur"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Jeton absent ou invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Aucun rôle CSE (AUCUN_ROLE_CSE)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/roles" : {
+      "get" : {
+        "tags" : [ "Administration des rôles" ],
+        "summary" : "Lister les rôles",
+        "description" : "Rôles avec libellé, effectif et OTP.",
+        "operationId" : "lister_1",
+        "responses" : {
+          "200" : {
+            "description" : "Rôles",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/RoleInfo"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Jeton absent ou invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle ADMIN_SYSTEME requis",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "ModifierUtilisateur" : {
+        "type" : "object",
+        "description" : "Modification d'un compte",
+        "properties" : {
+          "email" : {
+            "type" : "string",
+            "example" : "moussa.sy@cse.sn",
+            "maxLength" : 255,
+            "minLength" : 0
+          },
+          "prenom" : {
+            "type" : "string",
+            "example" : "Moussa",
+            "maxLength" : 150,
+            "minLength" : 0
+          },
+          "nom" : {
+            "type" : "string",
+            "example" : "Sy",
+            "maxLength" : 150,
+            "minLength" : 0
+          },
+          "telephone" : {
+            "type" : "string",
+            "example" : "+221 77 123 45 67",
+            "maxLength" : 30,
+            "minLength" : 0,
+            "pattern" : "^[+0-9 ().-]*$"
+          },
+          "role" : {
+            "type" : "string",
+            "enum" : [ "ADMIN_SYSTEME", "DIRECTION_GENERALE", "DAF", "RESPONSABLE_ACHATS", "RESPONSABLE_MATERIEL", "CHEF_CHANTIER", "FOURNISSEUR" ],
+            "example" : "RESPONSABLE_MATERIEL"
+          },
+          "chantierIds" : {
+            "type" : "array",
+            "example" : [ "c0000000-0000-0000-0000-000000000001" ],
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            },
+            "uniqueItems" : true
+          },
+          "perimetreParc" : {
+            "type" : "string",
+            "example" : "NATIONAL",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "seuilDelegation" : {
+            "type" : "number",
+            "example" : 150000000
+          },
+          "budgetGere" : {
+            "type" : "number",
+            "example" : 5000000000
+          },
+          "fournisseurId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "f0000000-0000-0000-0000-000000000001"
+          }
+        },
+        "required" : [ "email", "nom", "prenom", "role" ]
+      },
+      "ProblemDetail" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "format" : "uri"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "detail" : {
+            "type" : "string"
+          },
+          "instance" : {
+            "type" : "string",
+            "format" : "uri"
+          },
+          "properties" : {
+            "type" : "object",
+            "additionalProperties" : { }
+          }
+        }
+      },
+      "Utilisateur" : {
+        "type" : "object",
+        "description" : "Profil d'un utilisateur de la plateforme",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Identifiant Keycloak (sub)",
+            "example" : "00000000-0000-0000-0000-000000000101"
+          },
+          "email" : {
+            "type" : "string",
+            "description" : "Adresse e-mail (identifiant de connexion)",
+            "example" : "chef.chantier@cse.sn"
+          },
+          "prenom" : {
+            "type" : "string",
+            "description" : "Prénom",
+            "example" : "Mamadou"
+          },
+          "nom" : {
+            "type" : "string",
+            "description" : "Nom",
+            "example" : "Diop"
+          },
+          "telephone" : {
+            "type" : "string",
+            "description" : "Téléphone",
+            "example" : "+221 77 123 45 67"
+          },
+          "role" : {
+            "type" : "string",
+            "description" : "Rôle unique de l'utilisateur",
+            "enum" : [ "ADMIN_SYSTEME", "DIRECTION_GENERALE", "DAF", "RESPONSABLE_ACHATS", "RESPONSABLE_MATERIEL", "CHEF_CHANTIER", "FOURNISSEUR" ],
+            "example" : "CHEF_CHANTIER"
+          },
+          "actif" : {
+            "type" : "boolean",
+            "description" : "Compte actif (connexion autorisée)",
+            "example" : true
+          },
+          "chantierIds" : {
+            "type" : "array",
+            "description" : "Chantiers attribués (chef de chantier uniquement)",
+            "example" : [ "c0000000-0000-0000-0000-000000000001" ],
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            }
+          },
+          "perimetreParc" : {
+            "type" : "string",
+            "description" : "Périmètre du parc (responsable matériel)",
+            "example" : "NATIONAL"
+          },
+          "seuilDelegation" : {
+            "type" : "number",
+            "description" : "Seuil de délégation en FCFA (responsable des achats)",
+            "example" : 150000000
+          },
+          "budgetGere" : {
+            "type" : "number",
+            "description" : "Budget géré en FCFA (DAF)",
+            "example" : 5000000000
+          },
+          "fournisseurId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Fiche fournisseur rattachée (compte fournisseur)",
+            "example" : "f0000000-0000-0000-0000-000000000001"
+          },
+          "otpConfigure" : {
+            "type" : "boolean",
+            "description" : "Second facteur TOTP configuré dans Keycloak",
+            "example" : false
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "Date de création du profil",
+            "example" : "2026-10-30T09:15:00Z"
+          }
+        }
+      },
+      "CreerUtilisateur" : {
+        "type" : "object",
+        "description" : "Création d'un compte (Keycloak + profil)",
+        "properties" : {
+          "email" : {
+            "type" : "string",
+            "example" : "moussa.sy@cse.sn",
+            "maxLength" : 255,
+            "minLength" : 0
+          },
+          "prenom" : {
+            "type" : "string",
+            "example" : "Moussa",
+            "maxLength" : 150,
+            "minLength" : 0
+          },
+          "nom" : {
+            "type" : "string",
+            "example" : "Sy",
+            "maxLength" : 150,
+            "minLength" : 0
+          },
+          "telephone" : {
+            "type" : "string",
+            "example" : "+221 77 123 45 67",
+            "maxLength" : 30,
+            "minLength" : 0,
+            "pattern" : "^[+0-9 ().-]*$"
+          },
+          "role" : {
+            "type" : "string",
+            "enum" : [ "ADMIN_SYSTEME", "DIRECTION_GENERALE", "DAF", "RESPONSABLE_ACHATS", "RESPONSABLE_MATERIEL", "CHEF_CHANTIER", "FOURNISSEUR" ],
+            "example" : "CHEF_CHANTIER"
+          },
+          "motDePasseTemporaire" : {
+            "type" : "string",
+            "description" : "Mot de passe temporaire, conforme à la politique Keycloak (8 caractères min.)",
+            "example" : "Temp@2026!",
+            "maxLength" : 128,
+            "minLength" : 8
+          },
+          "chantierIds" : {
+            "type" : "array",
+            "example" : [ "c0000000-0000-0000-0000-000000000001" ],
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            },
+            "uniqueItems" : true
+          },
+          "perimetreParc" : {
+            "type" : "string",
+            "example" : "NATIONAL",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "seuilDelegation" : {
+            "type" : "number",
+            "example" : 150000000
+          },
+          "budgetGere" : {
+            "type" : "number",
+            "example" : 5000000000
+          },
+          "fournisseurId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "f0000000-0000-0000-0000-000000000001"
+          }
+        },
+        "required" : [ "email", "motDePasseTemporaire", "nom", "prenom", "role" ]
+      },
+      "ReinitialiserMotDePasse" : {
+        "type" : "object",
+        "description" : "Mot de passe temporaire à imposer",
+        "properties" : {
+          "motDePasseTemporaire" : {
+            "type" : "string",
+            "description" : "Mot de passe temporaire, à changer à la prochaine connexion",
+            "example" : "Temp@2026!",
+            "maxLength" : 128,
+            "minLength" : 8
+          }
+        },
+        "required" : [ "motDePasseTemporaire" ]
+      },
+      "StatutUtilisateur" : {
+        "type" : "object",
+        "description" : "Statut cible du compte",
+        "properties" : {
+          "actif" : {
+            "type" : "boolean",
+            "description" : "Vrai pour activer, faux pour bloquer la connexion",
+            "example" : false
+          }
+        },
+        "required" : [ "actif" ]
+      },
+      "PageResponseUtilisateur" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Utilisateur"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "RoleInfo" : {
+        "type" : "object",
+        "description" : "Rôle de la plateforme et ses effectifs",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "enum" : [ "ADMIN_SYSTEME", "DIRECTION_GENERALE", "DAF", "RESPONSABLE_ACHATS", "RESPONSABLE_MATERIEL", "CHEF_CHANTIER", "FOURNISSEUR" ],
+            "example" : "DAF"
+          },
+          "libelle" : {
+            "type" : "string",
+            "example" : "Direction Administrative et Financière"
+          },
+          "description" : {
+            "type" : "string",
+            "example" : "Engagements budgétaires, mandatement et paiement des factures"
+          },
+          "nombreUtilisateurs" : {
+            "type" : "integer",
+            "format" : "int64",
+            "example" : 1
+          },
+          "otpObligatoire" : {
+            "type" : "boolean",
+            "example" : true
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "bearerAuth" : {
+        "type" : "http",
+        "description" : "Jeton d'accès Keycloak (realm cse)",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
+      },
+      "keycloak" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "http://localhost:8180/realms/cse/protocol/openid-connect/auth",
+            "tokenUrl" : "http://localhost:8180/realms/cse/protocol/openid-connect/token"
+          }
+        }
+      }
+    }
+  }
+}

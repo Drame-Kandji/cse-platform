@@ -1,138 +1,145 @@
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
 spring:
   application:
     name: ms-gateway
   main:
     web-application-type: reactive
-  cloud:
-    gateway:
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowedOriginPatterns: "*"
-            allowedMethods: "*"
-            allowedHeaders: "*"
-      routes:
-        - id: ms-auth
-          uri: http://localhost:8081
-          predicates:
-            - Path=/api/admin/utilisateurs/**
-        - id: ms-auth-openapi
-          uri: http://localhost:8081
-          predicates:
-            - Path=/v3/api-docs/ms-auth
-          filters:
-            - RewritePath=/v3/api-docs/ms-auth, /v3/api-docs
-        - id: ms-besoins
-          uri: http://localhost:8082
-          predicates:
-            - Path=/api/besoins/**
-        - id: ms-besoins-openapi
-          uri: http://localhost:8082
-          predicates:
-            - Path=/v3/api-docs/ms-besoins
-          filters:
-            - RewritePath=/v3/api-docs/ms-besoins, /v3/api-docs
-        - id: ms-achats
-          uri: http://localhost:8083
-          predicates:
-            - Path=/api/appels-offres/**,/api/contrats/**,/api/commandes/**,/api/engagements/**,/api/factures/**,/api/besoins-a-acheter/**
-        - id: ms-achats-openapi
-          uri: http://localhost:8083
-          predicates:
-            - Path=/v3/api-docs/ms-achats
-          filters:
-            - RewritePath=/v3/api-docs/ms-achats, /v3/api-docs
-        - id: ms-fournisseurs
-          uri: http://localhost:8084
-          predicates:
-            - Path=/api/fournisseurs/**,/api/litiges/**
-        - id: ms-fournisseurs-openapi
-          uri: http://localhost:8084
-          predicates:
-            - Path=/v3/api-docs/ms-fournisseurs
-          filters:
-            - RewritePath=/v3/api-docs/ms-fournisseurs, /v3/api-docs
-        - id: ms-suivi
-          uri: http://localhost:8085
-          predicates:
-            - Path=/api/materiels/**,/api/maintenances/**,/api/chantiers/**,/api/affectations/**,/api/pannes/**,/api/referentiels/**
-        - id: ms-suivi-openapi
-          uri: http://localhost:8085
-          predicates:
-            - Path=/v3/api-docs/ms-suivi
-          filters:
-            - RewritePath=/v3/api-docs/ms-suivi, /v3/api-docs
-        - id: ms-reporting
-          uri: http://localhost:8086
-          predicates:
-            - Path=/api/reporting/**
-        - id: ms-reporting-openapi
-          uri: http://localhost:8086
-          predicates:
-            - Path=/v3/api-docs/ms-reporting
-          filters:
-            - RewritePath=/v3/api-docs/ms-reporting, /v3/api-docs
-        - id: ms-chatbot
-          uri: http://localhost:8087
-          predicates:
-            - Path=/api/chatbot/**
-        - id: ms-chatbot-openapi
-          uri: http://localhost:8087
-          predicates:
-            - Path=/v3/api-docs/ms-chatbot
-          filters:
-            - RewritePath=/v3/api-docs/ms-chatbot, /v3/api-docs
-        - id: ms-notification
-          uri: http://localhost:8088
-          predicates:
-            - Path=/api/notifications/**
-        - id: ms-notification-openapi
-          uri: http://localhost:8088
-          predicates:
-            - Path=/v3/api-docs/ms-notification
-          filters:
-            - RewritePath=/v3/api-docs/ms-notification, /v3/api-docs
-        - id: ms-audit
-          uri: http://localhost:8089
-          predicates:
-            - Path=/api/audit/**
-        - id: ms-audit-openapi
-          uri: http://localhost:8089
-          predicates:
-            - Path=/v3/api-docs/ms-audit
-          filters:
-            - RewritePath=/v3/api-docs/ms-audit, /v3/api-docs
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: ${REDIS_TIMEOUT:PT1S}
   security:
     oauth2:
       resourceserver:
         jwt:
+          jwk-set-uri: ${JWK_SET_URI:http://localhost:8180/realms/cse/protocol/openid-connect/certs}
           issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/cse}
+  cloud:
+    gateway:
+      server:
+        webflux:
+          httpclient:
+            connect-timeout: ${GATEWAY_CONNECT_TIMEOUT_MS:2000}
+            response-timeout: ${GATEWAY_RESPONSE_TIMEOUT:PT30S}
+cse:
+  openapi:
+    title: ms-gateway — Passerelle d'API
+    description: >-
+      Point d'entrée unique de la plateforme CSE : routage vers les microservices, authentification
+      JWT, limitation de débit, coupe-circuits et supervision.
+  gateway:
+    # URL de chaque service : variable MS_<NOM>_URL (ex. MS_AUTH_URL=http://ms-auth:8081 en Docker).
+    services:
+      ms-auth:
+        url: ${MS_AUTH_URL:http://localhost:8081}
+        chemins: [/api/me, /api/me/**, /api/admin/**]
+      ms-besoins:
+        url: ${MS_BESOINS_URL:http://localhost:8082}
+        chemins: [/api/besoins, /api/besoins/**]
+      ms-achats:
+        url: ${MS_ACHATS_URL:http://localhost:8083}
+        chemins:
+          - /api/appels-offres
+          - /api/appels-offres/**
+          - /api/contrats
+          - /api/contrats/**
+          - /api/engagements
+          - /api/engagements/**
+          - /api/factures
+          - /api/factures/**
+          - /api/finance/**
+          - /api/besoins-a-acheter
+          - /api/besoins-a-acheter/**
+          - /api/portail/appels-offres
+          - /api/portail/appels-offres/**
+          - /api/portail/offres
+          - /api/portail/offres/**
+          - /api/portail/attributions
+          - /api/portail/attributions/**
+          - /api/portail/factures
+          - /api/portail/factures/**
+      ms-fournisseurs:
+        url: ${MS_FOURNISSEURS_URL:http://localhost:8084}
+        chemins:
+          - /api/fournisseurs
+          - /api/fournisseurs/**
+          - /api/litiges
+          - /api/litiges/**
+          - /api/portail/profil
+          - /api/portail/profil/**
+          - /api/portail/catalogue
+          - /api/portail/catalogue/**
+          - /api/portail/documents
+          - /api/portail/documents/**
+          - /api/portail/inscription
+          - /api/portail/inscription/**
+          - /api/portail/litiges
+          - /api/portail/litiges/**
+      ms-suivi:
+        url: ${MS_SUIVI_URL:http://localhost:8085}
+        chemins:
+          - /api/materiels
+          - /api/materiels/**
+          - /api/maintenances
+          - /api/maintenances/**
+          - /api/chantiers
+          - /api/chantiers/**
+          - /api/affectations
+          - /api/affectations/**
+          - /api/pannes
+          - /api/pannes/**
+          - /api/referentiels/**
+      ms-reporting:
+        url: ${MS_REPORTING_URL:http://localhost:8086}
+        chemins: [/api/reporting/**]
+      ms-chatbot:
+        url: ${MS_CHATBOT_URL:http://localhost:8087}
+        chemins: [/api/chatbot/**]
+      ms-notification:
+        url: ${MS_NOTIFICATION_URL:http://localhost:8088}
+        chemins: [/api/notifications, /api/notifications/**]
+      ms-audit:
+        url: ${MS_AUDIT_URL:http://localhost:8089}
+        chemins: [/api/audit, /api/audit/**]
+    sse:
+      service: ms-notification
+      chemins: [/api/notifications/stream]
+      # Le serveur envoie un « ping » toutes les 25 s : coupure seulement après un long silence.
+      delai: ${GATEWAY_SSE_TIMEOUT:PT1H}
+    limite-debit:
+      actif: ${GATEWAY_RATE_LIMIT_ENABLED:true}
+      debit: ${GATEWAY_RATE_LIMIT_REPLENISH:20}
+      rafale: ${GATEWAY_RATE_LIMIT_BURST:40}
+      jetons-par-requete: 1
+    coupe-circuit:
+      actif: ${GATEWAY_CIRCUIT_BREAKER_ENABLED:true}
+      delai: ${GATEWAY_CIRCUIT_BREAKER_TIMEOUT:PT20S}
+      fenetre: 20
+      seuil-echec: 50
+      attente-ouvert: PT10S
+    cors:
+      origines-autorisees: ${GATEWAY_CORS_ORIGINS:http://localhost:5173,http://localhost:5174}
+      max-age: PT1H
+    sonde:
+      chemin: /actuator/health
+      delai: ${GATEWAY_HEALTH_PROBE_TIMEOUT:PT2S}
+    securite:
+      portail-sans-role-fournisseur: []
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics
+  endpoints.web.exposure.include: health,info,metrics,prometheus
+  endpoint.health.probes.enabled: true
 springdoc:
+  api-docs:
+    # Sous /v3/api-docs/ pour ne pas masquer les routes agrégées /v3/api-docs/<service>.
+    path: /v3/api-docs/ms-gateway
   swagger-ui:
     path: /swagger-ui.html
-    urls:
-      - name: 1. ms-auth (Utilisateurs)
-        url: /v3/api-docs/ms-auth
-      - name: 2. ms-besoins (Expressions de besoins)
-        url: /v3/api-docs/ms-besoins
-      - name: 3. ms-suivi (Parc matériel & Chantiers)
-        url: /v3/api-docs/ms-suivi
-      - name: 4. ms-fournisseurs
-        url: /v3/api-docs/ms-fournisseurs
-      - name: 5. ms-achats
-        url: /v3/api-docs/ms-achats
-      - name: 6. ms-reporting
-        url: /v3/api-docs/ms-reporting
-      - name: 7. ms-chatbot
-        url: /v3/api-docs/ms-chatbot
-      - name: 8. ms-notification
-        url: /v3/api-docs/ms-notification
-      - name: 9. ms-audit
-        url: /v3/api-docs/ms-audit
+    oauth:
+      client-id: cse-swagger
+      use-pkce-with-authorization-code-grant: true
+logging:
+  pattern:
+    level: "%5p [${spring.application.name}]"

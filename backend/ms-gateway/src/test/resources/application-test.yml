@@ -1,0 +1,8 @@
+cse:
+  gateway:
+    limite-debit:
+      actif: false
+    coupe-circuit:
+      delai: PT3S
+    sonde:
+      delai: PT1S

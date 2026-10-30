@@ -1,14 +1,38 @@
 package sn.cse.auth.domain.model;
 
-import java.util.UUID;
+/** Responsable de la Direction du Matériel, éventuellement limité à un périmètre de parc. */
+public final class ResponsableMateriel extends Utilisateur {
 
-public class ResponsableMateriel extends Utilisateur {
-    private String perimetreParc;
+  private String perimetreParc;
 
-    public ResponsableMateriel(UUID id, String nom, String prenom, String email, String perimetreParc) {
-        super(id, nom, prenom, email);
-        this.perimetreParc = perimetreParc;
-    }
+  /**
+   * @param etat état commun
+   * @param perimetreParc périmètre du parc géré (facultatif)
+   */
+  public ResponsableMateriel(EtatCommun etat, String perimetreParc) {
+    super(etat);
+    this.perimetreParc = new AttributsProfil(null, perimetreParc, null, null, null).perimetreParc();
+  }
 
-    public String getPerimetreParc() { return perimetreParc; }
+  @Override
+  public Role role() {
+    return Role.RESPONSABLE_MATERIEL;
+  }
+
+  @Override
+  public AttributsProfil attributs() {
+    return new AttributsProfil(null, perimetreParc, null, null, null);
+  }
+
+  @Override
+  public void modifierAttributs(AttributsProfil attributs) {
+    this.perimetreParc = attributs.perimetreParc();
+  }
+
+  /**
+   * @return périmètre du parc, {@code null} si non restreint
+   */
+  public String perimetreParc() {
+    return perimetreParc;
+  }
 }
