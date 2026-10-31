@@ -1,0 +1,27 @@
+# Configuration de test : aucune dépendance externe (Kafka, Keycloak, ms-fournisseurs).
+spring:
+  kafka:
+    bootstrap-servers: localhost:1
+    listener:
+      auto-startup: false
+    admin:
+      auto-create: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:1/certs
+          issuer-uri: http://localhost:1/realms/cse
+cse:
+  # Clé de test fixe (32 octets en Base64), réservée aux tests.
+  crypto:
+    key: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
+  outbox:
+    relay-enabled: false
+  achats:
+    jobs:
+      cloture-cron: "-"
+      retard-livraison-cron: "-"
+logging:
+  level:
+    org.apache.kafka: WARN

@@ -1,33 +1,94 @@
 server:
-  port: 8083
+  port: ${SERVER_PORT:8083}
+  shutdown: graceful
 spring:
   application:
     name: ms-achats
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/cse?stringtype=unspecified}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:changeit}
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/cse}
+    username: ${DB_USERNAME:ms_achats}
+    password: ${DB_PASSWORD:changeit-services}
+    hikari:
+      # Garantit l'isolement du schéma même si l'utilisateur n'a pas de search_path (tests).
+      connection-init-sql: SET search_path TO achats
+      maximum-pool-size: 10
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: validate
-    open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: UTC
   flyway:
-    enabled: true
     schemas: achats
-    baseline-on-migrate: true
-    validate-on-migrate: false
+    default-schema: achats
+    locations: classpath:db/migration,classpath:db/common
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${spring.application.name}
+      auto-offset-reset: earliest
+    producer:
+      acks: all
+  jackson:
+    # Montants FCFA toujours écrits en notation décimale (jamais 1.5E+8).
+    generator:
+      write-bigdecimal-as-plain: true
   security:
     oauth2:
       resourceserver:
         jwt:
+          jwk-set-uri: ${JWK_SET_URI:http://localhost:8180/realms/cse/protocol/openid-connect/certs}
           issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/cse}
+cse:
+  openapi:
+    title: ms-achats — Achats et approvisionnements
+    description: >-
+      Appels d'offres (publication, dépôt anonymisé des offres, clôture, évaluation multicritère,
+      attribution avec co-validation et approbation DG), contrats d'achat, engagements DAF,
+      livraisons, factures fournisseurs, synthèse financière et portail fournisseur.
+  crypto:
+    key: ${CSE_CRYPTO_KEY:}
+  achats:
+    # Règle R11 : au-delà de ce montant (FCFA), l'attribution exige l'approbation de la DG.
+    seuil-delegation: ${CSE_ACHATS_SEUIL_DELEGATION:150000000}
+    penalite-retard-pct-par-jour-defaut: ${CSE_ACHATS_PENALITE_PCT_JOUR:0.1}
+    plafond-penalites-pct: ${CSE_ACHATS_PLAFOND_PENALITES_PCT:10}
+    taux-tarif-journalier: ${CSE_ACHATS_TAUX_TARIF_JOURNALIER:0.0025}
+    intervalle-rappel-retard-jours: ${CSE_ACHATS_RAPPEL_RETARD_JOURS:7}
+    fournisseurs:
+      base-url: ${MS_FOURNISSEURS_URL:http://localhost:8084}
+    jobs:
+      cloture-cron: ${CSE_ACHATS_CLOTURE_CRON:0 */5 * * * *}
+      retard-livraison-cron: ${CSE_ACHATS_RETARD_CRON:0 0 6 * * *}
+resilience4j:
+  circuitbreaker:
+    instances:
+      fournisseurs:
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 2
+  retry:
+    instances:
+      fournisseurs:
+        max-attempts: 2
+        wait-duration: 300ms
+        ignore-exceptions:
+          - io.github.resilience4j.circuitbreaker.CallNotPermittedException
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics
+  endpoints.web.exposure.include: health,info,metrics,prometheus
+  endpoint.health.probes.enabled: true
 springdoc:
+  writer-with-order-by-keys: true
   swagger-ui:
     path: /swagger-ui.html
+    oauth:
+      client-id: cse-swagger
+      use-pkce-with-authorization-code-grant: true
+logging:
+  pattern:
+    level: "%5p [${spring.application.name},%X{correlationId:-}]"
+---
+spring.config.activate.on-profile: dev
+cse.seed.enabled: true
