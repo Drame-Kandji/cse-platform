@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+      Tests de bout en bout au niveau API (RestAssured) contre la pile QUI TOURNE (passerelle + Keycloak).
+      Module volontairement ABSENT de backend/pom.xml : le build normal n'exige pas de pile démarrée.
+      Lancement : mvn -f tests/e2e-api/pom.xml verify -De2e.gateway=http://localhost:8080
+    -->
+    <parent>
+        <groupId>sn.cse</groupId>
+        <artifactId>cse-platform</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../../backend/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>e2e-api</artifactId>
+    <name>e2e-api</name>
+    <description>Tests E2E API des 3 scénarios critiques, RBAC et ProblemDetail (RestAssured)</description>
+
+    <properties>
+        <!-- Aucun code de production : pas de porte de couverture. -->
+        <jacoco.check.skip>true</jacoco.check.skip>
+        <e2e.gateway>http://localhost:8080</e2e.gateway>
+        <e2e.keycloak>http://localhost:8180</e2e.keycloak>
+        <e2e.realm>cse</e2e.realm>
+        <e2e.client>cse-tests-e2e</e2e.client>
+        <e2e.password>Cse@2026</e2e.password>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <includes>
+                        <include>**/*E2EIT.java</include>
+                    </includes>
+                    <systemPropertyVariables>
+                        <e2e.gateway>${e2e.gateway}</e2e.gateway>
+                        <e2e.keycloak>${e2e.keycloak}</e2e.keycloak>
+                        <e2e.realm>${e2e.realm}</e2e.realm>
+                        <e2e.client>${e2e.client}</e2e.client>
+                        <e2e.password>${e2e.password}</e2e.password>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

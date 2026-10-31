@@ -1,7 +1,7 @@
 import { readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 
-const IGNORED = new Set(['node_modules', 'dist', 'coverage', '.vite'])
+const IGNORED = new Set(['node_modules', 'dist', 'coverage', '.vite', 'playwright-report', 'test-results', '.auth'])
 
 /** Liste recursivement les fichiers sources (dossiers generes exclus). */
 export async function walk(dir) {

@@ -1,14 +1,16 @@
 # Plateforme CSE — commandes usuelles. `make verify` est la porte de qualité (backend + frontend).
-.PHONY: help build test verify up infra start stop status down front front-verify logs clean certs backup restore perf images
+.PHONY: help build test verify up infra start stop status down front front-verify logs clean certs backup restore perf images e2e e2e-api e2e-ui
 
 MVN := mvn -f backend/pom.xml
 PNPM := pnpm --dir frontend
 COMPOSE := docker compose --env-file .env -f infra/docker-compose.yml
 K6_IMAGE ?= grafana/k6:0.54.0
 PERF_ARGS ?=
+E2E_GATEWAY ?= http://localhost:8080
+E2E_BASE_URL ?= http://localhost:5173
 
 help:
-	@grep -E '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk -F':.*?## ' '{printf "  %-14s %s\n", $$1, $$2}'
+	@grep -E '^[a-z0-9-]+:.*?## ' $(MAKEFILE_LIST) | awk -F':.*?## ' '{printf "  %-14s %s\n", $$1, $$2}'
 
 build: ## Compile et package tous les microservices (tests inclus)
 	$(MVN) -q install
@@ -59,6 +61,14 @@ restore: ## Restaure une sauvegarde : make restore DUMP=<fichier.dump|répertoir
 
 perf: ## Test de charge k6 via la passerelle (PERF_ARGS="-e VUS=200 -e PLATEAU=10m")
 	docker run --rm --network host -v "$(CURDIR)/tests/perf/k6:/scripts:ro" $(K6_IMAGE) run $(PERF_ARGS) /scripts/scenario.js
+
+e2e: e2e-api e2e-ui ## Tests E2E des 3 scénarios critiques (pile démarrée : make infra && make start && make front)
+
+e2e-api: ## Tests E2E API RestAssured (scénarios, RBAC, ProblemDetail) contre la passerelle
+	mvn -f tests/e2e-api/pom.xml verify -De2e.gateway=$(E2E_GATEWAY)
+
+e2e-ui: ## Tests E2E Playwright (chromium) contre l'application web interne
+	E2E_BASE_URL=$(E2E_BASE_URL) E2E_GATEWAY_URL=$(E2E_GATEWAY) $(PNPM) --filter @cse/web-interne test:e2e
 
 down: ## Arrête tout
 	scripts/cse.sh down
