@@ -1,0 +1,412 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "ms-audit — Journal d'audit",
+    "description" : "Journal d'audit immuable de la plateforme CSE, alimenté par le topic cse.audit.events. Consultation réservée à l'administrateur système (R12).",
+    "contact" : {
+      "name" : "Équipe plateforme CSE",
+      "email" : "support@cse.sn"
+    },
+    "version" : "2.0.0"
+  },
+  "servers" : [ {
+    "url" : "http://localhost",
+    "description" : "Generated server url"
+  } ],
+  "security" : [ {
+    "bearerAuth" : [ ]
+  }, {
+    "keycloak" : [ ]
+  } ],
+  "tags" : [ {
+    "name" : "Audit",
+    "description" : "Journal d'audit immuable de la plateforme (administrateur)"
+  } ],
+  "paths" : {
+    "/api/audit" : {
+      "get" : {
+        "tags" : [ "Audit" ],
+        "summary" : "Rechercher dans le journal d'audit",
+        "description" : "Liste paginée (taille max 50) des actions journalisées, filtrable par auteur, entité, action, service, période (jours UTC inclus) et texte libre. Tri autorisé : occurredAt, service, action, entite, utilisateurNom.",
+        "operationId" : "rechercher",
+        "parameters" : [ {
+          "name" : "utilisateurId",
+          "in" : "query",
+          "description" : "Identifiant de l'auteur",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "00000000-0000-0000-0000-000000000201"
+        }, {
+          "name" : "entite",
+          "in" : "query",
+          "description" : "Type d'entité",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "BesoinMateriel"
+        }, {
+          "name" : "action",
+          "in" : "query",
+          "description" : "Action (type d'événement)",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "BESOIN_VALIDE"
+        }, {
+          "name" : "service",
+          "in" : "query",
+          "description" : "Service émetteur",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "ms-besoins"
+        }, {
+          "name" : "du",
+          "in" : "query",
+          "description" : "Premier jour inclus (UTC)",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "example" : "2026-10-01"
+        }, {
+          "name" : "au",
+          "in" : "query",
+          "description" : "Dernier jour inclus (UTC)",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "example" : "2026-10-30"
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "description" : "Texte libre (résumé, identifiant, auteur…)",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "BES-2026"
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "description" : "Index de page (base 0)",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "example" : 0
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "description" : "Taille de page (max 50)",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "example" : 20
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Tri champ,asc|desc",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "occurredAt,desc"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Page d'entrées",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseAuditLog"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Filtre, période ou tri invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Jeton absent ou invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle ADMIN_SYSTEME requis (R12)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/audit/statistiques" : {
+      "get" : {
+        "tags" : [ "Audit" ],
+        "summary" : "Statistiques du journal d'audit",
+        "description" : "Total, entrées du jour, des sept derniers jours et répartition par service.",
+        "operationId" : "statistiques",
+        "responses" : {
+          "401" : {
+            "description" : "Jeton absent ou invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle ADMIN_SYSTEME requis (R12)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Statistiques",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StatistiquesAudit"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "ProblemDetail" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "format" : "uri"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "detail" : {
+            "type" : "string"
+          },
+          "instance" : {
+            "type" : "string",
+            "format" : "uri"
+          },
+          "properties" : {
+            "type" : "object",
+            "additionalProperties" : { }
+          }
+        }
+      },
+      "AuditLog" : {
+        "type" : "object",
+        "description" : "Entrée immuable du journal d'audit",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Identifiant de l'entrée",
+            "example" : "3f1c2a9e-7b1d-4c55-9a0e-1d2b3c4d5e6f"
+          },
+          "eventId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Identifiant de l'événement d'audit d'origine",
+            "example" : "9b2e4f10-2c3d-4e5f-8a9b-0c1d2e3f4a5b"
+          },
+          "occurredAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "Instant de l'action (UTC)",
+            "example" : "2026-10-30T09:15:00Z"
+          },
+          "service" : {
+            "type" : "string",
+            "description" : "Microservice émetteur",
+            "example" : "ms-besoins"
+          },
+          "action" : {
+            "type" : "string",
+            "description" : "Action réalisée (type d'événement)",
+            "example" : "BESOIN_VALIDE"
+          },
+          "entite" : {
+            "type" : "string",
+            "description" : "Type d'entité concernée",
+            "example" : "BesoinMateriel"
+          },
+          "entiteId" : {
+            "type" : "string",
+            "description" : "Identifiant de l'entité concernée",
+            "example" : "b0000000-0000-0000-0000-000000000001"
+          },
+          "utilisateurId" : {
+            "type" : "string",
+            "description" : "Identifiant Keycloak de l'auteur (absent pour une action système)",
+            "example" : "00000000-0000-0000-0000-000000000201"
+          },
+          "utilisateurNom" : {
+            "type" : "string",
+            "description" : "Nom de l'auteur",
+            "example" : "Ibrahima Fall"
+          },
+          "roles" : {
+            "type" : "array",
+            "items" : {
+              "description" : "Rôle de l'auteur au moment de l'action",
+              "example" : "RESPONSABLE_MATERIEL"
+            }
+          },
+          "resume" : {
+            "type" : "string",
+            "description" : "Résumé lisible de l'action",
+            "example" : "Besoin BES-2026-0001 validé"
+          },
+          "correlationId" : {
+            "type" : "string",
+            "description" : "Identifiant de corrélation de la requête d'origine",
+            "example" : "c7d8e9f0-1a2b-3c4d-5e6f-7a8b9c0d1e2f"
+          }
+        }
+      },
+      "PageResponseAuditLog" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AuditLog"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "StatistiquesAudit" : {
+        "type" : "object",
+        "description" : "Statistiques globales du journal d'audit",
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Nombre total d'entrées",
+            "example" : 1520
+          },
+          "aujourdhui" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Entrées dont l'action date du jour (UTC)",
+            "example" : 42
+          },
+          "septDerniersJours" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Entrées des sept derniers jours, jour courant inclus",
+            "example" : 311
+          },
+          "parService" : {
+            "type" : "array",
+            "description" : "Volume par service, décroissant",
+            "items" : {
+              "$ref" : "#/components/schemas/TotalService"
+            }
+          }
+        }
+      },
+      "TotalService" : {
+        "type" : "object",
+        "description" : "Volume d'entrées d'un service",
+        "properties" : {
+          "service" : {
+            "type" : "string",
+            "description" : "Service émetteur",
+            "example" : "ms-achats"
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Nombre d'entrées",
+            "example" : 380
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "bearerAuth" : {
+        "type" : "http",
+        "description" : "Jeton d'accès Keycloak (realm cse)",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
+      },
+      "keycloak" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "http://localhost:8180/realms/cse/protocol/openid-connect/auth",
+            "tokenUrl" : "http://localhost:8180/realms/cse/protocol/openid-connect/token"
+          }
+        }
+      }
+    }
+  }
+}

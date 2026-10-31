@@ -1,0 +1,849 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "ms-reporting — Tableaux de bord",
+    "description" : "Tableaux de bord par profil (DG, DAF, RA, RM, chef de chantier), séries temporelles et exports PDF / Excel, calculés sur des vues CQRS alimentées par les événements Kafka (aucun appel aux autres services).",
+    "contact" : {
+      "name" : "Équipe plateforme CSE",
+      "email" : "support@cse.sn"
+    },
+    "version" : "2.0.0"
+  },
+  "servers" : [ {
+    "url" : "http://localhost",
+    "description" : "Generated server url"
+  } ],
+  "security" : [ {
+    "bearerAuth" : [ ]
+  }, {
+    "keycloak" : [ ]
+  } ],
+  "tags" : [ {
+    "name" : "Reporting",
+    "description" : "Tableaux de bord par profil, séries temporelles, exports"
+  } ],
+  "paths" : {
+    "/api/reporting/series" : {
+      "get" : {
+        "tags" : [ "Reporting" ],
+        "summary" : "Série temporelle d'un indicateur",
+        "description" : "Un point par tranche (JOUR « 2026-07-14 », SEMAINE ISO « 2026-W29 », MOIS « 2026-07 »). Pour un cumul (MONTANT_ENGAGE, COUT_MAINTENANCE, BESOINS_SOUMIS) chaque tranche a un point, éventuellement 0 ; pour un taux ou une moyenne (TAUX_DISPONIBILITE, TAUX_UTILISATION, DELAI_APPROVISIONNEMENT) une tranche sans donnée n'a pas de point. L'indicateur doit relever d'une section d'un profil autorisé.",
+        "operationId" : "serie",
+        "parameters" : [ {
+          "name" : "indicateur",
+          "in" : "query",
+          "description" : "Indicateur",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "TAUX_DISPONIBILITE", "TAUX_UTILISATION", "MONTANT_ENGAGE", "COUT_MAINTENANCE", "BESOINS_SOUMIS", "DELAI_APPROVISIONNEMENT" ]
+          },
+          "example" : "TAUX_DISPONIBILITE"
+        }, {
+          "name" : "granularite",
+          "in" : "query",
+          "description" : "Granularité (défaut MOIS)",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "JOUR", "SEMAINE", "MOIS" ]
+          },
+          "example" : "MOIS"
+        }, {
+          "name" : "du",
+          "in" : "query",
+          "description" : "Premier jour (défaut : au − 89 jours)",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "example" : "2026-08-01"
+        }, {
+          "name" : "au",
+          "in" : "query",
+          "description" : "Dernier jour (défaut : aujourd'hui)",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "example" : "2026-10-30"
+        }, {
+          "name" : "chantierId",
+          "in" : "query",
+          "description" : "Restreint au chantier",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "example" : "c0000000-0000-0000-0000-000000000001"
+        } ],
+        "responses" : {
+          "400" : {
+            "description" : "Paramètre invalide (profil, indicateur, granularité, format, période)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Jeton absent ou invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle sans tableau de bord, profil non autorisé (PROFIL_NON_AUTORISE), indicateur non autorisé ou chantier hors périmètre du chef (CHANTIER_NON_AUTORISE)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Points de la série",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Point"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reporting/kpis" : {
+      "get" : {
+        "tags" : [ "Reporting" ],
+        "summary" : "Tableau de bord d'un profil",
+        "description" : "Indicateurs des sections du profil : DG → toutes ; RESPONSABLE_MATERIEL → parc, besoins, chantiers ; RESPONSABLE_ACHATS → achats, fournisseurs ; DAF → finances, achats, chantiers ; CHEF_CHANTIER → besoins, parc, chantiers limités à ses chantiers. Période par défaut : 90 derniers jours.",
+        "operationId" : "kpis",
+        "parameters" : [ {
+          "name" : "profil",
+          "in" : "query",
+          "description" : "Profil : DG (tous les profils lui sont accessibles), DAF, RESPONSABLE_ACHATS, RESPONSABLE_MATERIEL, CHEF_CHANTIER. Défaut : profil principal du rôle.",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "DG"
+        }, {
+          "name" : "du",
+          "in" : "query",
+          "description" : "Premier jour (défaut : au − 89 jours)",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "example" : "2026-08-01"
+        }, {
+          "name" : "au",
+          "in" : "query",
+          "description" : "Dernier jour (défaut : aujourd'hui)",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "example" : "2026-10-30"
+        }, {
+          "name" : "chantierId",
+          "in" : "query",
+          "description" : "Restreint au chantier (un chef ne peut choisir que l'un des siens)",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "example" : "c0000000-0000-0000-0000-000000000001"
+        } ],
+        "responses" : {
+          "400" : {
+            "description" : "Paramètre invalide (profil, indicateur, granularité, format, période)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Jeton absent ou invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle sans tableau de bord, profil non autorisé (PROFIL_NON_AUTORISE), indicateur non autorisé ou chantier hors périmètre du chef (CHANTIER_NON_AUTORISE)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Tableau de bord",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Tableau"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reporting/export" : {
+      "get" : {
+        "tags" : [ "Reporting" ],
+        "summary" : "Exporter le tableau de bord",
+        "description" : "Mêmes paramètres et mêmes chiffres que /kpis. PDF : page de titre CSE puis une page par section ; Excel : une feuille par section avec formats FCFA et %. Nom proposé : tableau-de-bord-<PROFIL>-<aaaa-mm-jj>.<pdf|xlsx>.",
+        "operationId" : "exporter",
+        "parameters" : [ {
+          "name" : "format",
+          "in" : "query",
+          "description" : "Format du fichier",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "pdf", "xlsx" ]
+          },
+          "example" : "pdf"
+        }, {
+          "name" : "profil",
+          "in" : "query",
+          "description" : "Profil : DG (tous les profils lui sont accessibles), DAF, RESPONSABLE_ACHATS, RESPONSABLE_MATERIEL, CHEF_CHANTIER. Défaut : profil principal du rôle.",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "DG"
+        }, {
+          "name" : "du",
+          "in" : "query",
+          "description" : "Premier jour (défaut : au − 89 jours)",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "example" : "2026-08-01"
+        }, {
+          "name" : "au",
+          "in" : "query",
+          "description" : "Dernier jour (défaut : aujourd'hui)",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "example" : "2026-10-30"
+        }, {
+          "name" : "chantierId",
+          "in" : "query",
+          "description" : "Restreint au chantier",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "example" : "c0000000-0000-0000-0000-000000000001"
+        } ],
+        "responses" : {
+          "400" : {
+            "description" : "Paramètre invalide (profil, indicateur, granularité, format, période)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Jeton absent ou invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle sans tableau de bord, profil non autorisé (PROFIL_NON_AUTORISE), indicateur non autorisé ou chantier hors périmètre du chef (CHANTIER_NON_AUTORISE)",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Fichier en pièce jointe",
+            "headers" : {
+              "Content-Disposition" : {
+                "description" : "attachment; filename=\"tableau-de-bord-DG-2026-10-30.pdf\"",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/pdf" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "ProblemDetail" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "format" : "uri"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "detail" : {
+            "type" : "string"
+          },
+          "instance" : {
+            "type" : "string",
+            "format" : "uri"
+          },
+          "properties" : {
+            "type" : "object",
+            "additionalProperties" : { }
+          }
+        }
+      },
+      "Point" : {
+        "type" : "object",
+        "description" : "Point d'une série temporelle",
+        "properties" : {
+          "periode" : {
+            "type" : "string",
+            "description" : "Tranche : « 2026-07 » (MOIS), « 2026-07-14 » (JOUR), « 2026-W29 » (SEMAINE ISO)",
+            "example" : "2026-07"
+          },
+          "valeur" : {
+            "type" : "number",
+            "description" : "Valeur de l'indicateur sur la tranche",
+            "example" : 72.5
+          }
+        }
+      },
+      "Tableau" : {
+        "type" : "object",
+        "description" : "Tableau de bord d'un profil. Montants en FCFA entiers, taux en % (0..100, une décimale).",
+        "properties" : {
+          "profil" : {
+            "type" : "string",
+            "description" : "Profil du tableau",
+            "enum" : [ "DG", "DAF", "RESPONSABLE_ACHATS", "RESPONSABLE_MATERIEL", "CHEF_CHANTIER" ],
+            "example" : "DG"
+          },
+          "du" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Premier jour de la période",
+            "example" : "2026-08-01"
+          },
+          "au" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Dernier jour de la période",
+            "example" : "2026-10-30"
+          },
+          "genereLe" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "Instant de génération (UTC)",
+            "example" : "2026-10-30T09:15:00Z"
+          },
+          "parc" : {
+            "$ref" : "#/components/schemas/TableauParc",
+            "description" : "Parc matériel (DG, RM, CHEF)"
+          },
+          "besoins" : {
+            "$ref" : "#/components/schemas/TableauBesoins",
+            "description" : "Besoins soumis sur la période (DG, RM, CHEF)"
+          },
+          "achats" : {
+            "$ref" : "#/components/schemas/TableauAchats",
+            "description" : "Achats (DG, RA, DAF)"
+          },
+          "fournisseurs" : {
+            "$ref" : "#/components/schemas/TableauFournisseurs",
+            "description" : "Fournisseurs (DG, RA)"
+          },
+          "finances" : {
+            "$ref" : "#/components/schemas/TableauFinances",
+            "description" : "Finances (DG, DAF)"
+          },
+          "chantiers" : {
+            "type" : "array",
+            "description" : "Indicateurs par chantier (DG, RM, DAF, CHEF)",
+            "items" : {
+              "$ref" : "#/components/schemas/TableauChantier"
+            }
+          }
+        }
+      },
+      "TableauAchats" : {
+        "type" : "object",
+        "description" : "Appels d'offres, contrats et livraisons",
+        "properties" : {
+          "aoPublies" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "AO publiés sur la période encore ouverts",
+            "example" : 3
+          },
+          "aoClotures" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "AO publiés sur la période clôturés",
+            "example" : 2
+          },
+          "aoAttribues" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "AO publiés sur la période attribués",
+            "example" : 7
+          },
+          "contratsEnCours" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Contrats ni livrés ni clôturés",
+            "example" : 5
+          },
+          "livraisonsEnRetard" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Contrats non livrés dont la date prévue est dépassée",
+            "example" : 1
+          },
+          "delaiMoyenApprovisionnementJours" : {
+            "type" : "number",
+            "description" : "Délai moyen publication AO → livraison réelle, en jours",
+            "example" : 41.5
+          },
+          "tauxLivraisonALHeure" : {
+            "type" : "number",
+            "description" : "Livraisons à l'heure, en %",
+            "example" : 85.7
+          }
+        }
+      },
+      "TableauBesoins" : {
+        "type" : "object",
+        "description" : "Besoins soumis sur la période (statut courant)",
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Besoins soumis",
+            "example" : 38
+          },
+          "enAttente" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "En attente",
+            "example" : 6
+          },
+          "valides" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Validés (orientation en attente)",
+            "example" : 2
+          },
+          "rejetes" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Rejetés",
+            "example" : 4
+          },
+          "affectesDirect" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Affectés directement",
+            "example" : 15
+          },
+          "enAchat" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "En achat",
+            "example" : 11
+          },
+          "delaiMoyenTraitementHeures" : {
+            "type" : "number",
+            "description" : "Délai moyen soumission → décision, en heures",
+            "example" : 18.5
+          },
+          "parPriorite" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "integer",
+              "format" : "int64"
+            },
+            "description" : "Répartition par priorité (NORMAL, URGENT, CRITIQUE)",
+            "example" : {
+              "NORMAL" : 25,
+              "URGENT" : 10,
+              "CRITIQUE" : 3
+            }
+          }
+        }
+      },
+      "TableauChantier" : {
+        "type" : "object",
+        "description" : "Indicateurs d'un chantier sur la période",
+        "properties" : {
+          "chantierId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Chantier",
+            "example" : "c0000000-0000-0000-0000-000000000001"
+          },
+          "chantierNom" : {
+            "type" : "string",
+            "description" : "Nom",
+            "example" : "Extension autoroute Dakar–AIBD"
+          },
+          "region" : {
+            "type" : "string",
+            "description" : "Région",
+            "example" : "Dakar"
+          },
+          "budget" : {
+            "type" : "number",
+            "description" : "Budget (FCFA)",
+            "example" : 1200000000
+          },
+          "montantMarche" : {
+            "type" : "number",
+            "description" : "Montant du marché (FCFA)",
+            "example" : 1500000000
+          },
+          "montantEngage" : {
+            "type" : "number",
+            "description" : "Engagements validés sur la période (FCFA)",
+            "example" : 250000000
+          },
+          "coutExploitation" : {
+            "type" : "number",
+            "description" : "Coût d'exploitation sur la période (FCFA)",
+            "example" : 48000000
+          },
+          "coutMaintenance" : {
+            "type" : "number",
+            "description" : "Coût de maintenance sur la période (FCFA)",
+            "example" : 6500000
+          },
+          "marge" : {
+            "type" : "number",
+            "description" : "Marché proratisé sur la période − exploitation − maintenance (FCFA)",
+            "example" : 130500000
+          },
+          "materielsAffectes" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Matériels actuellement affectés",
+            "example" : 14
+          },
+          "tauxUtilisation" : {
+            "type" : "number",
+            "description" : "Taux d'utilisation des matériels affectés, en %",
+            "example" : 88.2
+          },
+          "besoinsEnAttente" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Besoins en attente",
+            "example" : 2
+          }
+        }
+      },
+      "TableauFinances" : {
+        "type" : "object",
+        "description" : "Budget, engagements et coûts de la période",
+        "properties" : {
+          "budgetTotal" : {
+            "type" : "number",
+            "description" : "Budget des chantiers actifs (FCFA)",
+            "example" : 4500000000
+          },
+          "montantEngage" : {
+            "type" : "number",
+            "description" : "Engagements validés sur la période (FCFA)",
+            "example" : 820000000
+          },
+          "montantMandate" : {
+            "type" : "number",
+            "description" : "Factures mandatées sur la période (FCFA)",
+            "example" : 510000000
+          },
+          "montantPaye" : {
+            "type" : "number",
+            "description" : "Factures payées sur la période (FCFA)",
+            "example" : 430000000
+          },
+          "tauxExecutionBudget" : {
+            "type" : "number",
+            "description" : "Montant engagé / budget, en %",
+            "example" : 18.2
+          },
+          "coutMaintenance" : {
+            "type" : "number",
+            "description" : "Coût des maintenances clôturées (FCFA)",
+            "example" : 36500000
+          },
+          "coutExploitation" : {
+            "type" : "number",
+            "description" : "Jours affectés × tarif journalier (FCFA)",
+            "example" : 152000000
+          }
+        }
+      },
+      "TableauFournisseurTop" : {
+        "type" : "object",
+        "description" : "Fournisseur du classement",
+        "properties" : {
+          "fournisseurId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Fournisseur",
+            "example" : "f0000000-0000-0000-0000-000000000001"
+          },
+          "raisonSociale" : {
+            "type" : "string",
+            "description" : "Raison sociale",
+            "example" : "Sahel Engins SA"
+          },
+          "scorePerformance" : {
+            "type" : "number",
+            "description" : "Score de performance (0..100)",
+            "example" : 88.5
+          },
+          "nombreLitiges" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Litiges (tous statuts)",
+            "example" : 0
+          },
+          "tauxLivraisonALHeure" : {
+            "type" : "number",
+            "description" : "Livraisons à l'heure, en %",
+            "example" : 100.0
+          }
+        }
+      },
+      "TableauFournisseurs" : {
+        "type" : "object",
+        "description" : "Performance des fournisseurs",
+        "properties" : {
+          "actifs" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Fournisseurs actifs",
+            "example" : 5
+          },
+          "scoreMoyen" : {
+            "type" : "number",
+            "description" : "Score moyen des actifs (0..100)",
+            "example" : 76.4
+          },
+          "litigesOuverts" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Litiges ouverts",
+            "example" : 2
+          },
+          "top" : {
+            "type" : "array",
+            "description" : "Meilleurs fournisseurs actifs",
+            "items" : {
+              "$ref" : "#/components/schemas/TableauFournisseurTop"
+            }
+          }
+        }
+      },
+      "TableauParc" : {
+        "type" : "object",
+        "description" : "Indicateurs du parc matériel",
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Matériels du périmètre",
+            "example" : 120
+          },
+          "disponibles" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Disponibles",
+            "example" : 45
+          },
+          "affectes" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Affectés",
+            "example" : 60
+          },
+          "enMaintenance" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "En maintenance",
+            "example" : 10
+          },
+          "reformes" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Réformés",
+            "example" : 5
+          },
+          "tauxDisponibilite" : {
+            "type" : "number",
+            "description" : "Disponibles / (total − réformés), en %",
+            "example" : 39.1
+          },
+          "tauxUtilisation" : {
+            "type" : "number",
+            "description" : "Jours affectés / jours disponibles sur la période, en %",
+            "example" : 62.4
+          },
+          "maintenancesEnCours" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Maintenances en cours",
+            "example" : 4
+          },
+          "pannesOuvertes" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Pannes non résolues",
+            "example" : 3
+          },
+          "alertesMaintenance" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Alertes de maintenance préventive non traitées",
+            "example" : 2
+          },
+          "parCategorie" : {
+            "type" : "array",
+            "description" : "Détail par catégorie (toutes les catégories)",
+            "items" : {
+              "$ref" : "#/components/schemas/TableauParcCategorie"
+            }
+          }
+        }
+      },
+      "TableauParcCategorie" : {
+        "type" : "object",
+        "description" : "Parc d'une catégorie de matériel",
+        "properties" : {
+          "categorie" : {
+            "type" : "string",
+            "description" : "Catégorie",
+            "enum" : [ "MATERIEL_ROULANT", "OUTILLAGE", "EQUIPEMENT_INFORMATIQUE", "CONSOMMABLE" ],
+            "example" : "MATERIEL_ROULANT"
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Matériels",
+            "example" : 40
+          },
+          "disponibles" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Disponibles",
+            "example" : 12
+          },
+          "affectes" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Affectés",
+            "example" : 25
+          },
+          "enMaintenance" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "En maintenance",
+            "example" : 3
+          },
+          "tauxUtilisation" : {
+            "type" : "number",
+            "description" : "Taux d'utilisation, en %",
+            "example" : 71.0
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "bearerAuth" : {
+        "type" : "http",
+        "description" : "Jeton d'accès Keycloak (realm cse)",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
+      },
+      "keycloak" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "http://localhost:8180/realms/cse/protocol/openid-connect/auth",
+            "tokenUrl" : "http://localhost:8180/realms/cse/protocol/openid-connect/token"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,33 +1,62 @@
 server:
-  port: 8086
+  port: ${SERVER_PORT:8086}
+  shutdown: graceful
 spring:
   application:
     name: ms-reporting
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/cse?stringtype=unspecified}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:changeit}
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    open-in-view: false
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/cse}
+    username: ${DB_USERNAME:ms_reporting}
+    password: ${DB_PASSWORD:changeit-services}
+    hikari:
+      # Garantit l'isolement du schéma même si l'utilisateur n'a pas de search_path (tests).
+      connection-init-sql: SET search_path TO reporting
+      maximum-pool-size: 10
   flyway:
-    enabled: true
     schemas: reporting
-    baseline-on-migrate: true
-    validate-on-migrate: false
+    default-schema: reporting
+    locations: classpath:db/migration,classpath:db/common
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${spring.application.name}
+      auto-offset-reset: earliest
+    producer:
+      acks: all
   security:
     oauth2:
       resourceserver:
         jwt:
+          jwk-set-uri: ${JWK_SET_URI:http://localhost:8180/realms/cse/protocol/openid-connect/certs}
           issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/cse}
+cse:
+  openapi:
+    title: ms-reporting — Tableaux de bord
+    description: >-
+      Tableaux de bord par profil (DG, DAF, RA, RM, chef de chantier), séries temporelles et exports
+      PDF / Excel, calculés sur des vues CQRS alimentées par les événements Kafka (aucun appel aux
+      autres services).
+  outbox:
+    # ms-reporting ne publie aucun événement : le relais de l'outbox est inutile.
+    relay-enabled: false
+  reporting:
+    periode-defaut-jours: ${REPORTING_PERIODE_DEFAUT_JOURS:90}
+    periode-max-jours: ${REPORTING_PERIODE_MAX_JOURS:1830}
+    max-points-serie: ${REPORTING_MAX_POINTS_SERIE:400}
+    top-fournisseurs: ${REPORTING_TOP_FOURNISSEURS:5}
+    duree-chantier-defaut-jours: ${REPORTING_DUREE_CHANTIER_DEFAUT_JOURS:365}
+    consommateur: ms-reporting
+    # Instantané quotidien du parc à 00:05 UTC (« - » désactive le job).
+    instantane-cron: ${REPORTING_INSTANTANE_CRON:0 5 0 * * *}
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics
+  endpoints.web.exposure.include: health,info,metrics,prometheus
+  endpoint.health.probes.enabled: true
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+    oauth:
+      client-id: cse-swagger
+      use-pkce-with-authorization-code-grant: true
+logging:
+  pattern:
+    level: "%5p [${spring.application.name},%X{correlationId:-}]"

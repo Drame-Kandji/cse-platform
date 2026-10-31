@@ -266,7 +266,7 @@ SyntheseFinance { montantEngage, montantEngagementsEnAttente, montantFacture, mo
 
 ## 6. ms-reporting (port 8086) — CQRS alimenté par Kafka
 
-Profils autorisés : DG → tous ; RM → `RESPONSABLE_MATERIEL` ; RA → `RESPONSABLE_ACHATS` ; DAF → `DAF` ; CHEF → `CHEF_CHANTIER` (filtré sur ses chantiers). Profil non autorisé → 403.
+Codes de profil : `DG` (alias accepté `DIRECTION_GENERALE`), `DAF`, `RESPONSABLE_ACHATS`, `RESPONSABLE_MATERIEL`, `CHEF_CHANTIER` ; profil par défaut selon la priorité DG > DAF > RA > RM > CHEF. Séries : indicateur autorisé si l'un des profils de l'appelant affiche la section correspondante (sinon 403 `INDICATEUR_NON_AUTORISE`). Profils autorisés : DG → tous ; RM → `RESPONSABLE_MATERIEL` ; RA → `RESPONSABLE_ACHATS` ; DAF → `DAF` ; CHEF → `CHEF_CHANTIER` (filtré sur ses chantiers). Profil non autorisé → 403.
 
 ```ts
 Tableau { profil, du, au, genereLe,

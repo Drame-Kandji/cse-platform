@@ -1,33 +1,62 @@
 server:
-  port: 8089
+  port: ${SERVER_PORT:8089}
+  shutdown: graceful
 spring:
   application:
     name: ms-audit
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/cse?stringtype=unspecified}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:changeit}
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/cse}
+    username: ${DB_USERNAME:ms_audit}
+    password: ${DB_PASSWORD:changeit-services}
+    hikari:
+      # Garantit l'isolement du schéma même si l'utilisateur n'a pas de search_path (tests).
+      connection-init-sql: SET search_path TO audit
+      maximum-pool-size: 10
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: validate
-    open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: UTC
   flyway:
-    enabled: true
     schemas: audit
-    baseline-on-migrate: true
-    validate-on-migrate: false
+    default-schema: audit
+    locations: classpath:db/migration,classpath:db/common
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${spring.application.name}
+      auto-offset-reset: earliest
+    producer:
+      acks: all
   security:
     oauth2:
       resourceserver:
         jwt:
+          jwk-set-uri: ${JWK_SET_URI:http://localhost:8180/realms/cse/protocol/openid-connect/certs}
           issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/cse}
+cse:
+  openapi:
+    title: ms-audit — Journal d'audit
+    description: >-
+      Journal d'audit immuable de la plateforme CSE, alimenté par le topic cse.audit.events.
+      Consultation réservée à l'administrateur système (R12).
+  outbox:
+    # ms-audit ne publie aucun événement : le relais de l'outbox est inutile.
+    relay-enabled: false
+  audit:
+    fenetre-statistiques-jours: ${AUDIT_FENETRE_STATISTIQUES_JOURS:7}
+    longueur-max-recherche: ${AUDIT_LONGUEUR_MAX_RECHERCHE:100}
+    consommateur: ms-audit.journal
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics
+  endpoints.web.exposure.include: health,info,metrics,prometheus
+  endpoint.health.probes.enabled: true
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+    oauth:
+      client-id: cse-swagger
+      use-pkce-with-authorization-code-grant: true
+logging:
+  pattern:
+    level: "%5p [${spring.application.name},%X{correlationId:-}]"

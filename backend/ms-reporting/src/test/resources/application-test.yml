@@ -1,0 +1,20 @@
+# Profil « test » : aucun broker Kafka ni Keycloak requis.
+spring:
+  kafka:
+    bootstrap-servers: localhost:1
+    listener:
+      auto-startup: false
+    admin:
+      # Pas de création de topics sans broker (évite l'attente du client d'administration).
+      auto-create: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:1/certs
+cse:
+  outbox:
+    relay-enabled: false
+logging:
+  level:
+    org.apache.kafka: WARN
