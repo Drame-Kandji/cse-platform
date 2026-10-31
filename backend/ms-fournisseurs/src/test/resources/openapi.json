@@ -1,7 +1,7 @@
 {
   "openapi" : "3.1.0",
   "info" : {
-    "title" : "ms-fournisseurs — Référentiel fournisseurs",
+    "title" : "ms-fournisseurs · Référentiel fournisseurs",
     "description" : "Référentiel des fournisseurs de la CSE : cycle de vie (EN_ATTENTE_VALIDATION → ACTIF ⇄ SUSPENDU → BLACKLISTE), blacklistage en deux étapes (R09), documents administratifs, évaluations et score de performance (R07), catalogue de prix avec historique, comparaison de prix et litiges.",
     "contact" : {
       "name" : "Équipe plateforme CSE",
@@ -3352,7 +3352,7 @@
           },
           "libelle" : {
             "type" : "string",
-            "example" : "Quitus fiscal 2026 — DGID"
+            "example" : "Quitus fiscal 2026 · DGID"
           },
           "dateExpiration" : {
             "type" : "string",
@@ -3487,7 +3487,7 @@
           },
           "coordonneesBancaires" : {
             "$ref" : "#/components/schemas/CoordonneesBancairesDto",
-            "description" : "Coordonnées bancaires — RA et DAF uniquement, null sinon"
+            "description" : "Coordonnées bancaires · RA et DAF uniquement, null sinon"
           }
         }
       },
@@ -3790,7 +3790,7 @@
       },
       "EvaluationRequest" : {
         "type" : "object",
-        "description" : "Évaluation d'un fournisseur — chaque critère est noté de 0 à 10",
+        "description" : "Évaluation d'un fournisseur · chaque critère est noté de 0 à 10",
         "properties" : {
           "contratId" : {
             "type" : "string",
@@ -3920,7 +3920,7 @@
           "libelle" : {
             "type" : "string",
             "description" : "Libellé",
-            "example" : "Quitus fiscal 2026 — DGID",
+            "example" : "Quitus fiscal 2026 · DGID",
             "maxLength" : 200,
             "minLength" : 0
           },

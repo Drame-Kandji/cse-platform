@@ -94,7 +94,7 @@ class NotificationIntegrationTest {
                 "MATERIEL_ROULANT",
                 BigDecimal.valueOf(250000),
                 CHANTIER,
-                "Extension autoroute Dakar–AIBD",
+                "Extension autoroute Dakar-AIBD",
                 null,
                 null,
                 LocalDate.of(2026, 11, 2),
@@ -112,7 +112,7 @@ class NotificationIntegrationTest {
         .andExpect(jsonPath("$.content[0].type").value("MATERIEL_AFFECTE"))
         .andExpect(
             jsonPath("$.content[0].titre")
-                .value("Matériel PEL-001 affecté à Extension autoroute Dakar–AIBD"))
+                .value("Matériel PEL-001 affecté à Extension autoroute Dakar-AIBD"))
         .andExpect(
             jsonPath("$.content[0].message")
                 .value(org.hamcrest.Matchers.containsString("du 02/11/2026 au 15/12/2026")))
@@ -151,7 +151,7 @@ class NotificationIntegrationTest {
                 besoinId,
                 "BES-2026-0012",
                 CHANTIER,
-                "Extension autoroute Dakar–AIBD",
+                "Extension autoroute Dakar-AIBD",
                 CHEF,
                 "Mamadou Diop",
                 "Niveleuse",

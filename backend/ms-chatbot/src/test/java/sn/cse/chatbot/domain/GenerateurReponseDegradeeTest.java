@@ -29,10 +29,10 @@ class GenerateurReponseDegradeeTest {
             "Où sont les niveleuses ?",
             ContexteDonnees.vide().avecMateriels(List.of(Donnees.NIVELEUSE, Donnees.PELLE)));
     assertThat(r)
-        .startsWith("**Localisation** — 2 matériels trouvés :")
+        .startsWith("**Localisation** · 2 matériels trouvés :")
         .contains(
-            "- **NIV-002** — Niveleuse CAT 140K : sur le chantier **Contournement de Thiès RN2** (affecté) — GPS 14.791, -16.9256")
-        .contains("- **PEL-001** — Pelle hydraulique 20 t : au dépôt (non affecté) (disponible)");
+            "- **NIV-002** · Niveleuse CAT 140K : sur le chantier **Contournement de Thiès RN2** (affecté) · GPS 14.791, -16.9256")
+        .contains("- **PEL-001** · Pelle hydraulique 20 t : au dépôt (non affecté) (disponible)");
   }
 
   @Test
@@ -58,7 +58,7 @@ class GenerateurReponseDegradeeTest {
         ContexteDonnees.vide().avecMateriels(List.of(Donnees.PELLE, Donnees.NIVELEUSE));
     String r = repondre("Avons-nous 3 pelles disponibles ?", c);
     assertThat(r)
-        .contains("**Disponibilité — pelle** — 1 matériel disponible :")
+        .contains("**Disponibilité · pelle** · 1 matériel disponible :")
         .contains("PEL-001")
         .contains("maintenance préventive due")
         .doesNotContain("NIV-002")
@@ -78,9 +78,9 @@ class GenerateurReponseDegradeeTest {
                 .avecBesoins(List.of(Donnees.BESOIN_REJETE, Donnees.BESOIN_ATTENTE)));
     assertThat(r)
         .contains(
-            "**BES-2026-0012** — 1 × Compacteur (chantier Pont de la lagune) : rejeté — motif : Doublon avec BES-2026-0010 par Ibrahima Fall")
+            "**BES-2026-0012** · 1 × Compacteur (chantier Pont de la lagune) : rejeté · motif : Doublon avec BES-2026-0010 par Ibrahima Fall")
         .contains(
-            "**BES-2026-0013** — 2 × Bétonnière (chantier Thiès) : en attente de validation par le Responsable Matériel — priorité normale, besoin au 09/11/2026");
+            "**BES-2026-0013** · 2 × Bétonnière (chantier Thiès) : en attente de validation par le Responsable Matériel · priorité normale, besoin au 09/11/2026");
     assertThat(repondre("Statut de BES-2026-0099", ContexteDonnees.vide()))
         .contains("aucun besoin correspondant à « BES-2026-0099 »");
   }
@@ -95,9 +95,9 @@ class GenerateurReponseDegradeeTest {
                 .avecAppelsOffres(List.of(Donnees.AO)));
     assertThat(r)
         .contains(
-            "**CTR-2026-003** — Fourniture de 2 pelles (Sahel Engins SA) : en cours de livraison, livraison prévue le 15/11/2026 — 180 000 000 FCFA")
+            "**CTR-2026-003** · Fourniture de 2 pelles (Sahel Engins SA) : en cours de livraison, livraison prévue le 15/11/2026 · 180 000 000 FCFA")
         .contains(
-            "**AO-2026-001** — Acquisition de compacteurs : publié (offres en cours de réception), 3 offre(s), date limite le 20/11/2026 à 12:00 — attribué pour 90 000 000 FCFA");
+            "**AO-2026-001** · Acquisition de compacteurs : publié (offres en cours de réception), 3 offre(s), date limite le 20/11/2026 à 12:00 · attribué pour 90 000 000 FCFA");
     String sansMontant =
         repondre(
             "Statut du contrat CTR-2026-003",
@@ -112,13 +112,13 @@ class GenerateurReponseDegradeeTest {
                 "Historique de maintenance de NIV-002",
                 ContexteDonnees.vide().avecMaintenances(List.of(Donnees.VIDANGE))))
         .contains(
-            "**OT-2026-0007** — NIV-002 Niveleuse CAT 140K : maintenance préventive, clôturée, planifiée le 01/09/2026, terminée le 02/09/2026 — Vidange 500 h — coût 450 000 FCFA");
+            "**OT-2026-0007** · NIV-002 Niveleuse CAT 140K : maintenance préventive, clôturée, planifiée le 01/09/2026, terminée le 02/09/2026 · Vidange 500 h · coût 450 000 FCFA");
     assertThat(
             repondre(
                 "Planning du chantier de Thiès",
                 ContexteDonnees.vide().avecAffectations(List.of(Donnees.AFFECTATION))))
         .contains(
-            "**NIV-002** — Niveleuse CAT 140K → Contournement de Thiès RN2 du 01/10/2026 au 31/12/2026 (en cours)");
+            "**NIV-002** · Niveleuse CAT 140K → Contournement de Thiès RN2 du 01/10/2026 au 31/12/2026 (en cours)");
     assertThat(repondre("Planning du chantier de Kaolack", ContexteDonnees.vide()))
         .contains("Je n'ai trouvé aucune affectation correspondant à « Kaolack »");
   }
@@ -129,9 +129,9 @@ class GenerateurReponseDegradeeTest {
             repondre(
                 "Fournisseurs de matériel roulant",
                 ContexteDonnees.vide().avecFournisseurs(List.of(Donnees.SAHEL))))
-        .contains("**Fournisseurs recommandés — matériel roulant** — 1 fournisseur :")
+        .contains("**Fournisseurs recommandés · matériel roulant** · 1 fournisseur :")
         .contains(
-            "1. **Sahel Engins SA** — score 87,5/100, livraisons à l'heure 92 % (matériel roulant)");
+            "1. **Sahel Engins SA** · score 87,5/100, livraisons à l'heure 92 % (matériel roulant)");
   }
 
   @Test

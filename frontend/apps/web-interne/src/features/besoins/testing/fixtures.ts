@@ -30,7 +30,7 @@ export function besoinFixture(overrides: Partial<Besoin> = {}): Besoin {
     priorite: 'URGENT',
     statut: 'EN_ATTENTE',
     chantierId: 'c0000000-0000-0000-0000-000000000001',
-    chantierNom: 'Extension autoroute Dakar–AIBD',
+    chantierNom: 'Extension autoroute Dakar-AIBD',
     demandeurId: '00000000-0000-0000-0000-000000000101',
     demandeurNom: 'Mamadou Diop',
     dureeUtilisationJours: 30,
@@ -50,7 +50,7 @@ export function chantierFixture(overrides: Partial<Chantier> = {}): Chantier {
   return {
     id: 'c0000000-0000-0000-0000-000000000001',
     code: 'CH-DKR-01',
-    nom: 'Extension autoroute Dakar–AIBD',
+    nom: 'Extension autoroute Dakar-AIBD',
     localisation: 'Diamniadio',
     region: 'Dakar',
     latitude: 14.7167,

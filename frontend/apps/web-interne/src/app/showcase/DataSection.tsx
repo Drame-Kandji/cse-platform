@@ -47,7 +47,7 @@ const columns: ColumnDef<DemoMateriel>[] = [
     accessorKey: 'chantier',
     header: 'Chantier',
     meta: { hideOnMobile: true },
-    cell: ({ row }) => row.original.chantier ?? <span className="text-muted-foreground">—</span>,
+    cell: ({ row }) => row.original.chantier ?? <span className="text-muted-foreground">-</span>,
   },
   {
     accessorKey: 'miseEnService',

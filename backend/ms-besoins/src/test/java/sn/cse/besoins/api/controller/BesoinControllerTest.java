@@ -89,7 +89,7 @@ class BesoinControllerTest {
         Priorite.URGENT,
         statut,
         CHANTIER,
-        "Extension autoroute Dakar–AIBD",
+        "Extension autoroute Dakar-AIBD",
         CHEF,
         "Mamadou Diop",
         30,

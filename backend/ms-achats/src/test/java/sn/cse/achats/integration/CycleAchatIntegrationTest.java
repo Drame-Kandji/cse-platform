@@ -106,7 +106,7 @@ class CycleAchatIntegrationTest extends IntegrationTestBase {
             "{'besoinId':'"
                 + besoinId
                 + "','reference':'BES-2026-0101','chantierId':'c0000000-0000-0000-0000-000000000001',"
-                + "'chantierNom':'Extension autoroute Dakar–AIBD','designation':'Pelle hydraulique 20 t',"
+                + "'chantierNom':'Extension autoroute Dakar-AIBD','designation':'Pelle hydraulique 20 t',"
                 + "'categorie':'MATERIEL_ROULANT','quantite':2,'priorite':'URGENT','statut':'EN_ACHAT',"
                 + "'dateBesoin':'2026-11-15','dureeUtilisationJours':90,'materielIds':[]}");
     besoins.recevoir(besoin);

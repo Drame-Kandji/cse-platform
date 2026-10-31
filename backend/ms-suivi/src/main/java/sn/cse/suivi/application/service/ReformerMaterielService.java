@@ -70,7 +70,7 @@ public class ReformerMaterielService implements ReformerMaterielUseCase {
     String motifDemande = materiel.getMotifReforme();
     materiel.deciderReforme(approuve, chargeur.contexte(materiel));
     Materiel enregistre = materiels.save(materiel);
-    String suffixe = commentaire == null || commentaire.isBlank() ? "" : " — " + commentaire;
+    String suffixe = commentaire == null || commentaire.isBlank() ? "" : " · " + commentaire;
     if (approuve) {
       tracer(enregistre, auteur, "Réforme validée par la Direction Générale" + suffixe);
       evenements.materiel(EventTypes.MATERIEL_REFORME, enregistre, null, motifDemande + suffixe);

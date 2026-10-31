@@ -19,7 +19,7 @@ import { Switch } from '@/shared/ui/switch'
 import { Demo, Section } from './Section'
 
 const CHANTIERS = [
-  { value: 'diamniadio', label: 'Autoroute Diamniadio – AIBD', description: 'Lot 3 · Thiès' },
+  { value: 'diamniadio', label: 'Autoroute Diamniadio-AIBD', description: 'Lot 3 · Thiès' },
   { value: 'ter', label: 'TER phase 2', description: 'Dakar' },
   { value: 'saint-louis', label: 'Port de Saint-Louis', description: 'Saint-Louis' },
   { value: 'kaolack', label: 'Pont de Kaolack', description: 'Kaolack' },
@@ -50,7 +50,7 @@ function DemoForm() {
   })
   const submit = form.handleSubmit((values) => {
     toast.success('Besoin enregistré', {
-      description: `${values.designation} — ${toIsoDate(values.dateBesoin) ?? ''}`,
+      description: `${values.designation} · ${toIsoDate(values.dateBesoin) ?? ''}`,
     })
   })
   return (
@@ -213,7 +213,7 @@ export function FormsSection() {
           </div>
         </Demo>
       </div>
-      <Demo title="Formulaire complet (react-hook-form + zod + FormField) — soumettre vide pour voir les erreurs">
+      <Demo title="Formulaire complet (react-hook-form + zod + FormField) · soumettre vide pour voir les erreurs">
         <DemoForm />
       </Demo>
     </Section>

@@ -96,7 +96,7 @@ export function CarteMap({ groupes, selectedKey, onSelect, onPopupClose }: Carte
                 key={groupe.key}
                 ref={register(groupe.key)}
                 position={position}
-                title={`${groupe.chantier.libelle} — ${String(count)} matériel(s)`}
+                title={`${groupe.chantier.libelle} · ${String(count)} matériel(s)`}
                 icon={chantierIcon({
                   size: tailleMarqueur(count),
                   count,

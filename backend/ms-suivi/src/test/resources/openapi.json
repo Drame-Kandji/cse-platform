@@ -1,7 +1,7 @@
 {
   "openapi" : "3.1.0",
   "info" : {
-    "title" : "ms-suivi — Suivi du parc matériel",
+    "title" : "ms-suivi · Suivi du parc matériel",
     "description" : "Chantiers, parc de matériels, affectations (règle R04, détection des chevauchements), réceptions, maintenances (ordres de travail), pannes, réforme (R13), carte GeoJSON et planning.",
     "contact" : {
       "name" : "Équipe plateforme CSE",
@@ -18,14 +18,14 @@
     "name" : "Pannes",
     "description" : "Pannes signalées sur les matériels"
   }, {
+    "name" : "Matériels · opérations",
+    "description" : "Cycle de vie d'un matériel"
+  }, {
     "name" : "Affectations",
     "description" : "Affectations des matériels aux chantiers"
   }, {
     "name" : "Matériels",
     "description" : "Parc matériel de la CSE"
-  }, {
-    "name" : "Matériels — opérations",
-    "description" : "Cycle de vie d'un matériel"
   }, {
     "name" : "Maintenances",
     "description" : "Ordres de travail de maintenance (OT-AAAA-NNNN)"
@@ -983,7 +983,7 @@
     },
     "/api/materiels/{id}/reforme/demande" : {
       "post" : {
-        "tags" : [ "Matériels — opérations" ],
+        "tags" : [ "Matériels · opérations" ],
         "summary" : "Demander la réforme (R13, étape 1)",
         "description" : "Émet MATERIEL_REFORME_DEMANDEE ; le matériel n'est plus affectable.",
         "operationId" : "demanderReforme",
@@ -1082,7 +1082,7 @@
     },
     "/api/materiels/{id}/liberer" : {
       "post" : {
-        "tags" : [ "Matériels — opérations" ],
+        "tags" : [ "Matériels · opérations" ],
         "summary" : "Libérer un matériel",
         "description" : "Termine l'affectation active ; le matériel redevient DISPONIBLE (ou reste EN_MAINTENANCE) ; émet AFFECTATION_TERMINEE et MATERIEL_ETAT_CHANGE.",
         "operationId" : "liberer",
@@ -1180,7 +1180,7 @@
     },
     "/api/materiels/{id}/heures" : {
       "post" : {
-        "tags" : [ "Matériels — opérations" ],
+        "tags" : [ "Matériels · opérations" ],
         "summary" : "Relever le compteur horaire",
         "description" : "Le relevé ne peut pas être inférieur au compteur actuel.",
         "operationId" : "releverHeures",
@@ -1269,7 +1269,7 @@
     },
     "/api/materiels/{id}/confirmer-reception" : {
       "post" : {
-        "tags" : [ "Matériels — opérations" ],
+        "tags" : [ "Matériels · opérations" ],
         "summary" : "Confirmer la réception sur chantier",
         "description" : "Chef de chantier (uniquement sur ses chantiers) ou RM ; l'affectation passe EN_COURS ; émet RECEPTION_CONFIRMEE.",
         "operationId" : "confirmerReception",
@@ -1357,7 +1357,7 @@
     },
     "/api/materiels/{id}/affecter" : {
       "post" : {
-        "tags" : [ "Matériels — opérations" ],
+        "tags" : [ "Matériels · opérations" ],
         "summary" : "Affecter un matériel à un chantier",
         "description" : "Règle R04 : le matériel doit être DISPONIBLE (422 MATERIEL_NON_DISPONIBLE). Une affectation active chevauchant la période renvoie 409 CONFLIT_AFFECTATION (y compris en cas de demandes simultanées). L'affectation est créée EN_ATTENTE_RECEPTION ; émet MATERIEL_AFFECTE.",
         "operationId" : "affecter",
@@ -1824,7 +1824,7 @@
     },
     "/api/materiels/{id}/reforme/valider" : {
       "patch" : {
-        "tags" : [ "Matériels — opérations" ],
+        "tags" : [ "Matériels · opérations" ],
         "summary" : "Décider de la réforme (R13, étape 2)",
         "description" : "Direction Générale : approuvé → REFORME (terminal, émet MATERIEL_REFORME) ; refusé → la demande est levée. Le matériel doit être libéré et hors maintenance.",
         "operationId" : "validerReforme",
@@ -1923,7 +1923,7 @@
     },
     "/api/materiels/{id}/etat" : {
       "patch" : {
-        "tags" : [ "Matériels — opérations" ],
+        "tags" : [ "Matériels · opérations" ],
         "summary" : "Changer l'état d'un matériel",
         "description" : "EN_MAINTENANCE (immobilisation) ou DISPONIBLE (remise en service : retour AFFECTE si une affectation est en cours). Jamais REFORME ici. Émet MATERIEL_ETAT_CHANGE.",
         "operationId" : "changerEtat",
@@ -2913,7 +2913,7 @@
           },
           "chantierActuelNom" : {
             "type" : "string",
-            "example" : "Extension autoroute Dakar–AIBD"
+            "example" : "Extension autoroute Dakar-AIBD"
           },
           "latitude" : {
             "type" : "number",
@@ -3047,7 +3047,7 @@
           },
           "nom" : {
             "type" : "string",
-            "example" : "Extension autoroute Dakar–AIBD"
+            "example" : "Extension autoroute Dakar-AIBD"
           },
           "localisation" : {
             "type" : "string",
@@ -3166,7 +3166,7 @@
           },
           "chantierNom" : {
             "type" : "string",
-            "example" : "Extension autoroute Dakar–AIBD"
+            "example" : "Extension autoroute Dakar-AIBD"
           },
           "gravite" : {
             "type" : "string",
@@ -3267,7 +3267,7 @@
           },
           "chantierNom" : {
             "type" : "string",
-            "example" : "Extension autoroute Dakar–AIBD"
+            "example" : "Extension autoroute Dakar-AIBD"
           },
           "besoinId" : {
             "type" : "string",
@@ -3398,7 +3398,7 @@
           },
           "technicien" : {
             "type" : "string",
-            "example" : "Atelier central — Moustapha Gueye",
+            "example" : "Atelier central · Moustapha Gueye",
             "maxLength" : 150,
             "minLength" : 0
           },
@@ -3443,7 +3443,7 @@
           },
           "chantierNom" : {
             "type" : "string",
-            "example" : "Extension autoroute Dakar–AIBD"
+            "example" : "Extension autoroute Dakar-AIBD"
           },
           "type" : {
             "type" : "string",
@@ -3476,7 +3476,7 @@
           },
           "technicien" : {
             "type" : "string",
-            "example" : "Atelier central — Moustapha Gueye"
+            "example" : "Atelier central · Moustapha Gueye"
           },
           "cout" : {
             "type" : "number",
@@ -3717,7 +3717,7 @@
           },
           "chantierActuelNom" : {
             "type" : "string",
-            "example" : "Extension autoroute Dakar–AIBD"
+            "example" : "Extension autoroute Dakar-AIBD"
           },
           "latitude" : {
             "type" : "number",
@@ -3807,7 +3807,7 @@
           },
           "chantierDestinationNom" : {
             "type" : "string",
-            "example" : "Extension autoroute Dakar–AIBD"
+            "example" : "Extension autoroute Dakar-AIBD"
           },
           "date" : {
             "type" : "string",
@@ -3943,7 +3943,7 @@
           },
           "chantierNom" : {
             "type" : "string",
-            "example" : "Extension autoroute Dakar–AIBD"
+            "example" : "Extension autoroute Dakar-AIBD"
           },
           "nombreMateriels" : {
             "type" : "integer",

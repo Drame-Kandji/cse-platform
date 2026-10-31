@@ -67,7 +67,7 @@ export function ActionsSection() {
           </div>
         </div>
       </Demo>
-      <Demo title="StatusBadge — référentiel shared/domain/labels.ts">
+      <Demo title="StatusBadge · référentiel shared/domain/labels.ts">
         <div className="grid gap-4">
           {KINDS.map((kind) => (
             <div key={kind} className="grid gap-2 sm:grid-cols-[11rem_1fr] sm:items-center">

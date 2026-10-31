@@ -280,7 +280,7 @@ public final class Fournisseur {
       String motif =
           commentaire == null || commentaire.isBlank()
               ? demande.motif()
-              : demande.motif() + " — " + commentaire.trim();
+              : demande.motif() + " · " + commentaire.trim();
       changerStatut(StatutFournisseur.BLACKLISTE, motif);
     }
     this.demandeBlacklistage = null;

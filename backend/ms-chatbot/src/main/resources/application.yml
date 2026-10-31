@@ -33,7 +33,7 @@ spring:
 
 cse:
   openapi:
-    title: ms-chatbot — Assistant matériel et logistique
+    title: ms-chatbot · Assistant matériel et logistique
     description: >-
       Assistant conversationnel : analyse d'intention déterministe, lecture des données réelles
       (ms-suivi, ms-besoins, ms-achats, ms-fournisseurs) avec les droits de l'utilisateur, filtrage

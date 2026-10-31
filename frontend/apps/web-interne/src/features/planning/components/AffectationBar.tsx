@@ -48,7 +48,7 @@ export function AffectationBar({
           style={{ left: `${String(position.left)}%`, width: `max(${String(position.width)}%, 6px)` }}
         >
           <span className="truncate">
-            {formatDate(affectation.dateDebut, 'd MMM')} – {formatDate(fin, 'd MMM')}
+            {formatDate(affectation.dateDebut, 'd MMM')} au {formatDate(fin, 'd MMM')}
           </span>
         </button>
       </PopoverTrigger>

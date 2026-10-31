@@ -61,7 +61,7 @@ public record MaterielDto(
     @Schema(example = "2023-03-14", nullable = true) LocalDate dateAcquisition,
     @Schema(example = "c0000000-0000-0000-0000-000000000001", nullable = true)
         UUID chantierActuelId,
-    @Schema(example = "Extension autoroute Dakar–AIBD", nullable = true) String chantierActuelNom,
+    @Schema(example = "Extension autoroute Dakar-AIBD", nullable = true) String chantierActuelNom,
     @Schema(example = "14.7171", nullable = true) Double latitude,
     @Schema(example = "-17.4682", nullable = true) Double longitude,
     @Schema(example = "f0000000-0000-0000-0000-000000000001", nullable = true) UUID fournisseurId,

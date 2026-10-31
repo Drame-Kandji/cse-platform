@@ -21,24 +21,24 @@ describe('grouperParPosition', () => {
         kind: 'CHANTIER',
         id: 'c1',
         code: 'CH-DKR-01',
-        libelle: 'Autoroute Dakar–AIBD',
+        libelle: 'Autoroute Dakar-AIBD',
         nombreMateriels: 3,
       }),
       // Decalages du jeu de donnees dev (+/- 0,003 degre autour du chantier).
       feature(DAKAR.lat - 0.003, DAKAR.lng - 0.0018, {
         id: 'm1',
         etat: 'AFFECTE',
-        chantierNom: 'Autoroute Dakar–AIBD',
+        chantierNom: 'Autoroute Dakar-AIBD',
       }),
       feature(DAKAR.lat + 0.0015, DAKAR.lng, {
         id: 'm2',
         etat: 'AFFECTE',
-        chantierNom: 'Autoroute Dakar–AIBD',
+        chantierNom: 'Autoroute Dakar-AIBD',
       }),
       feature(DAKAR.lat, DAKAR.lng + 0.0018, {
         id: 'm3',
         etat: 'EN_MAINTENANCE',
-        chantierNom: 'Autoroute Dakar–AIBD',
+        chantierNom: 'Autoroute Dakar-AIBD',
       }),
       feature(THIES.lat, THIES.lng, {
         kind: 'CHANTIER',

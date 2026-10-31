@@ -27,6 +27,6 @@ public record MaintenanceRequest(
         @Size(max = 1000)
         String description,
     @Schema(example = "2026-11-05") @NotNull LocalDate datePlanifiee,
-    @Schema(example = "Atelier central — Moustapha Gueye", nullable = true) @Size(max = 150)
+    @Schema(example = "Atelier central · Moustapha Gueye", nullable = true) @Size(max = 150)
         String technicien,
     @Schema(example = "5a6b7c8d-9e0f-4a1b-2c3d-4e5f6a7b8c9d", nullable = true) UUID panneId) {}

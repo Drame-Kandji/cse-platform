@@ -37,7 +37,7 @@ function valeursInitiales(besoin?: BesoinAAcheter): AppelOffreFormInput {
   return {
     besoinId: besoin?.besoinId,
     objet: besoin ? `Acquisition : ${besoin.designation}` : '',
-    description: besoin ? `Besoin ${besoin.reference} — chantier ${besoin.chantierNom}` : '',
+    description: besoin ? `Besoin ${besoin.reference} · chantier ${besoin.chantierNom}` : '',
     type: 'APPEL_OFFRES',
     categorie: besoin?.categorie ?? 'MATERIEL_ROULANT',
     quantite: besoin?.quantite ?? 1,

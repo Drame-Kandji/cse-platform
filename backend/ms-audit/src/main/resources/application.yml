@@ -37,7 +37,7 @@ spring:
           issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/cse}
 cse:
   openapi:
-    title: ms-audit — Journal d'audit
+    title: ms-audit · Journal d'audit
     description: >-
       Journal d'audit immuable de la plateforme CSE, alimenté par le topic cse.audit.events.
       Consultation réservée à l'administrateur système (R12).

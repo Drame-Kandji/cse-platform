@@ -121,7 +121,7 @@ class ApiSecuriteTest {
     return Chantier.ouvrir(
         new DonneesChantier(
             "CH-DKR-01",
-            "Extension autoroute Dakar–AIBD",
+            "Extension autoroute Dakar-AIBD",
             "Diamniadio",
             "Dakar",
             new Coordonnees(14.7167, -17.4677),
@@ -261,7 +261,7 @@ class ApiSecuriteTest {
                 .content(AFFECTATION))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.statut").value("EN_ATTENTE_RECEPTION"))
-        .andExpect(jsonPath("$.chantierNom").value("Extension autoroute Dakar–AIBD"));
+        .andExpect(jsonPath("$.chantierNom").value("Extension autoroute Dakar-AIBD"));
   }
 
   @Test

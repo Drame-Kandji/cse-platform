@@ -43,7 +43,7 @@ class SmtpMailAdapterTest {
     NotificationProperties props =
         new NotificationProperties(
             "http://localhost:5173/",
-            "—",
+            "-",
             null,
             List.of(),
             new NotificationProperties.Mail(actif, "no-reply@cse.sn", "[CSE]"));

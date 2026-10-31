@@ -39,7 +39,7 @@ export function DecisionDialog({ approuve, titre, onClose, onSubmit, pending }: 
   return (
     <Dialog open={approuve !== null} onOpenChange={(open) => !open && fermer()}>
       <DialogContent
-        title={approuve ? `Approuver — ${titre}` : `Refuser — ${titre}`}
+        title={approuve ? `Approuver · ${titre}` : `Refuser · ${titre}`}
         description={
           approuve
             ? 'Décision tracée.'

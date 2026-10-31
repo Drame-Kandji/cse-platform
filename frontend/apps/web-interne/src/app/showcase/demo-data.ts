@@ -30,7 +30,7 @@ const DESIGNATIONS = [
   'Grue mobile Liebherr',
 ]
 const CHANTIERS = [
-  'Autoroute Diamniadio – AIBD',
+  'Autoroute Diamniadio-AIBD',
   'TER phase 2',
   'Port de Saint-Louis',
   'Pont de Kaolack',

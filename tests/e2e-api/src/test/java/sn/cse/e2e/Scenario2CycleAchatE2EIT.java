@@ -27,7 +27,7 @@ import sn.cse.e2e.support.Compte;
  * Scénario critique 2 (spec §6.2) : cycle complet d'achat, du besoin EN_ACHAT à la livraison et à
  * la création des matériels dans ms-suivi (cohérence à terme via {@code LIVRAISON_EFFECTUEE}).
  */
-@DisplayName("Scénario 2 — Cycle complet d'achat (API)")
+@DisplayName("Scénario 2 · Cycle complet d'achat (API)")
 class Scenario2CycleAchatE2EIT {
 
   private static final List<Map<String, Object>> CRITERES =
@@ -177,7 +177,7 @@ class Scenario2CycleAchatE2EIT {
                     "garantieMois",
                     24,
                     "conditionsLivraison",
-                    "Franco chantier Dakar–AIBD",
+                    "Franco chantier Dakar-AIBD",
                     "penaliteRetardPctParJour",
                     0.1,
                     "delaiLivraisonJours",

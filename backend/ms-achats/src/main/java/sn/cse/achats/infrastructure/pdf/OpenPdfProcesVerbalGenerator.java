@@ -62,7 +62,7 @@ public class OpenPdfProcesVerbalGenerator implements ProcesVerbalGenerator {
     Document document = new Document(PageSize.A4, 40, 40, 40, 40);
     try {
       PdfWriter.getInstance(document, sortie);
-      document.addTitle(titre(type) + " — " + ao.getReference());
+      document.addTitle(titre(type) + " · " + ao.getReference());
       document.addAuthor("Compagnie Sahélienne d'Entreprises");
       document.open();
       entete(document, type, ao, genereLe);
@@ -86,7 +86,7 @@ public class OpenPdfProcesVerbalGenerator implements ProcesVerbalGenerator {
     PdfPCell societe = new PdfPCell();
     societe.setBorder(Rectangle.NO_BORDER);
     societe.addElement(new Paragraph("COMPAGNIE SAHÉLIENNE D'ENTREPRISES", SOUS_TITRE));
-    societe.addElement(new Paragraph("Direction des Achats — Dakar, Sénégal", NORMAL));
+    societe.addElement(new Paragraph("Direction des Achats · Dakar, Sénégal", NORMAL));
     bandeau.addCell(societe);
     PdfPCell ref = new PdfPCell();
     ref.setBorder(Rectangle.NO_BORDER);
@@ -128,14 +128,14 @@ public class OpenPdfProcesVerbalGenerator implements ProcesVerbalGenerator {
           case DEMANDE_PRIX -> "Demande de prix restreinte";
         });
     ligneInfo(
-        t, "Catégorie / quantité", ao.getCategorie() + " — " + ao.getQuantite() + " unité(s)");
+        t, "Catégorie / quantité", ao.getCategorie() + " · " + ao.getQuantite() + " unité(s)");
     ao.getOrigine()
         .ifPresent(
             o ->
                 ligneInfo(
                     t,
                     "Besoin d'origine",
-                    o.reference() + (o.chantierNom() == null ? "" : " — " + o.chantierNom())));
+                    o.reference() + (o.chantierNom() == null ? "" : " · " + o.chantierNom())));
     if (ao.getBudgetEstime() != null) {
       ligneInfo(t, "Budget estimé", fcfa(ao.getBudgetEstime()));
     }
@@ -201,17 +201,17 @@ public class OpenPdfProcesVerbalGenerator implements ProcesVerbalGenerator {
       Color fond = i++ % 2 == 0 ? Color.WHITE : GRIS_CLAIR;
       cellule(
           t,
-          evaluation ? (e.rang() == null ? "—" : String.valueOf(e.rang())) : String.valueOf(i),
+          evaluation ? (e.rang() == null ? "-" : String.valueOf(e.rang())) : String.valueOf(i),
           fond);
       cellule(t, o.getCodeAnonyme(), fond);
       cellule(t, ao.estAnonyme() ? "(anonyme)" : o.getFournisseurNom(), fond);
       celluleDroite(t, fcfa(o.getMontantPropose()), fond);
       celluleDroite(t, o.getDelaiLivraisonJours() + " j", fond);
       if (evaluation) {
-        celluleDroite(t, e.scoreGlobal() == null ? "—" : e.scoreGlobal().toPlainString(), fond);
+        celluleDroite(t, e.scoreGlobal() == null ? "-" : e.scoreGlobal().toPlainString(), fond);
         cellule(t, o.isRetenue() ? "Oui" : "", fond);
       } else {
-        celluleDroite(t, o.getGarantieMois() == null ? "—" : o.getGarantieMois() + " mois", fond);
+        celluleDroite(t, o.getGarantieMois() == null ? "-" : o.getGarantieMois() + " mois", fond);
         cellule(t, DATE.format(o.getDateDepot()), fond);
       }
     }
@@ -284,7 +284,7 @@ public class OpenPdfProcesVerbalGenerator implements ProcesVerbalGenerator {
     document.add(t);
     Paragraph pied =
         new Paragraph(
-            "Document généré par la plateforme CSE — toute modification manuscrite le rend nul.",
+            "Document généré par la plateforme CSE. Toute modification manuscrite le rend nul.",
             PETIT);
     pied.setSpacingBefore(10);
     pied.setAlignment(Element.ALIGN_CENTER);
@@ -308,8 +308,8 @@ public class OpenPdfProcesVerbalGenerator implements ProcesVerbalGenerator {
       PdfPTable t, String etape, String decision, String par, Instant date) {
     cellule(t, etape, Color.WHITE);
     cellule(t, decision, Color.WHITE);
-    cellule(t, par == null ? "—" : par, Color.WHITE);
-    cellule(t, date == null ? "—" : DATE_HEURE.format(date), Color.WHITE);
+    cellule(t, par == null ? "-" : par, Color.WHITE);
+    cellule(t, date == null ? "-" : DATE_HEURE.format(date), Color.WHITE);
   }
 
   private static Paragraph section(String texte) {
@@ -324,7 +324,7 @@ public class OpenPdfProcesVerbalGenerator implements ProcesVerbalGenerator {
     l.setBackgroundColor(GRIS_CLAIR);
     l.setPadding(4);
     t.addCell(l);
-    PdfPCell v = new PdfPCell(new Phrase(valeur == null ? "—" : valeur, NORMAL));
+    PdfPCell v = new PdfPCell(new Phrase(valeur == null ? "-" : valeur, NORMAL));
     v.setPadding(4);
     t.addCell(v);
   }

@@ -16,7 +16,7 @@ import sn.cse.chatbot.domain.model.TypeSource;
 public record SourceDto(
     @Schema(example = "MATERIEL") TypeSource type,
     @Schema(example = "a1b2c3d4-0000-0000-0000-000000000010") String id,
-    @Schema(example = "NIV-002 — Niveleuse CAT 140K") String libelle,
+    @Schema(example = "NIV-002 · Niveleuse CAT 140K") String libelle,
     @Schema(example = "/materiels/a1b2c3d4-0000-0000-0000-000000000010") String lien) {
 
   /**

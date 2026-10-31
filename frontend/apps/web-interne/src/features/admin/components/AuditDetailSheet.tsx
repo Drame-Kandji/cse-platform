@@ -2,7 +2,7 @@ import { Copy } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { toast } from 'sonner'
 import { describeStatus } from '@/shared/domain/labels'
-import { EMPTY_VALUE, formatDateTime } from '@/shared/lib/format'
+import { EMPTY_VALUE, formatDateTime, sansTiretsLongs } from '@/shared/lib/format'
 import { Badge } from '@/shared/ui/badge'
 import { IconButton } from '@/shared/ui/button'
 import { Sheet, SheetContent } from '@/shared/ui/sheet'
@@ -49,7 +49,7 @@ export function AuditDetailSheet({ log, onClose }: { log: AuditLog | null; onClo
           size="md"
         >
           {log.resume && (
-            <p className="mb-2 rounded-lg bg-surface-sunken px-3 py-2.5 text-sm">{log.resume}</p>
+            <p className="mb-2 rounded-lg bg-surface-sunken px-3 py-2.5 text-sm">{sansTiretsLongs(log.resume)}</p>
           )}
           <dl>
             <Row label="Service">

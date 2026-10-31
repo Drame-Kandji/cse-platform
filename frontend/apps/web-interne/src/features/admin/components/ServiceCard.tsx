@@ -24,7 +24,7 @@ export function ServiceCard({ service }: { service: ServiceEtat }) {
             tone === 'danger' ? 'text-danger-emphasis' : 'text-foreground',
           )}
         >
-          {up && service.latenceMs != null ? `${formatNumber(service.latenceMs)} ms` : '—'}
+          {up && service.latenceMs != null ? `${formatNumber(service.latenceMs)} ms` : '-'}
         </span>
       </div>
     </Card>

@@ -62,7 +62,7 @@ const tableauRm: Tableau = {
   chantiers: [
     {
       chantierId: 'c1',
-      chantierNom: 'Extension autoroute Dakar–AIBD',
+      chantierNom: 'Extension autoroute Dakar-AIBD',
       region: 'Dakar',
       budget: 900_000_000,
       montantMarche: 1_200_000_000,

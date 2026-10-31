@@ -24,7 +24,7 @@ import sn.cse.e2e.support.Compte;
  * Responsable Matériel (R01), orientation (affectation directe ou achat), rejet motivé (R08),
  * historique et notification du demandeur.
  */
-@DisplayName("Scénario 1 — Soumission et validation d'un besoin (API)")
+@DisplayName("Scénario 1 · Soumission et validation d'un besoin (API)")
 class Scenario1BesoinValidationE2EIT {
 
   @Test

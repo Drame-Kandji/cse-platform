@@ -74,10 +74,10 @@ public class GenerateurReponseDegradee {
                           ? "affecté (chantier non précisé)"
                           : "au dépôt (non affecté)";
               String gps =
-                  m.latitude() == null ? "" : " — GPS " + m.latitude() + ", " + m.longitude();
+                  m.latitude() == null ? "" : " · GPS " + m.latitude() + ", " + m.longitude();
               return "**"
                   + m.code()
-                  + "** — "
+                  + "** · "
                   + m.designation()
                   + " : "
                   + ou
@@ -98,7 +98,7 @@ public class GenerateurReponseDegradee {
     } else {
       sb.append(
               titre(
-                  "Disponibilité" + (objet == null ? "" : " — " + objet),
+                  "Disponibilité" + (objet == null ? "" : " · " + objet),
                   dispo.size(),
                   "matériel disponible",
                   "matériels disponibles"))
@@ -108,12 +108,12 @@ public class GenerateurReponseDegradee {
                   m ->
                       "**"
                           + m.code()
-                          + "** — "
+                          + "** · "
                           + m.designation()
                           + " ("
                           + Libelles.de(m.categorie())
                           + ")"
-                          + (m.maintenanceDue() ? " — maintenance préventive due" : "")));
+                          + (m.maintenanceDue() ? " · maintenance préventive due" : "")));
     }
     if (e.quantite() != null && !c.indisponibles().contains(Section.MATERIELS)) {
       sb.append("\n\n");
@@ -147,23 +147,23 @@ public class GenerateurReponseDegradee {
     StringBuilder sb =
         new StringBuilder("**")
             .append(b.reference())
-            .append("** — ")
+            .append("** · ")
             .append(b.quantite())
             .append(" × ")
             .append(b.designation())
             .append(" (chantier ")
-            .append(b.chantierNom() == null ? "—" : b.chantierNom())
+            .append(b.chantierNom() == null ? "-" : b.chantierNom())
             .append(") : ")
             .append(Libelles.de(b.statut()));
     if ("REJETE".equals(b.statut()) && b.motifRejet() != null) {
-      sb.append(" — motif : ").append(b.motifRejet());
+      sb.append(" · motif : ").append(b.motifRejet());
     }
     if ("EN_ATTENTE".equals(b.statut())) {
       sb.append(" par le Responsable Matériel");
     } else if (b.validateurNom() != null) {
       sb.append(" par ").append(b.validateurNom());
     }
-    return sb.append(" — priorité ")
+    return sb.append(" · priorité ")
         .append(Libelles.de(b.priorite()))
         .append(", besoin au ")
         .append(Libelles.date(b.dateBesoin()))
@@ -201,10 +201,10 @@ public class GenerateurReponseDegradee {
     StringBuilder sb =
         new StringBuilder("**")
             .append(k.numero())
-            .append("** — ")
+            .append("** · ")
             .append(k.objet())
             .append(" (")
-            .append(k.fournisseurNom() == null ? "fournisseur —" : k.fournisseurNom())
+            .append(k.fournisseurNom() == null ? "fournisseur non renseigné" : k.fournisseurNom())
             .append(") : ")
             .append(Libelles.de(k.statut()));
     if (k.dateLivraisonReelle() != null) {
@@ -213,7 +213,7 @@ public class GenerateurReponseDegradee {
       sb.append(", livraison prévue le ").append(Libelles.date(k.dateLivraisonPrevue()));
     }
     if (k.montant() != null) {
-      sb.append(" — ").append(Libelles.montant(k.montant()));
+      sb.append(" · ").append(Libelles.montant(k.montant()));
     }
     return sb.toString();
   }
@@ -222,7 +222,7 @@ public class GenerateurReponseDegradee {
     StringBuilder sb =
         new StringBuilder("**")
             .append(a.reference())
-            .append("** — ")
+            .append("** · ")
             .append(a.objet())
             .append(" : ")
             .append(Libelles.de(a.statut()))
@@ -231,7 +231,7 @@ public class GenerateurReponseDegradee {
             .append(" offre(s), date limite le ")
             .append(Libelles.date(a.dateLimite()));
     if (a.montantAttribue() != null) {
-      sb.append(" — attribué pour ").append(Libelles.montant(a.montantAttribue()));
+      sb.append(" · attribué pour ").append(Libelles.montant(a.montantAttribue()));
     }
     return sb.toString();
   }
@@ -250,7 +250,7 @@ public class GenerateurReponseDegradee {
     StringBuilder sb =
         new StringBuilder("**")
             .append(m.numeroOt())
-            .append("** — ")
+            .append("** · ")
             .append(m.materielCode())
             .append(" ")
             .append(m.materielDesignation())
@@ -265,10 +265,10 @@ public class GenerateurReponseDegradee {
       sb.append(", terminée le ").append(Libelles.date(m.dateFin()));
     }
     if (m.description() != null && !m.description().isBlank()) {
-      sb.append(" — ").append(m.description());
+      sb.append(" · ").append(m.description());
     }
     if (m.cout() != null) {
-      sb.append(" — coût ").append(Libelles.montant(m.cout()));
+      sb.append(" · coût ").append(Libelles.montant(m.cout()));
     }
     return sb.toString();
   }
@@ -286,7 +286,7 @@ public class GenerateurReponseDegradee {
   private String affectation(AffectationInfo a) {
     return "**"
         + a.materielCode()
-        + "** — "
+        + "** · "
         + a.materielDesignation()
         + " → "
         + a.chantierNom()
@@ -303,7 +303,7 @@ public class GenerateurReponseDegradee {
     if (c.fournisseurs().isEmpty()) {
       return aucun("aucun fournisseur actif", categorie(e), c, Section.FOURNISSEURS);
     }
-    String pour = e.categorie() == null ? "" : " — " + Libelles.de(e.categorie());
+    String pour = e.categorie() == null ? "" : " · " + Libelles.de(e.categorie());
     return titre(
             "Fournisseurs recommandés" + pour,
             c.fournisseurs().size(),
@@ -316,7 +316,7 @@ public class GenerateurReponseDegradee {
     StringBuilder sb =
         new StringBuilder().append(f.rang()).append(". **").append(f.raisonSociale()).append("**");
     if (f.scorePerformance() != null) {
-      sb.append(" — score ").append(Libelles.nombre(f.scorePerformance())).append("/100");
+      sb.append(" · score ").append(Libelles.nombre(f.scorePerformance())).append("/100");
     }
     if (f.tauxLivraisonALHeure() != null) {
       sb.append(", livraisons à l'heure ")
@@ -378,7 +378,7 @@ public class GenerateurReponseDegradee {
   }
 
   private static String titre(String sujet, int n, String singulier, String pluriel) {
-    return "**" + sujet + "** — " + n + " " + (n > 1 ? pluriel : singulier) + " :\n";
+    return "**" + sujet + "** · " + n + " " + (n > 1 ? pluriel : singulier) + " :\n";
   }
 
   private static String aucun(String quoi, String objet, ContexteDonnees c, Section section) {

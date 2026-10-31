@@ -38,7 +38,7 @@ public class SerialiseurContexte {
                         "categorie=" + Libelles.de(m.categorie()),
                         "etat=" + Libelles.de(m.etat()),
                         "chantier=" + val(m.chantierNom()),
-                        "gps=" + (m.latitude() == null ? "—" : m.latitude() + "," + m.longitude()),
+                        "gps=" + (m.latitude() == null ? "-" : m.latitude() + "," + m.longitude()),
                         "prochaineMaintenance=" + Libelles.date(m.prochaineMaintenance()),
                         "maintenanceDue=" + (m.maintenanceDue() ? "oui" : "non"))));
     c.besoins()
@@ -89,7 +89,7 @@ public class SerialiseurContexte {
                         "offres=" + a.nombreOffres(),
                         "montantAttribue="
                             + (a.montantAttribue() == null
-                                ? "—"
+                                ? "-"
                                 : Libelles.montant(a.montantAttribue())))));
     c.fournisseurs()
         .forEach(
@@ -102,11 +102,11 @@ public class SerialiseurContexte {
                         "raisonSociale=" + f.raisonSociale(),
                         "score="
                             + (f.scorePerformance() == null
-                                ? "—"
+                                ? "-"
                                 : Libelles.nombre(f.scorePerformance()) + "/100"),
                         "livraisonALHeure="
                             + (f.tauxLivraisonALHeure() == null
-                                ? "—"
+                                ? "-"
                                 : Libelles.nombre(f.tauxLivraisonALHeure()) + "%"),
                         "litiges=" + f.nombreLitiges(),
                         "specialites="
@@ -180,6 +180,6 @@ public class SerialiseurContexte {
   }
 
   private static String val(String v) {
-    return v == null || v.isBlank() ? "—" : v;
+    return v == null || v.isBlank() ? "-" : v;
   }
 }

@@ -24,7 +24,7 @@ import sn.cse.e2e.support.Compte;
  * Contrôle d'accès par rôle à travers la passerelle (matrice de sécurité B.13) : chaque refus est
  * un 403 ProblemDetail {@code ACCES_REFUSE}, l'absence de jeton un 401.
  */
-@DisplayName("RBAC — matrice d'accès (API)")
+@DisplayName("RBAC · matrice d'accès (API)")
 class RbacE2EIT {
 
   @Test

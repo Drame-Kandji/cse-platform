@@ -52,7 +52,7 @@ public record BesoinResponse(
     @Schema(example = "URGENT") Priorite priorite,
     @Schema(example = "EN_ATTENTE") StatutBesoin statut,
     @Schema(example = "c0000000-0000-0000-0000-000000000001") UUID chantierId,
-    @Schema(example = "Extension autoroute Dakar–AIBD") String chantierNom,
+    @Schema(example = "Extension autoroute Dakar-AIBD") String chantierNom,
     @Schema(example = "00000000-0000-0000-0000-000000000101") UUID demandeurId,
     @Schema(example = "Mamadou Diop") String demandeurNom,
     @Schema(example = "45") int dureeUtilisationJours,

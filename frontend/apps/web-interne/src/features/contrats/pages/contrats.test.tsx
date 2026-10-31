@@ -36,7 +36,7 @@ function contrat(overrides: Partial<Contrat> = {}): Contrat {
     offreId: 'of-1',
     fournisseurId: 'f0000000-0000-0000-0000-000000000001',
     fournisseurNom: 'Sahel Engins SA',
-    chantierNom: 'Extension autoroute Dakar–AIBD',
+    chantierNom: 'Extension autoroute Dakar-AIBD',
     objet: 'Fourniture de deux pelles hydrauliques',
     designation: 'Pelle hydraulique 20 t',
     categorie: 'MATERIEL_ROULANT',

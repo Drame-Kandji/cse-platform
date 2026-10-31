@@ -33,7 +33,7 @@ public record ConversationDto(
   public record MessageDto(
       @Schema(example = "9d8c7b6a-1111-2222-3333-444455556666") UUID id,
       @Schema(example = "ASSISTANT") RoleMessage role,
-      @Schema(example = "**Localisation** — 1 matériel trouvé…") String contenu,
+      @Schema(example = "**Localisation** · 1 matériel trouvé…") String contenu,
       List<SourceDto> sources,
       @Schema(example = "2026-10-30T09:15:00Z") Instant horodatage) {}
 

@@ -1,7 +1,7 @@
 {
   "openapi" : "3.1.0",
   "info" : {
-    "title" : "ms-notification — Notifications",
+    "title" : "ms-notification · Notifications",
     "description" : "Notifications in-app (liste, compteur, lecture, flux temps réel SSE) et e-mails, produites à partir des événements métier Kafka selon des règles de routage configurables.",
     "contact" : {
       "name" : "Équipe plateforme CSE",

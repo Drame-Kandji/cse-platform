@@ -31,7 +31,7 @@ spring:
           issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/cse}
 cse:
   openapi:
-    title: ms-reporting — Tableaux de bord
+    title: ms-reporting · Tableaux de bord
     description: >-
       Tableaux de bord par profil (DG, DAF, RA, RM, chef de chantier), séries temporelles et exports
       PDF / Excel, calculés sur des vues CQRS alimentées par les événements Kafka (aucun appel aux

@@ -30,7 +30,7 @@ import sn.cse.suivi.domain.model.StatutChantier;
 public record ChantierDto(
     @Schema(example = "c0000000-0000-0000-0000-000000000001") UUID id,
     @Schema(example = "CH-DKR-01") String code,
-    @Schema(example = "Extension autoroute Dakar–AIBD") String nom,
+    @Schema(example = "Extension autoroute Dakar-AIBD") String nom,
     @Schema(example = "Diamniadio, Dakar") String localisation,
     @Schema(example = "Dakar") String region,
     @Schema(example = "14.7167") double latitude,

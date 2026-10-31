@@ -8,6 +8,7 @@ import {
   formatMoney,
   formatNumber,
   formatPercent,
+  sansTiretsLongs,
   toIsoDate,
 } from './format'
 import { initials } from './text'
@@ -47,5 +48,13 @@ describe('format', () => {
     expect(initials('Moussa Ndiaye')).toBe('MN')
     expect(initials('awa')).toBe('A')
     expect(initials('')).toBe('?')
+  })
+})
+
+describe('sansTiretsLongs', () => {
+  it('remplace les tirets longs par un point median ou un trait d union', () => {
+    expect(sansTiretsLongs('Matériel A — affecté')).toBe('Matériel A · affecté')
+    expect(sansTiretsLongs('Route Kaolack–Fatick')).toBe('Route Kaolack-Fatick')
+    expect(sansTiretsLongs('—')).toBe('-')
   })
 })

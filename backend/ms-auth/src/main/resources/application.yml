@@ -45,7 +45,7 @@ spring:
         size: 2
 cse:
   openapi:
-    title: ms-auth — Utilisateurs et rôles
+    title: ms-auth · Utilisateurs et rôles
     description: >-
       Profils utilisateurs de la plateforme CSE (hiérarchie Utilisateur) et administration des
       comptes Keycloak : création, rôles, statut, réinitialisation du mot de passe.

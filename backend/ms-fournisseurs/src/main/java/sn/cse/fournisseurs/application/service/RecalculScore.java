@@ -80,7 +80,7 @@ public class RecalculScore {
   private String motif(String declencheur, BigDecimal score) {
     if (politique.estSousSeuilAlerte(score)) {
       return declencheur
-          + " — score "
+          + " · score "
           + score.toPlainString()
           + " inférieur au seuil d'alerte "
           + politique.seuilAlerte().toPlainString();

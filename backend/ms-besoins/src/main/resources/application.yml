@@ -37,7 +37,7 @@ spring:
           issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/cse}
 cse:
   openapi:
-    title: ms-besoins — Besoins en matériel
+    title: ms-besoins · Besoins en matériel
     description: >-
       Expression des besoins en matériel par les chantiers, validation par le Responsable Matériel
       (R01), orientation automatique vers l'affectation directe (ms-suivi) ou les achats,

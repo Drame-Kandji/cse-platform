@@ -25,7 +25,7 @@ public record EngagementDto(
     @Schema(example = "a0000000-0000-0000-0000-000000000001") UUID contratId,
     @Schema(example = "CTR-2026-001") String contratNumero,
     @Schema(example = "Sahel Engins SA") String fournisseurNom,
-    @Schema(example = "Extension autoroute Dakar–AIBD") String chantierNom,
+    @Schema(example = "Extension autoroute Dakar-AIBD") String chantierNom,
     @Schema(example = "Acquisition de deux pelles hydrauliques 20 t") String objet,
     @Schema(example = "285000000") BigDecimal montant,
     @Schema(example = "EN_ATTENTE") StatutApprobation statut,

@@ -37,7 +37,7 @@ public record MaintenanceDto(
     @Schema(example = "PEL-CAT320-01") String materielCode,
     @Schema(example = "Pelle hydraulique sur chenilles 20 t") String materielDesignation,
     @Schema(example = "c0000000-0000-0000-0000-000000000001", nullable = true) UUID chantierId,
-    @Schema(example = "Extension autoroute Dakar–AIBD", nullable = true) String chantierNom,
+    @Schema(example = "Extension autoroute Dakar-AIBD", nullable = true) String chantierNom,
     @Schema(example = "PREVENTIVE") TypeMaintenance type,
     @Schema(example = "PLANIFIEE") StatutMaintenance statut,
     @Schema(example = "Vidange moteur, remplacement des filtres à huile et à gasoil")
@@ -45,7 +45,7 @@ public record MaintenanceDto(
     @Schema(example = "2026-11-05") LocalDate datePlanifiee,
     @Schema(example = "2026-11-05", nullable = true) LocalDate dateDebut,
     @Schema(example = "2026-11-06", nullable = true) LocalDate dateFin,
-    @Schema(example = "Atelier central — Moustapha Gueye", nullable = true) String technicien,
+    @Schema(example = "Atelier central · Moustapha Gueye", nullable = true) String technicien,
     @Schema(description = "Coût en FCFA", example = "685000", nullable = true) BigDecimal cout,
     @Schema(example = "4830", nullable = true) Long heuresCompteur,
     @Schema(example = "RAS, prochaine vidange à 5330 h", nullable = true) String observations,

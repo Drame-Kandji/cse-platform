@@ -37,7 +37,7 @@ spring:
           issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/cse}
 cse:
   openapi:
-    title: ms-suivi — Suivi du parc matériel
+    title: ms-suivi · Suivi du parc matériel
     description: >-
       Chantiers, parc de matériels, affectations (règle R04, détection des chevauchements),
       réceptions, maintenances (ordres de travail), pannes, réforme (R13), carte GeoJSON et planning.

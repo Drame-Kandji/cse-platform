@@ -43,13 +43,13 @@ public record AppelOffreDto(
     @Schema(example = "d0000000-0000-0000-0000-000000000001") UUID id,
     @Schema(example = "AO-2026-001") String reference,
     @Schema(example = "Acquisition de deux pelles hydrauliques 20 t") String objet,
-    @Schema(example = "Pelles sur chenilles pour les terrassements de l'autoroute Dakar–AIBD")
+    @Schema(example = "Pelles sur chenilles pour les terrassements de l'autoroute Dakar-AIBD")
         String description,
     @Schema(example = "APPEL_OFFRES") TypeAppelOffre type,
     @Schema(example = "b0000000-0000-0000-0000-000000000001") UUID besoinId,
     @Schema(example = "BES-2026-0001") String besoinReference,
     @Schema(example = "c0000000-0000-0000-0000-000000000001") UUID chantierId,
-    @Schema(example = "Extension autoroute Dakar–AIBD") String chantierNom,
+    @Schema(example = "Extension autoroute Dakar-AIBD") String chantierNom,
     @Schema(example = "MATERIEL_ROULANT") CategorieMateriel categorie,
     @Schema(example = "2") int quantite,
     @Schema(example = "Godet 1,2 m3, moteur Tier 3") String specifications,

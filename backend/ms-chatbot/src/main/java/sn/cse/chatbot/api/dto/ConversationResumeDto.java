@@ -18,7 +18,7 @@ import sn.cse.chatbot.domain.model.ConversationResume;
 public record ConversationResumeDto(
     @Schema(example = "5b0f3c1e-8a7d-4e2b-9c41-2d6f8e0a1b3c") UUID id,
     @Schema(example = "Où se trouve la niveleuse NIV-002 ?") String titre,
-    @Schema(example = "**Localisation** — 1 matériel trouvé…") String dernierMessage,
+    @Schema(example = "**Localisation** · 1 matériel trouvé…") String dernierMessage,
     @Schema(example = "2") int nombreMessages,
     @Schema(example = "2026-10-30T09:15:00Z") Instant updatedAt) {
 

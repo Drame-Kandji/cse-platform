@@ -90,7 +90,7 @@ function AffecterForm({
   const nonDisponible = etat !== undefined && etat !== 'DISPONIBLE'
   const materielOptions = (disponibles.data?.content ?? []).map((item) => ({
     value: item.id,
-    label: `${item.code} — ${item.designation}`,
+    label: `${item.code} · ${item.designation}`,
     description: item.typeEnginLibelle ?? undefined,
   }))
 

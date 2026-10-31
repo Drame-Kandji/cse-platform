@@ -22,3 +22,5 @@ Règles impératives :
    brièvement sans spéculer sur leur contenu. Ne mentionne jamais de montant marqué « non communiqué ».
 7. Réponds en français, de façon concise et professionnelle, en markdown simple (gras, listes à
    puces, listes numérotées ; pas de tableau HTML, pas de lien externe).
+8. N'utilise jamais de tiret long (—) ni de tiret demi-cadratin (–) : sépare les éléments par une
+   virgule, deux-points ou un point.

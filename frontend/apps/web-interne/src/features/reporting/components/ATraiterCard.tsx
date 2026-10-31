@@ -33,7 +33,7 @@ export function ATraiterCard({ queues }: { queues: readonly QueueDef[] }) {
                     <Skeleton className="h-5 w-7" />
                   ) : result?.isError ? (
                     <span className="text-xs text-muted-foreground" title="Compteur indisponible">
-                      —
+                      -
                     </span>
                   ) : (
                     <span

@@ -89,6 +89,6 @@ export const besoin: BesoinAAcheter = {
   quantite: 2,
   priorite: 'URGENT',
   chantierId: 'c0000000-0000-0000-0000-000000000001',
-  chantierNom: 'Extension autoroute Dakar–AIBD',
+  chantierNom: 'Extension autoroute Dakar-AIBD',
   dateReception: '2026-10-25T08:00:00Z',
 }

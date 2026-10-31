@@ -6,9 +6,21 @@ export const LOCALE = 'fr-SN'
 /** Espace insecable entre valeur et unite. */
 const NBSP = '\u00a0'
 /** Valeur affichee lorsqu'une donnee est absente. */
-export const EMPTY_VALUE = '—'
+export const EMPTY_VALUE = '-'
 
 type Nullable<T> = T | null | undefined
+
+/**
+ * Remplace les tirets longs (cadratin et demi-cadratin) d'un texte venu du serveur, pour les
+ * donnees historiques non modifiables comme le journal d'audit.
+ * @example sansTiretsLongs('Matériel A — affecté') // "Matériel A · affecté"
+ */
+export function sansTiretsLongs(texte: string): string {
+  return texte
+    .replace(/\s+—\s+/g, ' · ')
+    .replace(/\s*–\s*/g, '-')
+    .replace(/—/g, '-')
+}
 type DateInput = Nullable<Date | string | number>
 
 const integerFormat = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 0 })

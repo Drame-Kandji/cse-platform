@@ -188,7 +188,7 @@ class ContratApiEtDonneesDemoIntegrationTest extends IntegrationTestBase {
                 + BESOIN_13
                 + "',"
                 + "'reference':'BES-2026-0002','chantierId':'c0000000-0000-0000-0000-000000000001',"
-                + "'chantierNom':'Extension autoroute Dakar–AIBD','designation':'Grue mobile 50 t',"
+                + "'chantierNom':'Extension autoroute Dakar-AIBD','designation':'Grue mobile 50 t',"
                 + "'categorie':'MATERIEL_ROULANT','quantite':1,'specifications':'Flèche télescopique 40 m',"
                 + "'priorite':'CRITIQUE','statut':'EN_ACHAT','dateBesoin':'2026-02-25',"
                 + "'dureeUtilisationJours':120,'materielIds':[]}}")

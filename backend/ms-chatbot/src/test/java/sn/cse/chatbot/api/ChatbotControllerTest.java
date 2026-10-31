@@ -86,7 +86,7 @@ class ChatbotControllerTest {
                 UUID.randomUUID(),
                 "**NIV-002** à Thiès",
                 List.of(
-                    new Source(TypeSource.MATERIEL, "m1", "NIV-002 — Niveleuse", "/materiels/m1")),
+                    new Source(TypeSource.MATERIEL, "m1", "NIV-002 · Niveleuse", "/materiels/m1")),
                 Intention.LOCALISER_ENGIN,
                 true,
                 T0));

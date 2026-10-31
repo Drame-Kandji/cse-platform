@@ -54,7 +54,7 @@ public final class Donnees {
           uuid("b0000000-0000-0000-0000-000000000001"),
           "BES-2026-0001",
           uuid("c0000000-0000-0000-0000-000000000001"),
-          "Extension autoroute Dakar–AIBD",
+          "Extension autoroute Dakar-AIBD",
           "Pelle hydraulique 20 t");
 
   public static final ParametresContrat PARAMETRES =

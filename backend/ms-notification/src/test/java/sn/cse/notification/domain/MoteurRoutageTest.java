@@ -27,7 +27,7 @@ class MoteurRoutageTest {
                 Fixtures.regleRole(
                     "BESOIN_SOUMIS", "RESPONSABLE_MATERIEL", "Besoin {reference} ({priorite})")),
             formateur,
-            "—");
+            "-");
     UUID besoinId = UUID.randomUUID();
     List<NotificationPlanifiee> plans =
         moteur.router(
@@ -54,7 +54,7 @@ class MoteurRoutageTest {
   @Test
   void should_ignore_event_when_no_rule_matches() {
     MoteurRoutage moteur =
-        new MoteurRoutage(List.of(Fixtures.regleRole("BESOIN_SOUMIS", "DAF", "t")), formateur, "—");
+        new MoteurRoutage(List.of(Fixtures.regleRole("BESOIN_SOUMIS", "DAF", "t")), formateur, "-");
     assertThat(moteur.router(evenement("BESOIN_MODIFIE", Map.of()))).isEmpty();
     assertThat(moteur.estRoute("BESOIN_SOUMIS")).isTrue();
     assertThat(moteur.estRoute("AUDIT")).isFalse();
@@ -65,7 +65,7 @@ class MoteurRoutageTest {
     UUID demandeur = UUID.randomUUID();
     MoteurRoutage moteur =
         new MoteurRoutage(
-            List.of(Fixtures.regleUtilisateur("BESOIN_VALIDE", "demandeurId")), formateur, "—");
+            List.of(Fixtures.regleUtilisateur("BESOIN_VALIDE", "demandeurId")), formateur, "-");
     List<NotificationPlanifiee> plans =
         moteur.router(
             evenement(
@@ -87,7 +87,7 @@ class MoteurRoutageTest {
   void should_skip_rule_when_user_field_missing_or_invalid() {
     MoteurRoutage moteur =
         new MoteurRoutage(
-            List.of(Fixtures.regleUtilisateur("BESOIN_VALIDE", "demandeurId")), formateur, "—");
+            List.of(Fixtures.regleUtilisateur("BESOIN_VALIDE", "demandeurId")), formateur, "-");
     assertThat(moteur.router(evenement("BESOIN_VALIDE", Map.of()))).isEmpty();
     assertThat(moteur.router(evenement("BESOIN_VALIDE", Map.of("demandeurId", "pas-un-uuid"))))
         .isEmpty();
@@ -97,7 +97,7 @@ class MoteurRoutageTest {
   void should_request_chefs_of_payload_chantier_when_rule_targets_chefs() {
     UUID chantier = UUID.randomUUID();
     MoteurRoutage moteur =
-        new MoteurRoutage(List.of(Fixtures.regleChefs("MATERIEL_AFFECTE")), formateur, "—");
+        new MoteurRoutage(List.of(Fixtures.regleChefs("MATERIEL_AFFECTE")), formateur, "-");
     NotificationPlanifiee p =
         moteur
             .router(
@@ -120,8 +120,8 @@ class MoteurRoutageTest {
   void should_use_fallback_text_when_placeholder_missing() {
     MoteurRoutage moteur =
         new MoteurRoutage(
-            List.of(Fixtures.regleRole("X", "DAF", "Contrat {numero}")), formateur, "—");
-    assertThat(moteur.router(evenement("X", Map.of())).get(0).titre()).isEqualTo("Contrat —");
+            List.of(Fixtures.regleRole("X", "DAF", "Contrat {numero}")), formateur, "-");
+    assertThat(moteur.router(evenement("X", Map.of())).get(0).titre()).isEqualTo("Contrat -");
   }
 
   @Test
@@ -140,7 +140,7 @@ class MoteurRoutageTest {
                     new ConditionRegle("gravite", Operateur.DIFFERENT, "BLOQUANTE"),
                     NiveauNotification.ALERTE)),
             formateur,
-            "—");
+            "-");
     assertThat(moteur.router(evenement("PANNE_SIGNALEE", Map.of("gravite", "BLOQUANTE"))))
         .extracting(NotificationPlanifiee::niveau)
         .containsExactly(NiveauNotification.CRITIQUE);

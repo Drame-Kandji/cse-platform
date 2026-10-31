@@ -30,7 +30,7 @@ public record PanneDto(
     @Schema(example = "PEL-CAT320-01") String materielCode,
     @Schema(example = "Pelle hydraulique sur chenilles 20 t") String materielDesignation,
     @Schema(example = "c0000000-0000-0000-0000-000000000001", nullable = true) UUID chantierId,
-    @Schema(example = "Extension autoroute Dakar–AIBD", nullable = true) String chantierNom,
+    @Schema(example = "Extension autoroute Dakar-AIBD", nullable = true) String chantierNom,
     @Schema(example = "MAJEURE") GravitePanne gravite,
     @Schema(example = "Fuite hydraulique sur le vérin de flèche") String description,
     @Schema(example = "SIGNALEE") StatutPanne statut,

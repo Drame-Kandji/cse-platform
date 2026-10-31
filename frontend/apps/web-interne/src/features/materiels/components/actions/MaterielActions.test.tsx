@@ -17,7 +17,7 @@ const enAttente: Affectation = {
   materielDesignation: 'Pelle',
   categorie: 'MATERIEL_ROULANT',
   chantierId: CH1,
-  chantierNom: 'Autoroute Dakar–AIBD',
+  chantierNom: 'Autoroute Dakar-AIBD',
   dateDebut: '2026-10-28',
   dateFinPrevue: '2026-12-15',
   statut: 'EN_ATTENTE_RECEPTION',

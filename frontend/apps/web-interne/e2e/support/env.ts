@@ -26,7 +26,7 @@ export type RoleE2e = keyof typeof comptes
 
 /** Chantiers du chef de démonstration. */
 export const chantiers = {
-  dakar: { id: 'c0000000-0000-0000-0000-000000000001', nom: 'Extension autoroute Dakar–AIBD' },
+  dakar: { id: 'c0000000-0000-0000-0000-000000000001', nom: 'Extension autoroute Dakar-AIBD' },
   thies: { id: 'c0000000-0000-0000-0000-000000000002', nom: 'Contournement de Thiès RN2' },
 } as const
 

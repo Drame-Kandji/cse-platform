@@ -25,7 +25,7 @@ public record ReponseDto(
     @Schema(
             description = "Réponse en markdown simple",
             example =
-                "**Localisation** — 1 matériel trouvé :\n- **NIV-002** — Niveleuse CAT 140K : sur le chantier **Contournement de Thiès RN2** (affecté)")
+                "**Localisation** · 1 matériel trouvé :\n- **NIV-002** · Niveleuse CAT 140K : sur le chantier **Contournement de Thiès RN2** (affecté)")
         String reponse,
     List<SourceDto> sources,
     @Schema(example = "LOCALISER_ENGIN") Intention intention,

@@ -1,7 +1,7 @@
 {
   "openapi" : "3.1.0",
   "info" : {
-    "title" : "ms-audit — Journal d'audit",
+    "title" : "ms-audit · Journal d'audit",
     "description" : "Journal d'audit immuable de la plateforme CSE, alimenté par le topic cse.audit.events. Consultation réservée à l'administrateur système (R12).",
     "contact" : {
       "name" : "Équipe plateforme CSE",

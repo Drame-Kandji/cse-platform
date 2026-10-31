@@ -43,7 +43,7 @@ describe('BesoinsListPage', () => {
     renderWithProviders(<BesoinsListPage />, { user: testUser(['CHEF_CHANTIER']), route: '/besoins' })
     expect(await screen.findByText('BES-2026-0001')).toBeInTheDocument()
     expect(screen.getByText('BES-2026-0002')).toBeInTheDocument()
-    expect(screen.getByText(/1–20 sur 42/)).toBeInTheDocument()
+    expect(screen.getByText(/1-20 sur 42/)).toBeInTheDocument()
     expect(await screen.findByRole('button', { name: /En attente\s*7/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Tous\s*42/ })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('link', { name: /Nouveau besoin/ })).toBeInTheDocument()

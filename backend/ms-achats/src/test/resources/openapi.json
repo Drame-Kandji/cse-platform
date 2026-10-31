@@ -6,7 +6,7 @@
       "name" : "Équipe plateforme CSE"
     },
     "description" : "Appels d'offres (publication, dépôt anonymisé des offres, clôture, évaluation multicritère, attribution avec co-validation et approbation DG), contrats d'achat, engagements DAF, livraisons, factures fournisseurs, synthèse financière et portail fournisseur.",
-    "title" : "ms-achats — Achats et approvisionnements",
+    "title" : "ms-achats · Achats et approvisionnements",
     "version" : "2.0.0"
   },
   "security" : [ {
@@ -6128,7 +6128,7 @@
           },
           "chantierNom" : {
             "type" : "string",
-            "example" : "Extension autoroute Dakar–AIBD"
+            "example" : "Extension autoroute Dakar-AIBD"
           },
           "contratId" : {
             "type" : "string",
@@ -6158,7 +6158,7 @@
           },
           "description" : {
             "type" : "string",
-            "example" : "Pelles sur chenilles pour les terrassements de l'autoroute Dakar–AIBD"
+            "example" : "Pelles sur chenilles pour les terrassements de l'autoroute Dakar-AIBD"
           },
           "fournisseursInvites" : {
             "type" : "array",
@@ -6398,7 +6398,7 @@
           },
           "chantierNom" : {
             "type" : "string",
-            "example" : "Extension autoroute Dakar–AIBD"
+            "example" : "Extension autoroute Dakar-AIBD"
           },
           "dateReception" : {
             "type" : "string",
@@ -6577,7 +6577,7 @@
           },
           "chantierNom" : {
             "type" : "string",
-            "example" : "Extension autoroute Dakar–AIBD"
+            "example" : "Extension autoroute Dakar-AIBD"
           },
           "clauses" : {
             "$ref" : "#/components/schemas/ClausesContrat"
@@ -6709,7 +6709,7 @@
           },
           "description" : {
             "type" : "string",
-            "example" : "Pelles sur chenilles pour les terrassements de l'autoroute Dakar–AIBD",
+            "example" : "Pelles sur chenilles pour les terrassements de l'autoroute Dakar-AIBD",
             "maxLength" : 4000,
             "minLength" : 0
           },
@@ -6842,7 +6842,7 @@
         "properties" : {
           "chantierNom" : {
             "type" : "string",
-            "example" : "Extension autoroute Dakar–AIBD"
+            "example" : "Extension autoroute Dakar-AIBD"
           },
           "contratId" : {
             "type" : "string",

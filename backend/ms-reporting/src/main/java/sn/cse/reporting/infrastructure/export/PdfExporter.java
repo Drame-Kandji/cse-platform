@@ -60,7 +60,7 @@ public class PdfExporter implements ExportateurTableau {
     try {
       PdfWriter writer = PdfWriter.getInstance(doc, sortie);
       writer.setPageEvent(new PiedDePage());
-      doc.addTitle("Tableau de bord — " + tableau.profil().libelle());
+      doc.addTitle("Tableau de bord · " + tableau.profil().libelle());
       doc.addAuthor(ENTREPRISE);
       doc.addCreator("ms-reporting");
       doc.open();
@@ -84,7 +84,7 @@ public class PdfExporter implements ExportateurTableau {
     Paragraph entreprise = new Paragraph(ENTREPRISE, TITRE);
     entreprise.setAlignment(Element.ALIGN_CENTER);
     doc.add(entreprise);
-    Paragraph titre = new Paragraph("Tableau de bord — " + t.profil().libelle(), SOUS_TITRE);
+    Paragraph titre = new Paragraph("Tableau de bord · " + t.profil().libelle(), SOUS_TITRE);
     titre.setAlignment(Element.ALIGN_CENTER);
     titre.setSpacingBefore(18);
     doc.add(titre);
@@ -168,7 +168,7 @@ public class PdfExporter implements ExportateurTableau {
       ColumnText.showTextAligned(
           writer.getDirectContent(),
           Element.ALIGN_CENTER,
-          new Phrase(new Chunk(ENTREPRISE + " — page " + writer.getPageNumber(), PIED)),
+          new Phrase(new Chunk(ENTREPRISE + " · page " + writer.getPageNumber(), PIED)),
           (page.getLeft() + page.getRight()) / 2,
           page.getBottom() + 20,
           0);

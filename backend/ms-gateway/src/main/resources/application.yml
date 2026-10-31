@@ -26,7 +26,7 @@ spring:
             response-timeout: ${GATEWAY_RESPONSE_TIMEOUT:PT30S}
 cse:
   openapi:
-    title: ms-gateway — Passerelle d'API
+    title: ms-gateway · Passerelle d'API
     description: >-
       Point d'entrée unique de la plateforme CSE : routage vers les microservices, authentification
       JWT, limitation de débit, coupe-circuits et supervision.

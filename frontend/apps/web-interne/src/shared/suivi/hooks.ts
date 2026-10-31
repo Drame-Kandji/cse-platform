@@ -50,7 +50,7 @@ export function useBesoinOptions(chantierId: string | null | undefined) {
     select: (page) =>
       page.content.map((besoin) => ({
         value: besoin.id,
-        label: `${besoin.reference} — ${besoin.designation}`,
+        label: `${besoin.reference} · ${besoin.designation}`,
         description: `Quantité : ${String(besoin.quantite)}`,
       })),
   })

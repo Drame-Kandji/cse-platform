@@ -259,10 +259,10 @@ public class DevDataSeeder implements ApplicationRunner {
   /** Noms des chantiers tels que portés par les besoins de ms-besoins. */
   private static final Map<Integer, String> CHANTIERS_BESOINS =
       Map.of(
-          1, "Extension autoroute Dakar–AIBD",
+          1, "Extension autoroute Dakar-AIBD",
           2, "Contournement de Thiès RN2",
           3, "Pont de la lagune",
-          4, "Réhabilitation route Kaolack–Fatick",
+          4, "Réhabilitation route Kaolack-Fatick",
           5, "Bâtiment administratif",
           6, "Aménagement hydraulique");
 
@@ -543,7 +543,7 @@ public class DevDataSeeder implements ApplicationRunner {
     ao7 = offre(ao7, TERANGA, "84500000", 40, 12, "Deux Renault K 380, toupie Stetter", 58);
     ao7 = cloturer(ao7);
     ao7 = attribuer(ao7, SAHEL, "Délai de livraison décisif pour la saison sèche.", 40, 38, 0);
-    ContratAchat c7 = contrat(ao7, 37, "12", 30, "Livraison au chantier Kaolack–Fatick");
+    ContratAchat c7 = contrat(ao7, 37, "12", 30, "Livraison au chantier Kaolack-Fatick");
     signer(c7, 6);
 
     // AO-008 : outillage (sans besoin) attribué, contrat BROUILLON à rédiger.

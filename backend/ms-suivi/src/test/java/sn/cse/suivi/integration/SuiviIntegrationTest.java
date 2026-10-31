@@ -79,7 +79,7 @@ class SuiviIntegrationTest extends IntegrationTestSupport {
     mvc.perform(get("/api/materiels").param("q", "PEL-CAT320-01").with(rm()))
         .andExpect(jsonPath("$.content[0].etat").value("AFFECTE"))
         .andExpect(
-            jsonPath("$.content[0].chantierActuelNom").value("Extension autoroute Dakar–AIBD"))
+            jsonPath("$.content[0].chantierActuelNom").value("Extension autoroute Dakar-AIBD"))
         .andExpect(jsonPath("$.content[0].typeEnginLibelle").value("Pelle hydraulique"));
     mvc.perform(get("/api/materiels/{id}", "a1000000-0000-0000-0000-000000000001").with(rm()))
         .andExpect(jsonPath("$.code").value("PEL-CAT320-01"));

@@ -10,7 +10,7 @@ import { attendreToast, dateIso, suffixeUnique } from '../support/ui'
  * signale une panne vue par le RM, qui planifie, démarre puis clôture la maintenance (coût saisi) ;
  * le matériel revient à l'état AFFECTE (affectation en cours).
  */
-test.describe('Scénario 3 — Réception et clôture de maintenance', () => {
+test.describe('Scénario 3 · Réception et clôture de maintenance', () => {
   test('réception confirmée par le chef, panne signalée, OT correctif planifié, démarré et clôturé par le RM', async ({
     en,
   }) => {

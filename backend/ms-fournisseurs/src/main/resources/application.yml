@@ -40,7 +40,7 @@ spring:
     locale-resolver: fixed
 cse:
   openapi:
-    title: ms-fournisseurs — Référentiel fournisseurs
+    title: ms-fournisseurs · Référentiel fournisseurs
     description: >-
       Référentiel des fournisseurs de la CSE : cycle de vie (EN_ATTENTE_VALIDATION → ACTIF ⇄ SUSPENDU
       → BLACKLISTE), blacklistage en deux étapes (R09), documents administratifs, évaluations et score

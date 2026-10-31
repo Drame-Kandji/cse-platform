@@ -98,10 +98,10 @@ public class DevDataSeeder implements ApplicationRunner {
   };
 
   private static final String[] TECHNICIENS = {
-    "Atelier central Rufisque — Moustapha Gueye",
-    "Atelier central Rufisque — Ousseynou Faye",
-    "Sahel Engins SA — SAV",
-    "Teranga Équipements BTP — SAV"
+    "Atelier central Rufisque · Moustapha Gueye",
+    "Atelier central Rufisque · Ousseynou Faye",
+    "Sahel Engins SA · SAV",
+    "Teranga Équipements BTP · SAV"
   };
 
   /** Scénario de l'état final d'un matériel. */
@@ -242,7 +242,7 @@ public class DevDataSeeder implements ApplicationRunner {
         List.of(
             chantier(
                 "CH-DKR-01",
-                "Extension autoroute Dakar–AIBD",
+                "Extension autoroute Dakar-AIBD",
                 "Diamniadio",
                 "Dakar",
                 14.7167,
@@ -281,7 +281,7 @@ public class DevDataSeeder implements ApplicationRunner {
                 CHEF_NDIAYE.nom()),
             chantier(
                 "CH-KLK-01",
-                "Réhabilitation route Kaolack–Fatick",
+                "Réhabilitation route Kaolack-Fatick",
                 "Kaolack",
                 "Kaolack",
                 14.1652,
@@ -1012,7 +1012,7 @@ public class DevDataSeeder implements ApplicationRunner {
               null,
               aujourdhui.minusDays(35),
               DG,
-              "Réforme validée par la Direction Générale — mise en vente aux enchères");
+              "Réforme validée par la Direction Générale, mise en vente aux enchères");
           evenements.materiel(
               EventTypes.MATERIEL_REFORME, materiel, null, materiel.getMotifReforme());
         }

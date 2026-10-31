@@ -1,7 +1,7 @@
 import { parseISO } from 'date-fns'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { formatDateTime, toIsoDate } from '@/shared/lib/format'
+import { formatDateTime, sansTiretsLongs, toIsoDate } from '@/shared/lib/format'
 import { DataTable, useTableState, type ColumnDef } from '@/shared/ui/data-table'
 import { DateRangePicker } from '@/shared/ui/date-picker'
 import { FilterBar } from '@/shared/ui/filter-bar'
@@ -52,7 +52,7 @@ const columns: ColumnDef<AuditLog>[] = [
     header: 'Résumé',
     meta: { hideOnMobile: true, minWidth: 240 },
     cell: ({ row }) => (
-      <span className="line-clamp-2 max-w-md text-muted-foreground">{row.original.resume ?? ''}</span>
+      <span className="line-clamp-2 max-w-md text-muted-foreground">{sansTiretsLongs(row.original.resume ?? '')}</span>
     ),
   },
 ]

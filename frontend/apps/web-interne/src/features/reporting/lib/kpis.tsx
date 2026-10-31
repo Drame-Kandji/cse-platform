@@ -98,7 +98,7 @@ export function buildKpis(tableau: Tableau): Kpi[] {
         value:
           achats.delaiMoyenApprovisionnementJours != null
             ? `${formatNumber(achats.delaiMoyenApprovisionnementJours, { decimals: 1 })} j`
-            : '—',
+            : '-',
         hint: `${formatNumber(achats.contratsEnCours)} contrats en cours`,
       },
       {

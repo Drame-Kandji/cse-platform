@@ -55,7 +55,7 @@ class SoumettreEtModifierBesoinServiceTest {
     modification = new ModifierBesoinService(verification, enregistrement, clock);
     when(chantiers.trouver(CHANTIER_1))
         .thenReturn(
-            Optional.of(new ChantierInfo(CHANTIER_1, "Extension autoroute Dakar–AIBD", true)));
+            Optional.of(new ChantierInfo(CHANTIER_1, "Extension autoroute Dakar-AIBD", true)));
     when(chantiers.trouver(CHANTIER_2))
         .thenReturn(Optional.of(new ChantierInfo(CHANTIER_2, "Contournement de Thiès RN2", false)));
   }
@@ -82,7 +82,7 @@ class SoumettreEtModifierBesoinServiceTest {
 
     assertThat(vue.reference()).isEqualTo("BES-2026-0042");
     assertThat(vue.statut()).isEqualTo(StatutBesoin.EN_ATTENTE);
-    assertThat(vue.chantierNom()).isEqualTo("Extension autoroute Dakar–AIBD");
+    assertThat(vue.chantierNom()).isEqualTo("Extension autoroute Dakar-AIBD");
     assertThat(vue.demandeurNom()).isEqualTo("Mamadou Diop");
     assertThat(vue.version()).isZero();
     assertThat(publication.types).containsExactly(TypeEvenementBesoin.SOUMIS);

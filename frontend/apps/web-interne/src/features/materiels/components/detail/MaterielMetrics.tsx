@@ -29,9 +29,9 @@ export function MaterielMetrics({ materiel }: { materiel: MaterielDetail }) {
         <Fact label="Type">
           {materiel.typeEnginLibelle ?? labelOf('categorieMateriel', materiel.categorie)}
         </Fact>
-        <Fact label="Marque / modèle">{modele || '—'}</Fact>
+        <Fact label="Marque / modèle">{modele || '-'}</Fact>
         <Fact label="Immatriculation">
-          <span className="font-mono">{materiel.immatriculation ?? '—'}</span>
+          <span className="font-mono">{materiel.immatriculation ?? '-'}</span>
         </Fact>
         <Fact label="Heures de fonctionnement">{`${formatNumber(materiel.heuresFonctionnement)} h`}</Fact>
         <Fact label="Depuis la maintenance" alert={ratio !== null && ratio >= 1}>

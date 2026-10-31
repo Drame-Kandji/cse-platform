@@ -124,7 +124,7 @@ class OutilsDomaineTest {
             org.assertj.core.groups.Tuple.tuple(TypeSource.MAINTENANCE, "/materiels/m1"),
             org.assertj.core.groups.Tuple.tuple(
                 TypeSource.CHANTIER, "/chantiers?id=" + Donnees.CHANTIER_THIES));
-    assertThat(sources.get(0).libelle()).isEqualTo("NIV-002 — Niveleuse CAT 140K");
+    assertThat(sources.get(0).libelle()).isEqualTo("NIV-002 · Niveleuse CAT 140K");
   }
 
   @Test
@@ -191,8 +191,8 @@ class OutilsDomaineTest {
   void should_format_french_labels() {
     assertThat(Libelles.de("EN_ACHAT")).isEqualTo("transmis aux achats");
     assertThat(Libelles.de("INCONNU_X")).isEqualTo("inconnu x");
-    assertThat(Libelles.de(null)).isEqualTo("—");
-    assertThat(Libelles.date((java.time.LocalDate) null)).isEqualTo("—");
-    assertThat(Libelles.date((Instant) null)).isEqualTo("—");
+    assertThat(Libelles.de(null)).isEqualTo("-");
+    assertThat(Libelles.date((java.time.LocalDate) null)).isEqualTo("-");
+    assertThat(Libelles.date((Instant) null)).isEqualTo("-");
   }
 }

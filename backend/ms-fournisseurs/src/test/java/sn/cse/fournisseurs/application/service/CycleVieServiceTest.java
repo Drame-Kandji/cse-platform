@@ -56,7 +56,7 @@ class CycleVieServiceTest {
             EventTypes.FOURNISSEUR_SUSPENDU,
             EventTypes.FOURNISSEUR_BLACKLISTAGE_DEMANDE,
             EventTypes.FOURNISSEUR_BLACKLISTE);
-    assertThat(ctx.publications.evenements.get(2).motif()).isEqualTo("Fraude — Validé");
+    assertThat(ctx.publications.evenements.get(2).motif()).isEqualTo("Fraude · Validé");
   }
 
   @Test

@@ -49,7 +49,7 @@ export function MaterielFormDialog({ open, onOpenChange, materiel }: MaterielFor
         title={materiel ? 'Modifier la fiche' : 'Nouveau matériel'}
         description={
           materiel
-            ? `${materiel.code} — ${materiel.designation}`
+            ? `${materiel.code} · ${materiel.designation}`
             : 'Enregistrement d’un matériel dans le parc.'
         }
       >

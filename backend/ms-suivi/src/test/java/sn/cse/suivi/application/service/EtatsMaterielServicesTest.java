@@ -84,7 +84,7 @@ class EtatsMaterielServicesTest extends ServiceTestSupport {
         .extracting(e -> e.type() + ":" + e.motif())
         .containsExactly(
             EventTypes.MATERIEL_REFORME_DEMANDEE + ":Usure",
-            EventTypes.MATERIEL_REFORME + ":Usure — Vente");
+            EventTypes.MATERIEL_REFORME + ":Usure · Vente");
     assertThat(m.mouvements.journal)
         .extracting(mv -> mv.type())
         .containsOnly(TypeMouvement.REFORME);

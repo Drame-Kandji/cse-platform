@@ -39,7 +39,7 @@ import sn.cse.suivi.application.port.in.ReleverHeuresUseCase;
 /** Opérations sur un matériel : affectation, réception, libération, relevé, état, réforme. */
 @RestController
 @RequestMapping("/api/materiels/{id}")
-@Tag(name = "Matériels — opérations", description = "Cycle de vie d'un matériel")
+@Tag(name = "Matériels · opérations", description = "Cycle de vie d'un matériel")
 @ApiResponse(responseCode = "400", description = "Requête invalide")
 @ApiResponse(responseCode = "401", description = "Non authentifié")
 @ApiResponse(responseCode = "403", description = "Rôle insuffisant ou chantier hors périmètre")

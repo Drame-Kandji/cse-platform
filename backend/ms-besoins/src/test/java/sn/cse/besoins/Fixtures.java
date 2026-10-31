@@ -78,7 +78,7 @@ public final class Fixtures {
         UUID.randomUUID(),
         "BES-2026-0001",
         CHANTIER_1,
-        "Extension autoroute Dakar–AIBD",
+        "Extension autoroute Dakar-AIBD",
         CHEF,
         description(quantite, Priorite.NORMAL),
         MAINTENANT);

@@ -49,7 +49,7 @@ public record ConsolidationResponse(
   @Schema(name = "ChantierResume", description = "Chantier concerné par un regroupement")
   public record ChantierResume(
       @Schema(example = "c0000000-0000-0000-0000-000000000001") UUID id,
-      @Schema(example = "Extension autoroute Dakar–AIBD") String nom) {}
+      @Schema(example = "Extension autoroute Dakar-AIBD") String nom) {}
 
   /**
    * @param l ligne du domaine

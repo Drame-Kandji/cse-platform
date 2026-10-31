@@ -8,7 +8,7 @@ import { attendreToast, dateIso, suffixeUnique } from '../support/ui'
  * Scénario critique 1 (spec §6.2) : soumission d'un besoin par le chef de chantier, arbitrage par le
  * Responsable Matériel (R01) dans l'écran Validation, historique et notification du demandeur.
  */
-test.describe('Scénario 1 — Soumission et validation d’un besoin', () => {
+test.describe('Scénario 1 · Soumission et validation d’un besoin', () => {
   test('besoin URGENT soumis par le chef, validé par le RM et affecté directement depuis le parc', async ({
     en,
   }) => {

@@ -24,7 +24,7 @@ import sn.cse.e2e.support.Compte;
  * maintenance planifiée / démarrée / clôturée par le RM avec retour du matériel à l'état AFFECTE ou
  * DISPONIBLE.
  */
-@DisplayName("Scénario 3 — Réception et clôture de maintenance (API)")
+@DisplayName("Scénario 3 · Réception et clôture de maintenance (API)")
 class Scenario3ReceptionMaintenanceE2EIT {
 
   @Test

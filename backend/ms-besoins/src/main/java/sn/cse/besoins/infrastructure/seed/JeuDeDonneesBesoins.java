@@ -47,10 +47,10 @@ final class JeuDeDonneesBesoins {
 
   static final Map<Integer, String> CHANTIERS =
       Map.of(
-          1, "Extension autoroute Dakar–AIBD",
+          1, "Extension autoroute Dakar-AIBD",
           2, "Contournement de Thiès RN2",
           3, "Pont de la lagune",
-          4, "Réhabilitation route Kaolack–Fatick",
+          4, "Réhabilitation route Kaolack-Fatick",
           5, "Bâtiment administratif",
           6, "Aménagement hydraulique");
 

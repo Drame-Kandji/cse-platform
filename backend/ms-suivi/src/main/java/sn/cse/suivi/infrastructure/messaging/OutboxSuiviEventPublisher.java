@@ -80,7 +80,7 @@ public class OutboxSuiviEventPublisher implements SuiviEventPublisher {
             m.getFournisseurId(),
             m.getContratId(),
             motif),
-        "Matériel " + m.getCode() + " — " + m.getEtat() + (motif == null ? "" : " : " + motif));
+        "Matériel " + m.getCode() + " · " + m.getEtat() + (motif == null ? "" : " : " + motif));
   }
 
   @Override

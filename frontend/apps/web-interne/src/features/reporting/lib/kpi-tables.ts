@@ -49,7 +49,7 @@ export function kpiTables(tableau: Tableau): KpiTable[] {
           value:
             besoins.delaiMoyenTraitementHeures != null
               ? `${n(besoins.delaiMoyenTraitementHeures, 1)} h`
-              : '—',
+              : '-',
         },
         ...PRIORITE.map((priorite) => ({
           label: `Priorité ${labelOf('priorite', priorite).toLowerCase()}`,
@@ -73,7 +73,7 @@ export function kpiTables(tableau: Tableau): KpiTable[] {
           value:
             achats.delaiMoyenApprovisionnementJours != null
               ? `${n(achats.delaiMoyenApprovisionnementJours, 1)} j`
-              : '—',
+              : '-',
         },
         { label: "Livraisons à l'heure", value: formatTaux(achats.tauxLivraisonALHeure) },
       ],

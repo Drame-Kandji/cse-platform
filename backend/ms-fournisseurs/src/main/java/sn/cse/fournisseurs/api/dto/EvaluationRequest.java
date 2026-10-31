@@ -18,7 +18,7 @@ import java.util.UUID;
  * @param prix prix
  * @param commentaire commentaire
  */
-@Schema(description = "Évaluation d'un fournisseur — chaque critère est noté de 0 à 10")
+@Schema(description = "Évaluation d'un fournisseur · chaque critère est noté de 0 à 10")
 public record EvaluationRequest(
     @Schema(
             description = "Contrat évalué (optionnel)",

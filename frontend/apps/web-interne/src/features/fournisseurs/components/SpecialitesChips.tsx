@@ -10,7 +10,7 @@ export function SpecialitesChips({
   specialites: readonly CategorieMateriel[]
   className?: string
 }) {
-  if (specialites.length === 0) return <span className="text-sm text-muted-foreground">—</span>
+  if (specialites.length === 0) return <span className="text-sm text-muted-foreground">-</span>
   return (
     <ul className={cn('flex flex-wrap gap-1', className)} aria-label="Spécialités">
       {specialites.map((specialite) => (

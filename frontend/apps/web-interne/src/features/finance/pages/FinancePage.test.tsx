@@ -23,7 +23,7 @@ const engagement: Engagement = {
   contratId: 'ctr-1',
   contratNumero: 'CTR-2026-001',
   fournisseurNom: 'Sahel Engins SA',
-  chantierNom: 'Extension autoroute Dakar–AIBD',
+  chantierNom: 'Extension autoroute Dakar-AIBD',
   objet: 'Pelle hydraulique 20 t',
   montant: 45_000_000,
   statut: 'EN_ATTENTE',

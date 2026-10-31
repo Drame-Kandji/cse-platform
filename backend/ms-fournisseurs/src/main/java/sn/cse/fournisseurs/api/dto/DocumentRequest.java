@@ -17,7 +17,7 @@ import sn.cse.fournisseurs.domain.model.TypeDocument;
 @Schema(description = "Document administratif à enregistrer")
 public record DocumentRequest(
     @Schema(description = "Type de document", example = "QUITUS_FISCAL") @NotNull TypeDocument type,
-    @Schema(description = "Libellé", example = "Quitus fiscal 2026 — DGID")
+    @Schema(description = "Libellé", example = "Quitus fiscal 2026 · DGID")
         @NotBlank
         @Size(max = 200)
         String libelle,

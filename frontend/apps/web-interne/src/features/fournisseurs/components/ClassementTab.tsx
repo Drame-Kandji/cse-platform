@@ -52,7 +52,7 @@ export function ClassementTab() {
       meta: { align: 'right' },
       cell: ({ row }) => {
         const taux = row.original.tauxLivraisonALHeure
-        return taux === null || taux === undefined ? '—' : formatPercent(taux / 100)
+        return taux === null || taux === undefined ? '-' : formatPercent(taux / 100)
       },
     },
     {

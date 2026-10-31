@@ -27,7 +27,7 @@ export interface SignalerPanneDialogProps {
 export function SignalerPanneDialog({ open, onOpenChange, materiel, onSignaled }: SignalerPanneDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent title="Signaler une panne" description={`${materiel.code} — ${materiel.designation}`}>
+      <DialogContent title="Signaler une panne" description={`${materiel.code} · ${materiel.designation}`}>
         {open && (
           <PanneForm
             materielId={materiel.id}

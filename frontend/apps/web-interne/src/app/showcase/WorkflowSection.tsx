@@ -38,7 +38,7 @@ const EVENTS: TimelineItem[] = [
   {
     id: '1',
     title: 'Besoin créé',
-    description: '2 compacteurs vibrants — priorité urgente.',
+    description: '2 compacteurs vibrants · priorité urgente.',
     date: hoursAgo(50),
     actor: 'Mamadou Diop · Chef de chantier',
     tone: 'warning',
@@ -49,11 +49,11 @@ const EVENTS: TimelineItem[] = [
 export function WorkflowSection() {
   return (
     <Section id="workflow" title="Workflow & historique">
-      <Demo title="Stepper — étape courante : Achat">
+      <Demo title="Stepper · étape courante : Achat">
         <Stepper steps={STEPS} current={2} />
       </Demo>
       <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-2">
-        <Demo title="Stepper — besoin rejeté à la validation">
+        <Demo title="Stepper · besoin rejeté à la validation">
           <Stepper steps={STEPS.slice(0, 2)} current={1} errorIndex={1} />
         </Demo>
         <Demo title="Timeline">

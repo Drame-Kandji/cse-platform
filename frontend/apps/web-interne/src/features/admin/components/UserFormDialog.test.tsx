@@ -22,7 +22,7 @@ afterAll(() => {
 
 const chantiers = {
   content: [
-    { id: 'c1', code: 'CH-DKR-01', nom: 'Extension autoroute Dakar–AIBD', statut: 'EN_COURS' },
+    { id: 'c1', code: 'CH-DKR-01', nom: 'Extension autoroute Dakar-AIBD', statut: 'EN_COURS' },
     { id: 'c2', code: 'CH-THS-01', nom: 'Contournement de Thiès RN2', statut: 'EN_COURS' },
   ],
   page: 0,
@@ -40,7 +40,7 @@ describe('UserFormDialog', () => {
     renderWithProviders(<UserFormDialog open onOpenChange={vi.fn()} />)
 
     // Chef de chantier (defaut) : selection des chantiers.
-    expect(await screen.findByText('Extension autoroute Dakar–AIBD')).toBeInTheDocument()
+    expect(await screen.findByText('Extension autoroute Dakar-AIBD')).toBeInTheDocument()
     expect(screen.queryByLabelText(/Seuil de délégation/)).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('radio', { name: /Responsable Achats/ }))

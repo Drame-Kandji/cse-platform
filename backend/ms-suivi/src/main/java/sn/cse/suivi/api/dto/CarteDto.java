@@ -89,6 +89,6 @@ public record CarteDto(@Schema(example = "FeatureCollection") String type, List<
       @Schema(example = "AFFECTE", nullable = true) EtatMateriel etat,
       @Schema(example = "EN_COURS", nullable = true) StatutChantier statut,
       @Schema(example = "c0000000-0000-0000-0000-000000000001", nullable = true) UUID chantierId,
-      @Schema(example = "Extension autoroute Dakar–AIBD", nullable = true) String chantierNom,
+      @Schema(example = "Extension autoroute Dakar-AIBD", nullable = true) String chantierNom,
       @Schema(example = "8", nullable = true) Long nombreMateriels) {}
 }

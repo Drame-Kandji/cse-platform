@@ -59,7 +59,7 @@ spring:
 
 cse:
   openapi:
-    title: ms-notification — Notifications
+    title: ms-notification · Notifications
     description: >-
       Notifications in-app (liste, compteur, lecture, flux temps réel SSE) et e-mails, produites à
       partir des événements métier Kafka selon des règles de routage configurables.
@@ -68,7 +68,7 @@ cse:
     relay-enabled: false
   notification:
     frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:5173}
-    valeur-absente: "—"
+    valeur-absente: "-"
     sse:
       ping-interval: ${SSE_PING_INTERVAL:PT25S}
       timeout: ${SSE_TIMEOUT:PT30M}

@@ -72,8 +72,8 @@ export function FoundationsSection() {
       <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-2">
         <Demo title="Typographie">
           <div className="grid gap-2">
-            <p className="text-2xl font-semibold tracking-tight">Titre de page — 24 px</p>
-            <p className="text-lg font-semibold tracking-tight">Titre de section — 18 px</p>
+            <p className="text-2xl font-semibold tracking-tight">Titre de page · 24 px</p>
+            <p className="text-lg font-semibold tracking-tight">Titre de section · 18 px</p>
             <p className="text-sm">
               Texte courant 14 px, interligne confortable pour la lecture sur chantier.
             </p>

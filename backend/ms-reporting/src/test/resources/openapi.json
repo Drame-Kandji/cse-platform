@@ -1,7 +1,7 @@
 {
   "openapi" : "3.1.0",
   "info" : {
-    "title" : "ms-reporting — Tableaux de bord",
+    "title" : "ms-reporting · Tableaux de bord",
     "description" : "Tableaux de bord par profil (DG, DAF, RA, RM, chef de chantier), séries temporelles et exports PDF / Excel, calculés sur des vues CQRS alimentées par les événements Kafka (aucun appel aux autres services).",
     "contact" : {
       "name" : "Équipe plateforme CSE",
@@ -555,7 +555,7 @@
           "chantierNom" : {
             "type" : "string",
             "description" : "Nom",
-            "example" : "Extension autoroute Dakar–AIBD"
+            "example" : "Extension autoroute Dakar-AIBD"
           },
           "region" : {
             "type" : "string",

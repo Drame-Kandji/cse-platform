@@ -37,7 +37,7 @@
   },
   "table": {
     "rowsPerPage": "Lignes par page",
-    "range": "{{from}}–{{to}} sur {{total}}",
+    "range": "{{from}}-{{to}} sur {{total}}",
     "pageOf": "Page {{page}} sur {{total}}",
     "firstPage": "Première page",
     "previousPage": "Page précédente",

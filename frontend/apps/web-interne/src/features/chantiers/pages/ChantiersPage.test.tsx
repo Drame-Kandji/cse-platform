@@ -20,7 +20,7 @@ const page = <T,>(content: T[]) => ({
 const chantier: Chantier = {
   id: 'c0000000-0000-0000-0000-000000000001',
   code: 'CH-DKR-01',
-  nom: 'Extension autoroute Dakar–AIBD',
+  nom: 'Extension autoroute Dakar-AIBD',
   localisation: 'Diamniadio',
   region: 'Dakar',
   latitude: 14.7167,
@@ -53,11 +53,11 @@ describe('ChantiersPage', () => {
   it('affiche les chantiers et les actions de gestion au RM', async () => {
     const user = userEvent.setup()
     renderWithProviders(<ChantiersPage />, { user: testUser(['RESPONSABLE_MATERIEL']), route: '/chantiers' })
-    expect(await screen.findByText('Extension autoroute Dakar–AIBD')).toBeInTheDocument()
+    expect(await screen.findByText('Extension autoroute Dakar-AIBD')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Nouveau chantier/ })).toBeInTheDocument()
 
     // Vue tableau par defaut : un clic sur la ligne ouvre le detail.
-    await user.click(screen.getByText('Extension autoroute Dakar–AIBD'))
+    await user.click(screen.getByText('Extension autoroute Dakar-AIBD'))
     const sheet = await screen.findByRole('dialog')
     expect(await within(sheet).findByText(/Aucun matériel n'est affecté/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Terminer le chantier' })).toBeInTheDocument()
@@ -66,7 +66,7 @@ describe('ChantiersPage', () => {
 
   it('reste en lecture seule pour un chef de chantier', async () => {
     renderWithProviders(<ChantiersPage />, { user: testUser(['CHEF_CHANTIER']), route: '/chantiers' })
-    expect(await screen.findByText('Extension autoroute Dakar–AIBD')).toBeInTheDocument()
+    expect(await screen.findByText('Extension autoroute Dakar-AIBD')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Nouveau chantier/ })).not.toBeInTheDocument()
   })
 })

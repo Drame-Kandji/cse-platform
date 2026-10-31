@@ -41,7 +41,7 @@ spring:
           issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/cse}
 cse:
   openapi:
-    title: ms-achats — Achats et approvisionnements
+    title: ms-achats · Achats et approvisionnements
     description: >-
       Appels d'offres (publication, dépôt anonymisé des offres, clôture, évaluation multicritère,
       attribution avec co-validation et approbation DG), contrats d'achat, engagements DAF,

@@ -144,7 +144,7 @@ class FournisseurTest {
     DemandeBlacklistage demande = f.deciderBlacklistage(DG, true, "Confirmé par l'audit");
     assertThat(demande.motif()).isEqualTo("Fraude documentaire");
     assertThat(f.getStatut()).isEqualTo(StatutFournisseur.BLACKLISTE);
-    assertThat(f.getMotifStatut()).contains("Fraude documentaire — Confirmé par l'audit");
+    assertThat(f.getMotifStatut()).contains("Fraude documentaire · Confirmé par l'audit");
     assertThat(f.getDemandeBlacklistage()).isEmpty();
   }
 

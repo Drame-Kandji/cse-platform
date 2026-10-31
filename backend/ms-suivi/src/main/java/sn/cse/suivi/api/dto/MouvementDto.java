@@ -23,7 +23,7 @@ public record MouvementDto(
     @Schema(example = "7b1e5c3a-2d4f-4a6b-8c9d-0e1f2a3b4c5d") UUID materielId,
     @Schema(example = "AFFECTATION") TypeMouvement type,
     @Schema(example = "Contournement de Thiès RN2", nullable = true) String chantierOrigineNom,
-    @Schema(example = "Extension autoroute Dakar–AIBD", nullable = true)
+    @Schema(example = "Extension autoroute Dakar-AIBD", nullable = true)
         String chantierDestinationNom,
     @Schema(example = "2026-10-30T09:15:00Z") Instant date,
     @Schema(example = "Ibrahima Fall", nullable = true) String auteurNom,

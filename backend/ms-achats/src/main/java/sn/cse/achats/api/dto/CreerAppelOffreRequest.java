@@ -38,7 +38,7 @@ public record CreerAppelOffreRequest(
         UUID besoinId,
     @Schema(example = "Acquisition de deux pelles hydrauliques 20 t") @NotBlank @Size(max = 255)
         String objet,
-    @Schema(example = "Pelles sur chenilles pour les terrassements de l'autoroute Dakar–AIBD")
+    @Schema(example = "Pelles sur chenilles pour les terrassements de l'autoroute Dakar-AIBD")
         @Size(max = 4000)
         String description,
     @Schema(example = "APPEL_OFFRES") @NotNull TypeAppelOffre type,

@@ -27,7 +27,7 @@ public final class Fixtures {
   public static DonneesChantier donneesChantier(String code) {
     return new DonneesChantier(
         code,
-        "Extension autoroute Dakar–AIBD",
+        "Extension autoroute Dakar-AIBD",
         "Diamniadio",
         "Dakar",
         new Coordonnees(14.7167, -17.4677),

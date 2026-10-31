@@ -204,7 +204,7 @@ class CasUtilisationAchatsTest {
             "Godet 1,2 m3",
             Priorite.URGENT,
             Donnees.BESOIN.chantierId(),
-            "Extension autoroute Dakar–AIBD",
+            "Extension autoroute Dakar-AIBD",
             T0.minusSeconds(3600)));
   }
 
@@ -279,7 +279,7 @@ class CasUtilisationAchatsTest {
       assertThat(ao.getReference()).isEqualTo("AO-2026-001");
       assertThat(ao.getInvites()).hasSize(1);
       assertThat(ao.getOrigine().orElseThrow().chantierNom())
-          .isEqualTo("Extension autoroute Dakar–AIBD");
+          .isEqualTo("Extension autoroute Dakar-AIBD");
       assertThat(ports.besoins.get(BESOIN).appelOffreId()).isEqualTo(ao.getId());
       assertThat(ports.evenements).containsExactly(EventTypes.AO_PUBLIE);
       assertThat(consultation.besoinsAAcheter(PAGE).content()).hasSize(1);

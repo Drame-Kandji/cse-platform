@@ -60,7 +60,7 @@ public final class Libelles {
    * @return le libellé français (le code lui-même s'il est inconnu)
    */
   public static String de(String code) {
-    return code == null ? "—" : CODES.getOrDefault(code, code.toLowerCase(FR).replace('_', ' '));
+    return code == null ? "-" : CODES.getOrDefault(code, code.toLowerCase(FR).replace('_', ' '));
   }
 
   /**
@@ -68,7 +68,7 @@ public final class Libelles {
    * @return {@code jj/mm/aaaa} ou « — »
    */
   public static String date(LocalDate date) {
-    return date == null ? "—" : date.format(JOUR);
+    return date == null ? "-" : date.format(JOUR);
   }
 
   /**
@@ -76,7 +76,7 @@ public final class Libelles {
    * @return {@code jj/mm/aaaa à hh:mm} (UTC) ou « — »
    */
   public static String date(Instant instant) {
-    return instant == null ? "—" : HEURE.format(instant);
+    return instant == null ? "-" : HEURE.format(instant);
   }
 
   /**

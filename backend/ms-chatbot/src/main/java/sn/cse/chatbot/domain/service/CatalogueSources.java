@@ -41,7 +41,7 @@ public class CatalogueSources {
                     resultat,
                     TypeSource.MATERIEL,
                     m.id(),
-                    m.code() + " — " + m.designation(),
+                    m.code() + " · " + m.designation(),
                     null));
     c.besoins()
         .forEach(
@@ -50,13 +50,13 @@ public class CatalogueSources {
                     resultat,
                     TypeSource.BESOIN,
                     b.id(),
-                    b.reference() + " — " + b.designation(),
+                    b.reference() + " · " + b.designation(),
                     null));
     c.contrats()
         .forEach(
             k ->
                 ajouter(
-                    resultat, TypeSource.CONTRAT, k.id(), k.numero() + " — " + k.objet(), null));
+                    resultat, TypeSource.CONTRAT, k.id(), k.numero() + " · " + k.objet(), null));
     c.appelsOffres()
         .forEach(
             a ->
@@ -64,7 +64,7 @@ public class CatalogueSources {
                     resultat,
                     TypeSource.APPEL_OFFRE,
                     a.id(),
-                    a.reference() + " — " + a.objet(),
+                    a.reference() + " · " + a.objet(),
                     null));
     c.fournisseurs()
         .forEach(f -> ajouter(resultat, TypeSource.FOURNISSEUR, f.id(), f.raisonSociale(), null));
@@ -75,7 +75,7 @@ public class CatalogueSources {
                     resultat,
                     TypeSource.MAINTENANCE,
                     m.id(),
-                    m.numeroOt() + " — " + m.materielDesignation(),
+                    m.numeroOt() + " · " + m.materielDesignation(),
                     m.materielId()));
     c.affectations()
         .forEach(
@@ -84,7 +84,7 @@ public class CatalogueSources {
                   resultat,
                   TypeSource.MATERIEL,
                   a.materielId(),
-                  a.materielCode() + " — " + a.materielDesignation(),
+                  a.materielCode() + " · " + a.materielDesignation(),
                   null);
               ajouter(resultat, TypeSource.CHANTIER, a.chantierId(), a.chantierNom(), null);
             });

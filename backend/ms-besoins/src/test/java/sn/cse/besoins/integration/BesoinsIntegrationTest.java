@@ -116,7 +116,7 @@ class BesoinsIntegrationTest {
                 okJson(
                     "{\"id\":\""
                         + CHANTIER_1
-                        + "\",\"nom\":\"Extension autoroute Dakar–AIBD\","
+                        + "\",\"nom\":\"Extension autoroute Dakar-AIBD\","
                         + "\"statut\":\"EN_COURS\"}")));
   }
 
@@ -509,7 +509,7 @@ class BesoinsIntegrationTest {
                     "materielDesignation", "Pelle hydraulique 20 t",
                     "categorie", "MATERIEL_ROULANT",
                     "chantierId", CHANTIER_1.toString(),
-                    "chantierNom", "Extension autoroute Dakar–AIBD",
+                    "chantierNom", "Extension autoroute Dakar-AIBD",
                     "besoinId", besoin.toString(),
                     "dateDebut", LocalDate.now(clock).toString(),
                     "dateFinPrevue", LocalDate.now(clock).plusDays(30).toString()));

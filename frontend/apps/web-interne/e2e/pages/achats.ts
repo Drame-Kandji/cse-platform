@@ -74,7 +74,7 @@ export class FicheAppelOffre {
   async decider(titreEtape: string, bouton: 'Co-valider' | 'Approuver', commentaire: string) {
     await this.page.getByRole('tab', { name: 'Attribution' }).click()
     await this.etape(titreEtape).getByRole('button', { name: bouton }).click()
-    const dialogue = this.page.getByRole('dialog', { name: /^Approuver — / })
+    const dialogue = this.page.getByRole('dialog', { name: /^Approuver · / })
     await dialogue.getByRole('textbox', { name: /^Commentaire/ }).fill(commentaire)
     await dialogue.getByRole('button', { name: 'Confirmer l’approbation' }).click()
     await attendreToast(this.page, 'Décision enregistrée')

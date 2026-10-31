@@ -63,7 +63,7 @@ class ContratAchatTest {
     assertThat(c.getFournisseurNom()).isEqualTo("Sahel Engins SA");
     assertThat(c.getMontant()).isEqualByComparingTo("120000000");
     assertThat(c.getDesignation()).isEqualTo("Pelle hydraulique 20 t");
-    assertThat(c.getChantierNom()).isEqualTo("Extension autoroute Dakar–AIBD");
+    assertThat(c.getChantierNom()).isEqualTo("Extension autoroute Dakar-AIBD");
     assertThat(c.getDelaiLivraisonJours()).isEqualTo(60);
     assertThat(c.getClauses().garantieMois()).isEqualTo(24);
     assertThat(c.getClauses().penaliteRetardPctParJour()).isEqualByComparingTo("0.1");

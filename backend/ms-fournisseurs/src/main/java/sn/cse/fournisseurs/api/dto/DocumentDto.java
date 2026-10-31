@@ -18,6 +18,6 @@ import sn.cse.fournisseurs.domain.model.TypeDocument;
 public record DocumentDto(
     @Schema(example = "d0000000-0000-0000-0000-000000000001") UUID id,
     @Schema(example = "QUITUS_FISCAL") TypeDocument type,
-    @Schema(example = "Quitus fiscal 2026 — DGID") String libelle,
+    @Schema(example = "Quitus fiscal 2026 · DGID") String libelle,
     @Schema(example = "2026-12-31") LocalDate dateExpiration,
     @Schema(description = "Expiré à la date du jour", example = "false") boolean expire) {}

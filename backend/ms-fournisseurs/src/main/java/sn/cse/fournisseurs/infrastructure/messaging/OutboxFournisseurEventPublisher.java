@@ -47,7 +47,7 @@ public class OutboxFournisseurEventPublisher implements FournisseurEventPublishe
             + " ("
             + fournisseur.getStatut()
             + ")"
-            + (motif == null ? "" : " — " + motif);
+            + (motif == null ? "" : " · " + motif);
     outbox.publier(
         Topics.FOURNISSEURS, type, AGREGAT_FOURNISSEUR, fournisseur.getId(), payload, resume);
   }
@@ -65,7 +65,7 @@ public class OutboxFournisseurEventPublisher implements FournisseurEventPublishe
             litige.getGravite().name(),
             litige.getStatut().name());
     String resume =
-        litige.getReference() + " — " + litige.getRaisonSociale() + " : " + litige.getObjet();
+        litige.getReference() + " · " + litige.getRaisonSociale() + " : " + litige.getObjet();
     outbox.publier(Topics.FOURNISSEURS, type, AGREGAT_LITIGE, litige.getId(), payload, resume);
   }
 }

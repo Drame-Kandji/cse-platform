@@ -19,7 +19,7 @@ interface AppelOffreDto {
  * de l'AO) passent par l'API ; les décisions (offres, clôture, notes, attribution, co-validation RM,
  * approbation DG au-delà du seuil R11, signature, engagement DAF R06, livraison) passent par l'interface.
  */
-test.describe('Scénario 2 — Cycle complet d’achat', () => {
+test.describe('Scénario 2 · Cycle complet d’achat', () => {
   test('AO au-delà du seuil de délégation : offres, attribution co-validée par le RM et approuvée par la DG, engagement DAF, livraison', async ({
     en,
   }) => {
@@ -115,10 +115,10 @@ test.describe('Scénario 2 — Cycle complet d’achat', () => {
     const contrat = new FicheContrat(ra)
     await contrat.attendreStatut('Brouillon')
     await contrat.modifierClauses({
-      conditionsLivraison: 'Livraison franco sur le chantier Dakar–AIBD',
+      conditionsLivraison: 'Livraison franco sur le chantier Dakar-AIBD',
       conditionsMaintenance: 'Révision des 500 heures par le fournisseur',
     })
-    await expect(ra.getByRole('main')).toContainText('Livraison franco sur le chantier Dakar–AIBD')
+    await expect(ra.getByRole('main')).toContainText('Livraison franco sur le chantier Dakar-AIBD')
     await contrat.signer()
     // R06 : la livraison ne peut démarrer qu'après l'engagement DAF.
     await expect(ra.getByRole('button', { name: 'Démarrer la livraison' })).toBeDisabled()

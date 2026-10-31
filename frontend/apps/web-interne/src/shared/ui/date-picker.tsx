@@ -100,9 +100,9 @@ export function DateRangePicker({ value, onChange, placeholder, min, max, ...pro
   const [open, setOpen] = useState(false)
   const label =
     value.from && value.to
-      ? `${formatDate(value.from)} – ${formatDate(value.to)}`
+      ? `${formatDate(value.from)} au ${formatDate(value.to)}`
       : value.from
-        ? `${formatDate(value.from)} – …`
+        ? `${formatDate(value.from)} au …`
         : (placeholder ?? t('date.rangePlaceholder'))
   const select = (date: Date) => {
     if (!value.from || value.to) {

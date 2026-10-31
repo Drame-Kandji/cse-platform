@@ -67,5 +67,5 @@ public record FournisseurDetailDto(
         BlacklistageDemandeDto blacklistageDemande,
     @Schema(example = "4") long version,
     @Schema(description = "Documents administratifs") List<DocumentDto> documents,
-    @Schema(description = "Coordonnées bancaires — RA et DAF uniquement, null sinon")
+    @Schema(description = "Coordonnées bancaires · RA et DAF uniquement, null sinon")
         CoordonneesBancairesDto coordonneesBancaires) {}

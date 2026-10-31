@@ -49,7 +49,7 @@ public record ContratDto(
     @Schema(example = "Sahel Engins SA") String fournisseurNom,
     @Schema(example = "b0000000-0000-0000-0000-000000000001") UUID besoinId,
     @Schema(example = "c0000000-0000-0000-0000-000000000001") UUID chantierId,
-    @Schema(example = "Extension autoroute Dakar–AIBD") String chantierNom,
+    @Schema(example = "Extension autoroute Dakar-AIBD") String chantierNom,
     @Schema(example = "Acquisition de deux pelles hydrauliques 20 t") String objet,
     @Schema(example = "Pelle hydraulique 20 t") String designation,
     @Schema(example = "MATERIEL_ROULANT") CategorieMateriel categorie,

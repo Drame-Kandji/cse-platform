@@ -29,7 +29,7 @@ import sn.cse.notification.domain.model.Operateur;
 @ConfigurationProperties(prefix = "cse.notification")
 public record NotificationProperties(
     @NotBlank String frontendBaseUrl,
-    @DefaultValue("—") String valeurAbsente,
+    @DefaultValue("-") String valeurAbsente,
     Map<String, String> libelles,
     @NotEmpty List<@Valid Regle> regles,
     @NotNull @Valid Mail mail) {

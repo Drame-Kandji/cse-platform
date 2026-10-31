@@ -33,6 +33,6 @@ public record BesoinAAcheterDto(
     @Schema(example = "Godet 1,2 m3") String specifications,
     @Schema(example = "URGENT") Priorite priorite,
     @Schema(example = "c0000000-0000-0000-0000-000000000001") UUID chantierId,
-    @Schema(example = "Extension autoroute Dakar–AIBD") String chantierNom,
+    @Schema(example = "Extension autoroute Dakar-AIBD") String chantierNom,
     @Schema(example = "2026-10-30T09:15:00Z") Instant dateReception,
     @Schema(example = "d0000000-0000-0000-0000-000000000001") UUID appelOffreId) {}

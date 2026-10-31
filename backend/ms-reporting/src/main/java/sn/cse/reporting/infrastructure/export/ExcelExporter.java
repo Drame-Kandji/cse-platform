@@ -62,7 +62,7 @@ public class ExcelExporter implements ExportateurTableau {
   private static void feuille(Sheet feuille, Bloc bloc, Tableau t, Styles s) {
     int r = 0;
     Cell titre = feuille.createRow(r++).createCell(0);
-    titre.setCellValue(PdfExporter.ENTREPRISE + " — " + bloc.section().libelle());
+    titre.setCellValue(PdfExporter.ENTREPRISE + " · " + bloc.section().libelle());
     titre.setCellStyle(s.titre);
     feuille
         .createRow(r++)
@@ -70,11 +70,11 @@ public class ExcelExporter implements ExportateurTableau {
         .setCellValue(
             "Profil : "
                 + t.profil().libelle()
-                + " — période du "
+                + " · période du "
                 + FormatFr.date(t.du())
                 + " au "
                 + FormatFr.date(t.au())
-                + " — généré le "
+                + " · généré le "
                 + FormatFr.horodatage(t.genereLe()));
     r++;
     Row entete = feuille.createRow(r++);

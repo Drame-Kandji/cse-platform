@@ -76,7 +76,7 @@ export function FournisseursTable() {
       header: t('columns.ville'),
       meta: { nowrap: true },
       enableSorting: true,
-      cell: ({ row }) => row.original.ville ?? '—',
+      cell: ({ row }) => row.original.ville ?? '-',
     },
     {
       accessorKey: 'statut',
@@ -106,7 +106,7 @@ export function FournisseursTable() {
       header: t('columns.litiges'),
       meta: { align: 'right' },
       cell: ({ row }) =>
-        row.original.nombreLitigesOuverts > 0 ? formatNumber(row.original.nombreLitigesOuverts) : '—',
+        row.original.nombreLitigesOuverts > 0 ? formatNumber(row.original.nombreLitigesOuverts) : '-',
     },
   ]
 

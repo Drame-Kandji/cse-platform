@@ -19,7 +19,7 @@ final class FormatFr {
   static final char ESPACE = ' ';
 
   /** Texte affiché pour une valeur non définie. */
-  static final String NON_DEFINI = "—";
+  static final String NON_DEFINI = "-";
 
   private static final DateTimeFormatter DATE =
       DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.FRANCE);

@@ -1,7 +1,7 @@
 {
   "openapi" : "3.1.0",
   "info" : {
-    "title" : "ms-chatbot — Assistant matériel et logistique",
+    "title" : "ms-chatbot · Assistant matériel et logistique",
     "description" : "Assistant conversationnel : analyse d'intention déterministe, lecture des données réelles (ms-suivi, ms-besoins, ms-achats, ms-fournisseurs) avec les droits de l'utilisateur, filtrage par rôle, réponse par LLM OpenAI-compatible ou mode dégradé, historique des conversations.",
     "contact" : {
       "name" : "Équipe plateforme CSE",
@@ -373,7 +373,7 @@
           "reponse" : {
             "type" : "string",
             "description" : "Réponse en markdown simple",
-            "example" : "**Localisation** — 1 matériel trouvé :\n- **NIV-002** — Niveleuse CAT 140K : sur le chantier **Contournement de Thiès RN2** (affecté)"
+            "example" : "**Localisation** · 1 matériel trouvé :\n- **NIV-002** · Niveleuse CAT 140K : sur le chantier **Contournement de Thiès RN2** (affecté)"
           },
           "sources" : {
             "type" : "array",
@@ -412,7 +412,7 @@
           },
           "libelle" : {
             "type" : "string",
-            "example" : "NIV-002 — Niveleuse CAT 140K"
+            "example" : "NIV-002 · Niveleuse CAT 140K"
           },
           "lien" : {
             "type" : "string",
@@ -434,7 +434,7 @@
           },
           "dernierMessage" : {
             "type" : "string",
-            "example" : "**Localisation** — 1 matériel trouvé…"
+            "example" : "**Localisation** · 1 matériel trouvé…"
           },
           "nombreMessages" : {
             "type" : "integer",
@@ -516,7 +516,7 @@
           },
           "contenu" : {
             "type" : "string",
-            "example" : "**Localisation** — 1 matériel trouvé…"
+            "example" : "**Localisation** · 1 matériel trouvé…"
           },
           "sources" : {
             "type" : "array",

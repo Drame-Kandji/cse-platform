@@ -295,7 +295,7 @@ public record TableauDto(
   public record ChantierDto(
       @Schema(description = "Chantier", example = "c0000000-0000-0000-0000-000000000001")
           UUID chantierId,
-      @Schema(description = "Nom", example = "Extension autoroute Dakar–AIBD") String chantierNom,
+      @Schema(description = "Nom", example = "Extension autoroute Dakar-AIBD") String chantierNom,
       @Schema(description = "Région", example = "Dakar", nullable = true) String region,
       @Schema(description = "Budget (FCFA)", example = "1200000000") BigDecimal budget,
       @Schema(description = "Montant du marché (FCFA)", example = "1500000000")

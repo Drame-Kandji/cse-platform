@@ -1,7 +1,7 @@
 {
   "openapi" : "3.1.0",
   "info" : {
-    "title" : "ms-besoins — Besoins en matériel",
+    "title" : "ms-besoins · Besoins en matériel",
     "description" : "Expression des besoins en matériel par les chantiers, validation par le Responsable Matériel (R01), orientation automatique vers l'affectation directe (ms-suivi) ou les achats, consolidation et statistiques.",
     "contact" : {
       "name" : "Équipe plateforme CSE",
@@ -1001,7 +1001,7 @@
           },
           "chantierNom" : {
             "type" : "string",
-            "example" : "Extension autoroute Dakar–AIBD"
+            "example" : "Extension autoroute Dakar-AIBD"
           },
           "demandeurId" : {
             "type" : "string",
@@ -1322,7 +1322,7 @@
           },
           "nom" : {
             "type" : "string",
-            "example" : "Extension autoroute Dakar–AIBD"
+            "example" : "Extension autoroute Dakar-AIBD"
           }
         }
       },

@@ -136,7 +136,7 @@ class SuiviRestAdapterTest {
                     "{\"id\":\""
                         + CHANTIER
                         + "\",\"code\":\"CH-DKR-01\","
-                        + "\"nom\":\"Extension autoroute Dakar–AIBD\",\"statut\":\"EN_COURS\","
+                        + "\"nom\":\"Extension autoroute Dakar-AIBD\",\"statut\":\"EN_COURS\","
                         + "\"budget\":1000}")));
     UUID termine = UUID.randomUUID();
     SUIVI.stubFor(
@@ -147,7 +147,7 @@ class SuiviRestAdapterTest {
     SUIVI.stubFor(get("/api/chantiers/" + inconnu).willReturn(aResponse().withStatus(404)));
 
     assertThat(adapter.trouver(CHANTIER))
-        .contains(new ChantierInfo(CHANTIER, "Extension autoroute Dakar–AIBD", true));
+        .contains(new ChantierInfo(CHANTIER, "Extension autoroute Dakar-AIBD", true));
     assertThat(adapter.trouver(termine)).get().extracting(ChantierInfo::actif).isEqualTo(false);
     assertThat(adapter.trouver(inconnu)).isEmpty();
   }

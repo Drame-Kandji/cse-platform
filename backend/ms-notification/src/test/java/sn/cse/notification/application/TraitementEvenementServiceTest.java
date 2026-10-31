@@ -45,7 +45,7 @@ class TraitementEvenementServiceTest {
 
           @Override
           public String valeurAbsente() {
-            return "—";
+            return "-";
           }
         };
     return new TraitementEvenementService(

@@ -302,20 +302,20 @@ public class DevDataSeeder implements ApplicationRunner {
       f.ajouterDocument(TypeDocument.RCCM, "Extrait RCCM " + f.getProfil().rccm(), null);
       fournisseurs.sauvegarder(f);
     }
-    ajouter(F1, TypeDocument.QUITUS_FISCAL, "Quitus fiscal — DGID", jour.plusMonths(5));
+    ajouter(F1, TypeDocument.QUITUS_FISCAL, "Quitus fiscal DGID", jour.plusMonths(5));
     ajouter(F1, TypeDocument.ASSURANCE, "Assurance responsabilité civile", jour.plusMonths(8));
     ajouter(F1, TypeDocument.CERTIFICATION, "Certificat ISO 9001:2015", jour.plusYears(1));
-    ajouter(F2, TypeDocument.QUITUS_FISCAL, "Quitus fiscal — DGID", jour.plusMonths(3));
+    ajouter(F2, TypeDocument.QUITUS_FISCAL, "Quitus fiscal DGID", jour.plusMonths(3));
     ajouter(F2, TypeDocument.ASSURANCE, "Assurance flotte engins", jour.plusDays(20));
-    ajouter(F3, TypeDocument.QUITUS_FISCAL, "Quitus fiscal — DGID", jour.plusMonths(4));
+    ajouter(F3, TypeDocument.QUITUS_FISCAL, "Quitus fiscal DGID", jour.plusMonths(4));
     // Documents expirés : alimentent DOCUMENT_EXPIRE et le compteur documentsExpires.
     ajouter(F3, TypeDocument.ASSURANCE, "Assurance responsabilité civile", jour.minusDays(18));
-    ajouter(F4, TypeDocument.QUITUS_FISCAL, "Quitus fiscal — DGID", jour.plusMonths(6));
-    ajouter(F5, TypeDocument.QUITUS_FISCAL, "Quitus fiscal — DGID", jour.minusDays(5));
+    ajouter(F4, TypeDocument.QUITUS_FISCAL, "Quitus fiscal DGID", jour.plusMonths(6));
+    ajouter(F5, TypeDocument.QUITUS_FISCAL, "Quitus fiscal DGID", jour.minusDays(5));
     ajouter(F5, TypeDocument.ASSURANCE, "Assurance transport de marchandises", jour.plusMonths(2));
-    ajouter(F6, TypeDocument.QUITUS_FISCAL, "Quitus fiscal — DGID", jour.minusMonths(2));
+    ajouter(F6, TypeDocument.QUITUS_FISCAL, "Quitus fiscal DGID", jour.minusMonths(2));
     ajouter(F6, TypeDocument.ASSURANCE, "Assurance responsabilité civile", jour.minusMonths(1));
-    ajouter(F7, TypeDocument.QUITUS_FISCAL, "Quitus fiscal — DGID", jour.plusMonths(10));
+    ajouter(F7, TypeDocument.QUITUS_FISCAL, "Quitus fiscal DGID", jour.plusMonths(10));
   }
 
   private void ajouter(UUID id, TypeDocument type, String libelle, LocalDate expiration) {

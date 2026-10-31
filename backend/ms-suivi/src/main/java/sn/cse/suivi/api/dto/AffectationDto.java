@@ -35,7 +35,7 @@ public record AffectationDto(
     @Schema(example = "Pelle hydraulique sur chenilles 20 t") String materielDesignation,
     @Schema(example = "MATERIEL_ROULANT") CategorieMateriel categorie,
     @Schema(example = "c0000000-0000-0000-0000-000000000001") UUID chantierId,
-    @Schema(example = "Extension autoroute Dakar–AIBD") String chantierNom,
+    @Schema(example = "Extension autoroute Dakar-AIBD") String chantierNom,
     @Schema(example = "b0000000-0000-0000-0000-000000000004", nullable = true) UUID besoinId,
     @Schema(example = "2026-11-02") LocalDate dateDebut,
     @Schema(example = "2027-02-28") LocalDate dateFinPrevue,
