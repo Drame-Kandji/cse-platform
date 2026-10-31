@@ -6,9 +6,9 @@ import type { Tableau } from '../types'
 export function KpiTables({ tableau }: { tableau: Tableau }) {
   const tables = kpiTables(tableau)
   return (
-    <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+    <div className="gap-6 md:columns-2 xl:columns-3">
       {tables.map((table) => (
-        <Card key={table.id} data-section={table.id} className="overflow-hidden">
+        <Card key={table.id} data-section={table.id} className="mb-6 break-inside-avoid overflow-hidden">
           <CardHeader title={table.title} className="pb-3" />
           <table className="w-full text-sm">
             <caption className="sr-only">{table.title}</caption>

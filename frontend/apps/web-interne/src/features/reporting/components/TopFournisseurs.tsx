@@ -1,72 +1,51 @@
-import { Trophy } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { to } from '@/app/routes'
 import { cn } from '@/shared/lib/cn'
 import { formatNumber } from '@/shared/lib/format'
 import { Card, CardContent, CardHeader } from '@/shared/ui/card'
 import { EmptyState } from '@/shared/ui/empty-state'
-import { formatTaux } from '../lib/format'
 import type { SectionFournisseurs } from '../types'
 
-function scoreTone(score: number) {
-  if (score >= 75) return 'bg-success'
-  if (score >= 50) return 'bg-warning'
-  return 'bg-danger'
-}
+/** Sous ce score, le fournisseur est signale en rouge (alerte). */
+const SEUIL_ALERTE = 50
 
-/** Classement des meilleurs fournisseurs : rang, barre de score, litiges, ponctualite. */
+/** Classement des meilleurs fournisseurs : rang, nom, score (rouge seulement sous le seuil). */
 export function TopFournisseurs({ fournisseurs }: { fournisseurs: SectionFournisseurs }) {
   const top = fournisseurs.top.slice(0, 6)
   return (
     <Card className="flex h-full flex-col">
-      <CardHeader
-        title="Meilleurs fournisseurs"
-        description={`Score moyen ${formatNumber(fournisseurs.scoreMoyen, { decimals: 1 })}/100 · ${formatNumber(fournisseurs.actifs)} actifs`}
-        icon={<Trophy />}
-      />
+      <CardHeader title="Meilleurs fournisseurs" />
       <CardContent className="flex-1">
         {top.length === 0 ? (
-          <EmptyState
-            size="compact"
-            title="Aucun fournisseur évalué"
-            description="Le classement apparaîtra après les premières évaluations."
-          />
+          <EmptyState size="compact" title="Aucun fournisseur évalué" />
         ) : (
-          <ol className="grid gap-3.5">
+          <ol className="grid gap-3">
             {top.map((fournisseur, index) => (
               <li
                 key={fournisseur.fournisseurId}
-                className="grid grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1"
+                className="grid grid-cols-[1.25rem_minmax(0,1fr)_auto] items-baseline gap-3 text-sm"
               >
+                <span className="tabular-nums text-muted-foreground">{index + 1}</span>
+                <span className="min-w-0">
+                  <Link
+                    to={to.fournisseurDetail(fournisseur.fournisseurId)}
+                    className="block truncate font-medium hover:text-primary-emphasis hover:underline"
+                  >
+                    {fournisseur.raisonSociale}
+                  </Link>
+                  {fournisseur.nombreLitiges > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      {fournisseur.nombreLitiges} litige(s)
+                    </span>
+                  )}
+                </span>
                 <span
                   className={cn(
-                    'grid size-6 place-items-center rounded-md text-xs font-semibold tabular-nums',
-                    index === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground',
+                    'font-semibold tabular-nums',
+                    fournisseur.scorePerformance < SEUIL_ALERTE && 'text-danger-emphasis',
                   )}
                 >
-                  {index + 1}
-                </span>
-                <Link
-                  to={to.fournisseurDetail(fournisseur.fournisseurId)}
-                  className="truncate text-sm font-medium hover:text-primary-emphasis hover:underline"
-                >
-                  {fournisseur.raisonSociale}
-                </Link>
-                <span className="text-sm font-semibold tabular-nums">
                   {formatNumber(fournisseur.scorePerformance, { decimals: 1 })}
-                  <span className="text-xs font-normal text-muted-foreground">/100</span>
-                </span>
-                <span aria-hidden />
-                <div className="h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden>
-                  <div
-                    className={cn('h-full rounded-full', scoreTone(fournisseur.scorePerformance))}
-                    style={{ width: `${Math.max(0, Math.min(100, fournisseur.scorePerformance))}%` }}
-                  />
-                </div>
-                <span className="text-right text-2xs text-muted-foreground">
-                  {fournisseur.nombreLitiges > 0 ? `${fournisseur.nombreLitiges} litige(s)` : 'Sans litige'}
-                  {fournisseur.tauxLivraisonALHeure != null &&
-                    ` · ${formatTaux(fournisseur.tauxLivraisonALHeure, 0)} à l'heure`}
                 </span>
               </li>
             ))}

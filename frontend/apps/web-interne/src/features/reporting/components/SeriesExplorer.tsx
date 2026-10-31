@@ -85,7 +85,6 @@ export function SeriesExplorer({ indicateurs, du, au, chantierId, defaultGranula
     <Card>
       <CardHeader
         title="Explorateur de séries"
-        description="Évolution d'un indicateur sur la période sélectionnée"
         action={
           <div className="flex flex-wrap items-center gap-2">
             <Select
@@ -125,9 +124,9 @@ export function SeriesExplorer({ indicateurs, du, au, chantierId, defaultGranula
       />
       <CardContent className="grid gap-5">
         {stats.length > 0 && (
-          <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <dl className="flex flex-wrap gap-x-8 gap-y-2">
             {stats.map((stat) => (
-              <div key={stat.label} className="rounded-lg bg-surface-sunken px-3 py-2">
+              <div key={stat.label}>
                 <dt className="text-xs text-muted-foreground">{stat.label}</dt>
                 <dd className="text-sm font-semibold tabular-nums">{format.value(stat.value)}</dd>
               </div>

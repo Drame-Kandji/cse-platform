@@ -1,4 +1,4 @@
-import { ArrowLeft, History, MessageSquarePlus, Sparkles } from 'lucide-react'
+import { ArrowLeft, History, MessageSquarePlus } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/shared/ui/button'
 import { ErrorState } from '@/shared/ui/error-state'
@@ -19,10 +19,7 @@ export interface AssistantChatProps {
 
 function TypingIndicator() {
   return (
-    <li className="flex items-center gap-3" aria-live="polite">
-      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary/10 text-primary-emphasis">
-        <Sparkles className="size-4" aria-hidden />
-      </span>
+    <li className="flex items-center" aria-live="polite">
       <span className="flex items-center gap-1 rounded-2xl rounded-tl-sm border border-border bg-surface-sunken px-4 py-3">
         <span className="sr-only">L'assistant rédige une réponse…</span>
         {[0, 150, 300].map((delay) => (
@@ -53,9 +50,7 @@ function Suggestions({ onPick }: { onPick: (question: string) => void }) {
   if (suggestions.length === 0) return null
   return (
     <div className="grid gap-2">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        Exemples de questions
-      </p>
+      <p className="text-xs text-muted-foreground">Suggestions</p>
       <ul className="grid gap-2">
         {suggestions.map((suggestion) => (
           <li key={suggestion}>
@@ -64,7 +59,7 @@ function Suggestions({ onPick }: { onPick: (question: string) => void }) {
               onClick={() => {
                 onPick(suggestion)
               }}
-              className="w-full rounded-xl border border-border bg-surface px-3.5 py-2.5 text-left text-sm transition-colors hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full rounded-lg border border-border bg-surface px-3.5 py-2.5 text-left text-sm transition-colors hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {suggestion}
             </button>
@@ -155,16 +150,9 @@ export function AssistantChat({ chat, firstName, onNavigate }: AssistantChatProp
               <ErrorState size="compact" error={chat.loadError} />
             ) : empty ? (
               <div className="grid gap-6">
-                <div className="flex gap-3">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary/10 text-primary-emphasis">
-                    <Sparkles className="size-4" aria-hidden />
-                  </span>
-                  <div className="rounded-2xl rounded-tl-sm border border-border bg-surface-sunken px-4 py-3 text-sm">
-                    Bonjour{firstName ? ` ${firstName}` : ''}, je peux vous renseigner sur le parc matériel,
-                    les besoins, les chantiers, les achats et les fournisseurs. Les réponses citent leurs
-                    sources.
-                  </div>
-                </div>
+                <p className="text-base font-medium">
+                  Bonjour{firstName ? ` ${firstName}` : ''}, que souhaitez-vous savoir ?
+                </p>
                 <Suggestions
                   onPick={(question) => {
                     chat.send(question)
@@ -188,7 +176,7 @@ export function AssistantChat({ chat, firstName, onNavigate }: AssistantChatProp
             )}
             <div ref={endRef} />
           </div>
-          <div className="pb-safe border-t border-border bg-surface-sunken/60 px-4 py-3">
+          <div className="pb-safe border-t border-border px-4 py-3">
             <Composer ref={composerRef} onSend={chat.send} disabled={chat.pending} />
           </div>
         </>

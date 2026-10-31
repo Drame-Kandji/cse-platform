@@ -60,10 +60,7 @@ export function TypeEnginDialog({ open, onOpenChange, typeEngin }: TypeEnginDial
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        title={typeEngin ? `Modifier ${typeEngin.libelle}` : "Nouveau type d'engin"}
-        description="Les seuils déclenchent les alertes de maintenance préventive (heures de fonctionnement ou jours écoulés)."
-      >
+      <DialogContent title={typeEngin ? `Modifier ${typeEngin.libelle}` : "Nouveau type d'engin"}>
         <form id="type-engin-form" className="grid gap-4" noValidate onSubmit={(event) => void submit(event)}>
           <div className="grid gap-4 sm:grid-cols-[10rem_minmax(0,1fr)]">
             <FormField control={form.control} name="code" label="Code" required>
@@ -86,13 +83,7 @@ export function TypeEnginDialog({ open, onOpenChange, typeEngin }: TypeEnginDial
             )}
           </FormField>
           <div className="grid gap-4 sm:grid-cols-2">
-            <FormField
-              control={form.control}
-              name="seuilMaintenanceHeures"
-              label="Seuil (heures)"
-              optional
-              hint="Ex. 250 h de fonctionnement"
-            >
+            <FormField control={form.control} name="seuilMaintenanceHeures" label="Seuil (heures)" optional>
               {({ field, control }) => (
                 <Input
                   {...control}
@@ -102,13 +93,7 @@ export function TypeEnginDialog({ open, onOpenChange, typeEngin }: TypeEnginDial
                 />
               )}
             </FormField>
-            <FormField
-              control={form.control}
-              name="seuilMaintenanceJours"
-              label="Seuil (jours)"
-              optional
-              hint="Ex. 180 jours entre deux révisions"
-            >
+            <FormField control={form.control} name="seuilMaintenanceJours" label="Seuil (jours)" optional>
               {({ field, control }) => (
                 <Input
                   {...control}
@@ -126,7 +111,6 @@ export function TypeEnginDialog({ open, onOpenChange, typeEngin }: TypeEnginDial
                 checked={field.value}
                 onCheckedChange={field.onChange}
                 label="Type actif"
-                description="Un type inactif n'est plus proposé à l'enregistrement de matériels."
               />
             )}
           </FormField>

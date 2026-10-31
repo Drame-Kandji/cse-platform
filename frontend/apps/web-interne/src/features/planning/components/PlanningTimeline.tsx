@@ -1,4 +1,3 @@
-import { Building2 } from 'lucide-react'
 import type { MouseEvent } from 'react'
 import { cn } from '@/shared/lib/cn'
 import {
@@ -39,7 +38,7 @@ function GridLines({ ticks, todayLeft }: { ticks: readonly Graduation[]; todayLe
       ))}
       {todayLeft !== null && (
         <span
-          className="absolute inset-y-0 z-[2] w-0.5 -translate-x-1/2 bg-danger"
+          className="absolute inset-y-0 z-[2] w-px -translate-x-1/2 bg-foreground/60"
           style={{ left: `${String(todayLeft)}%` }}
         />
       )}
@@ -87,7 +86,7 @@ export function PlanningTimeline({
             ))}
             {todayLeft !== null && (
               <span
-                className="absolute bottom-0 -translate-x-1/2 rounded-t bg-danger px-1 text-2xs font-semibold text-danger-foreground"
+                className="absolute bottom-0 -translate-x-1/2 rounded-t bg-foreground px-1 text-2xs font-semibold text-background"
                 style={{ left: `${String(todayLeft)}%` }}
               >
                 Auj.
@@ -104,7 +103,6 @@ export function PlanningTimeline({
                   'sticky left-0 z-[2] flex items-center gap-2 bg-muted px-3 py-1.5 text-xs font-semibold',
                 )}
               >
-                <Building2 className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
                 <span className="truncate">{groupe.chantierNom}</span>
                 <span className="ml-auto tabular-nums text-muted-foreground">{groupe.lignes.length}</span>
               </h3>

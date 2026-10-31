@@ -1,7 +1,5 @@
-import { labelOf } from '@/shared/domain/labels'
 import type { MaterielDetail } from '@/shared/domain/types'
 import { formatDate, toIsoDate } from '@/shared/lib/format'
-import { InlineAlert } from '@/shared/suivi'
 import {
   useChangerEtat,
   useConfirmerReception,
@@ -42,7 +40,7 @@ export function LifecycleDialogs({
         title="Confirmer la réception"
         description={
           enAttente
-            ? `Arrivée sur « ${enAttente.chantierNom} » — affectation du ${formatDate(enAttente.dateDebut)} au ${formatDate(enAttente.dateFinPrevue)}.`
+            ? `${enAttente.chantierNom} · ${formatDate(enAttente.dateDebut)} → ${formatDate(enAttente.dateFinPrevue)}`
             : undefined
         }
         label="Observations à la réception"
@@ -56,11 +54,7 @@ export function LifecycleDialogs({
         open={open === 'liberer'}
         onOpenChange={onOpenChange}
         title="Libérer le matériel"
-        description={
-          enCours
-            ? `Fin de l'affectation sur « ${enCours.chantierNom} » à la date du jour ; le matériel redevient disponible.`
-            : 'Le matériel redevient disponible.'
-        }
+        description={enCours?.chantierNom}
         label="Commentaire"
         confirmLabel="Libérer"
         onSubmit={(commentaire) =>
@@ -71,7 +65,6 @@ export function LifecycleDialogs({
         open={open === 'etat'}
         onOpenChange={onOpenChange}
         title={cible === 'DISPONIBLE' ? 'Remettre en service' : 'Mettre en maintenance'}
-        description={`Nouvel état : « ${labelOf('etatMateriel', cible)} ».`}
         label="Motif"
         minLength={5}
         placeholder={
@@ -84,18 +77,14 @@ export function LifecycleDialogs({
         open={open === 'reforme'}
         onOpenChange={onOpenChange}
         title="Demander la réforme"
-        description="La demande sera soumise à la Direction Générale pour décision."
+        description="Soumise à la DG. Retrait définitif du parc si approuvée."
         label="Motif de la réforme"
         minLength={10}
         placeholder="Vétusté, coût de réparation supérieur à la valeur, sinistre…"
         confirmLabel="Soumettre la demande"
         tone="danger"
         onSubmit={(motif) => reforme.mutateAsync(motif)}
-      >
-        <InlineAlert tone="warning" title="Retrait définitif du parc si la réforme est approuvée">
-          Le matériel ne pourra plus être affecté. Un matériel encore affecté doit d&apos;abord être libéré.
-        </InlineAlert>
-      </MotifDialog>
+      />
     </>
   )
 }

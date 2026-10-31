@@ -1,4 +1,3 @@
-import { Banknote, FileCheck2, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { formatMoney } from '@/shared/lib/format'
 import { ConfirmDialog } from '@/shared/ui/alert-dialog'
@@ -25,8 +24,7 @@ export function FactureRowActions({ facture, onMandater, onRejeter }: Props) {
       >
         <Button
           size="sm"
-          variant="secondary"
-          leftIcon={<X />}
+          variant="ghost"
           onClick={() => {
             onRejeter(facture)
           }}
@@ -35,7 +33,7 @@ export function FactureRowActions({ facture, onMandater, onRejeter }: Props) {
         </Button>
         <Button
           size="sm"
-          leftIcon={<FileCheck2 />}
+          variant="secondary"
           onClick={() => {
             onMandater(facture)
           }}
@@ -59,7 +57,7 @@ export function FactureRowActions({ facture, onMandater, onRejeter }: Props) {
             await payer.mutateAsync(facture.id)
           }}
           trigger={
-            <Button size="sm" leftIcon={<Banknote />}>
+            <Button size="sm" variant="secondary">
               {t('factures.payer')}
             </Button>
           }

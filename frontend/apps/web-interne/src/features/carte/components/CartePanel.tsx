@@ -1,4 +1,4 @@
-import { Building2, ChevronUp, Truck } from 'lucide-react'
+import { ChevronUp } from 'lucide-react'
 import { useState } from 'react'
 import {
   ETAT_MATERIEL,
@@ -31,13 +31,10 @@ export interface CartePanelProps {
 
 function Legend() {
   return (
-    <div className="flex flex-wrap gap-x-3 gap-y-1 text-2xs text-muted-foreground" aria-label="Légende">
-      <span className="inline-flex items-center gap-1">
-        <span className="size-2.5 rounded-sm bg-primary" aria-hidden /> Chantier
-      </span>
+    <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground" aria-label="Légende">
       {ETAT_MATERIEL.map((etat) => (
-        <span key={etat} className="inline-flex items-center gap-1">
-          <span className={cn('size-2.5 rounded-full', ETAT_BG[etat])} aria-hidden />{' '}
+        <span key={etat} className="inline-flex items-center gap-1.5">
+          <span className={cn('size-2 rounded-full', ETAT_BG[etat])} aria-hidden />
           {labelOf('etatMateriel', etat)}
         </span>
       ))}
@@ -78,7 +75,7 @@ export function CartePanel({
         <span className="text-sm font-semibold">
           {loading
             ? 'Chargement…'
-            : `${formatNumber(chantiers)} chantier(s) · ${formatNumber(total)} matériel(s)`}
+            : `${formatNumber(chantiers)} chantiers · ${formatNumber(total)} matériels`}
         </span>
         <ChevronUp
           className={cn(
@@ -88,7 +85,7 @@ export function CartePanel({
           aria-hidden
         />
       </button>
-      <div className="grid gap-2 px-4 pb-3">
+      <div className="grid gap-3 px-4 pb-3 pt-1">
         <div className="flex flex-wrap gap-2">
           <FilterChip
             label="Catégorie"
@@ -118,11 +115,10 @@ export function CartePanel({
           ))}
         {!loading && groupes.length === 0 && (
           <li>
-            <EmptyState size="compact" title="Aucun point à afficher" description="Modifiez les filtres." />
+            <EmptyState size="compact" title="Aucun point à afficher" />
           </li>
         )}
         {groupes.map((groupe) => {
-          const Icon = groupe.chantier ? Building2 : Truck
           const titre =
             groupe.chantier?.libelle ??
             (groupe.materiels.length === 1 ? groupe.materiels[0]?.libelle : 'Matériels hors chantier')
@@ -136,25 +132,11 @@ export function CartePanel({
                   setExpanded(false)
                 }}
                 className={cn(
-                  'flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-muted',
-                  selectedKey === groupe.key && 'bg-primary/10 hover:bg-primary/15',
+                  'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-muted',
+                  selectedKey === groupe.key && 'bg-primary/[0.08] font-medium text-primary-emphasis hover:bg-primary/10',
                 )}
               >
-                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground">
-                  <Icon className="size-4" aria-hidden />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium">{titre}</span>
-                  <span className="flex gap-1 pt-1" aria-hidden>
-                    {ETAT_MATERIEL.filter((etat) => groupe.parEtat[etat] > 0).map((etat) => (
-                      <span
-                        key={etat}
-                        className={cn('h-1.5 rounded-full', ETAT_BG[etat])}
-                        style={{ width: `${String(Math.min(48, 6 + groupe.parEtat[etat] * 4))}px` }}
-                      />
-                    ))}
-                  </span>
-                </span>
+                <span className="min-w-0 flex-1 truncate text-sm">{titre}</span>
                 <span className="text-xs tabular-nums text-muted-foreground">{effectifGroupe(groupe)}</span>
               </button>
             </li>

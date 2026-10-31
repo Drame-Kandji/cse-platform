@@ -1,44 +1,46 @@
 import { Pencil, Plus } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { optionsOf, type CategorieMateriel } from '@/shared/domain/labels'
+import { labelOf, optionsOf, type CategorieMateriel } from '@/shared/domain/labels'
 import { EMPTY_VALUE, formatNumber } from '@/shared/lib/format'
 import { Badge } from '@/shared/ui/badge'
 import { Button, IconButton } from '@/shared/ui/button'
 import { DataTable, type ColumnDef } from '@/shared/ui/data-table'
 import { FilterBar, FilterChip } from '@/shared/ui/filter-bar'
 import { PageHeader } from '@/shared/ui/page-header'
-import { StatCard } from '@/shared/ui/stat-card'
-import { StatusBadge } from '@/shared/ui/status-badge'
+import { CountTabs } from '@/shared/ui/count-tabs'
 import { TypeEnginDialog } from '../components/TypeEnginDialog'
 import { useTypesEngins } from '../hooks/useTypesEngins'
 import { normalizeText } from '../lib/text'
 import type { TypeEngin } from '../types'
 
+type Vue = 'ACTIFS' | 'SANS_SEUIL'
+
+/** Type actif sans aucun seuil : aucune alerte preventive possible. */
+function sansSeuilMaintenance(item: TypeEngin) {
+  return item.actif && item.seuilMaintenanceHeures == null && item.seuilMaintenanceJours == null
+}
+
 function columns(onEdit: (typeEngin: TypeEngin) => void): ColumnDef<TypeEngin>[] {
   return [
-    {
-      accessorKey: 'code',
-      header: 'Code',
-      meta: { nowrap: true },
-      enableSorting: true,
-      cell: ({ row }) => <span className="font-mono text-xs">{row.original.code}</span>,
-    },
     {
       accessorKey: 'libelle',
       header: 'Libellé',
       enableSorting: true,
       enableHiding: false,
       meta: { mobilePrimary: true },
-      cell: ({ row }) => <span className="font-medium">{row.original.libelle}</span>,
+      cell: ({ row }) => (
+        <span className="grid">
+          <span className="font-medium">{row.original.libelle}</span>
+          <span className="font-mono text-xs text-muted-foreground">{row.original.code}</span>
+        </span>
+      ),
     },
     {
       accessorKey: 'categorie',
       header: 'Catégorie',
       meta: { nowrap: true },
       enableSorting: true,
-      cell: ({ row }) => (
-        <StatusBadge kind="categorieMateriel" value={row.original.categorie} dot={false} size="sm" />
-      ),
+      cell: ({ row }) => labelOf('categorieMateriel', row.original.categorie),
     },
     {
       accessorKey: 'seuilMaintenanceHeures',
@@ -65,7 +67,7 @@ function columns(onEdit: (typeEngin: TypeEngin) => void): ColumnDef<TypeEngin>[]
       header: 'Statut',
       meta: { nowrap: true },
       cell: ({ row }) => (
-        <Badge tone={row.original.actif ? 'success' : 'neutral'} dot size="sm">
+        <Badge size="sm" variant={row.original.actif ? 'soft' : 'outline'}>
           {row.original.actif ? 'Actif' : 'Inactif'}
         </Badge>
       ),
@@ -94,6 +96,7 @@ export function Component() {
   const query = useTypesEngins()
   const [search, setSearch] = useState('')
   const [categories, setCategories] = useState<CategorieMateriel[]>([])
+  const [vue, setVue] = useState<Vue | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<TypeEngin | null>(null)
 
@@ -103,17 +106,17 @@ export function Component() {
     return (all ?? []).filter(
       (item) =>
         (categories.length === 0 || categories.includes(item.categorie)) &&
+        (vue !== 'ACTIFS' || item.actif) &&
+        (vue !== 'SANS_SEUIL' || sansSeuilMaintenance(item)) &&
         (!needle || normalizeText(`${item.code} ${item.libelle}`).includes(needle)),
     )
-  }, [all, search, categories])
+  }, [all, search, categories, vue])
 
   const openEditor = (typeEngin: TypeEngin | null) => {
     setEditing(typeEngin)
     setDialogOpen(true)
   }
-  const sansSeuil = (all ?? []).filter(
-    (item) => item.actif && item.seuilMaintenanceHeures == null && item.seuilMaintenanceJours == null,
-  ).length
+  const compte = (predicate: (item: TypeEngin) => boolean) => (all ? all.filter(predicate).length : undefined)
 
   return (
     <>
@@ -130,24 +133,19 @@ export function Component() {
           </Button>
         }
       />
-      <div className="grid gap-6">
-        <div className="grid gap-4 sm:grid-cols-3">
-          <StatCard label="Types d'engins" value={formatNumber(all?.length)} loading={query.isPending} />
-          <StatCard
-            label="Types actifs"
-            value={formatNumber(all?.filter((item) => item.actif).length)}
-            loading={query.isPending}
-            iconTone="success"
-          />
-          <StatCard
-            label="Actifs sans seuil de maintenance"
-            value={formatNumber(sansSeuil)}
-            hint={
-              sansSeuil > 0 ? 'Aucune alerte préventive possible' : 'Tous les types actifs sont paramétrés'
-            }
-            loading={query.isPending}
-          />
-        </div>
+      <div className="grid gap-4">
+        <CountTabs
+          label="Types d'engins"
+          className="mb-0"
+          loading={query.isPending}
+          value={vue}
+          onChange={setVue}
+          items={[
+            { value: null, label: 'Tous', count: all?.length },
+            { value: 'ACTIFS', label: 'Actifs', count: compte((item) => item.actif) },
+            { value: 'SANS_SEUIL', label: 'Sans seuil', count: compte(sansSeuilMaintenance) },
+          ]}
+        />
         <DataTable
           label="Types d'engins"
           columns={columns(openEditor)}

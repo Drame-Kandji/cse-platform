@@ -30,7 +30,6 @@ export function CategorieChart({ categories }: { categories: readonly ParcCatego
     <Card className="flex h-full flex-col">
       <CardHeader
         title="Parc par catégorie"
-        description="Nombre de matériels par état"
         action={<ChartLegend items={SERIES.map(({ label, color }) => ({ label, color }))} />}
       />
       <CardContent className="flex-1">

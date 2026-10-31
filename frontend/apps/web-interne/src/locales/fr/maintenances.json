@@ -28,6 +28,7 @@
     "cout": "Coût",
     "actions": "Actions",
     "gravite": "Gravité",
+    "panne": "Panne",
     "description": "Description",
     "chantier": "Chantier",
     "signalePar": "Signalée par",
@@ -42,7 +43,7 @@
   },
   "demarrer": {
     "title": "Démarrer l'OT {{numero}} ?",
-    "description": "Le matériel {{materiel}} passera à l'état En maintenance et ne sera plus affectable jusqu'à la clôture.",
+    "description": "{{materiel}} passera en maintenance jusqu'à la clôture.",
     "confirmer": "Démarrer"
   },
   "planifier": {
@@ -62,7 +63,7 @@
   },
   "cloturer": {
     "title": "Clôturer l'OT {{numero}}",
-    "description": "Le matériel {{materiel}} redeviendra disponible (ou affecté s'il a une affectation en cours).",
+    "description": "{{materiel}} redeviendra disponible ou affecté.",
     "cout": "Coût total (FCFA)",
     "heuresCompteur": "Relevé du compteur (heures)",
     "observations": "Observations",
@@ -80,14 +81,14 @@
   "signaler": {
     "title": "Signaler une panne",
     "description": "Le Responsable Matériel est notifié immédiatement. Une panne bloquante immobilise le matériel.",
-    "materiel": "Matériel concerné",
+    "materiel": "Matériel",
     "gravite": "Gravité",
-    "descriptionChamp": "Description de la panne",
-    "descriptionPlaceholder": "Symptômes, circonstances, localisation du matériel…",
+    "descriptionChamp": "Description",
+    "descriptionPlaceholder": "Symptômes constatés…",
     "submit": "Signaler la panne",
-    "graviteMineure": "Le matériel reste utilisable",
-    "graviteMajeure": "Fonctionnement dégradé",
-    "graviteBloquante": "Matériel immobilisé"
+    "graviteMineure": "Reste utilisable",
+    "graviteMajeure": "Usage dégradé",
+    "graviteBloquante": "Immobilisé"
   },
   "materielPicker": {
     "empty": "Aucun matériel trouvé",

@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 import { access } from '@/app/access'
 import { to } from '@/app/routes'
 import { useHasRole } from '@/shared/auth'
-import { STATUT_MAINTENANCE, TYPE_MAINTENANCE, optionsOf } from '@/shared/domain/labels'
+import { STATUT_MAINTENANCE, TYPE_MAINTENANCE, labelOf, optionsOf } from '@/shared/domain/labels'
 import { EMPTY_VALUE, formatDate, formatMoney } from '@/shared/lib/format'
 import { ConfirmDialog } from '@/shared/ui/alert-dialog'
 import { Button } from '@/shared/ui/button'
@@ -88,7 +88,9 @@ export function MaintenancesTab({ onPlanifier }: { onPlanifier: () => void }) {
         accessorKey: 'type',
         header: t('columns.type'),
         meta: { nowrap: true },
-        cell: ({ row }) => <StatusBadge kind="typeMaintenance" value={row.original.type} dot={false} />,
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">{labelOf('typeMaintenance', row.original.type)}</span>
+        ),
       },
       {
         accessorKey: 'statut',
@@ -128,6 +130,7 @@ export function MaintenancesTab({ onPlanifier }: { onPlanifier: () => void }) {
                 ) : row.original.statut === 'EN_COURS' ? (
                   <Button
                     size="sm"
+                    variant="secondary"
                     leftIcon={<CheckSquare />}
                     onClick={() => {
                       setACloturer(row.original)
@@ -187,7 +190,6 @@ export function MaintenancesTab({ onPlanifier }: { onPlanifier: () => void }) {
             <EmptyState
               icon={<Wrench aria-hidden />}
               title={t('maintenances.emptyTitle')}
-              description={t('maintenances.emptyDescription')}
               action={gestion ? <Button onClick={onPlanifier}>{t('page.planifier')}</Button> : undefined}
             />
           )

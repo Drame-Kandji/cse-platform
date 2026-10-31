@@ -1,6 +1,6 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { Command } from 'cmdk'
-import { ArrowRight, CornerDownLeft, LogOut, Moon, Palette, Plus, Search, Sparkles, Sun } from 'lucide-react'
+import { LogOut, Moon, Palette, Plus, Search, Sparkles, Sun } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -14,7 +14,7 @@ import { paths } from '../routes'
 import { useShell } from './shell-context'
 
 const groupClasses =
-  '[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:text-2xs [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.08em] [&_[cmdk-group-heading]]:text-muted-foreground'
+  '[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:text-muted-foreground'
 
 function Item({
   icon,
@@ -33,15 +33,11 @@ function Item({
     <Command.Item
       onSelect={onSelect}
       keywords={keywords ? [...keywords] : undefined}
-      className="group flex h-11 cursor-pointer items-center gap-3 rounded-lg px-3 text-sm outline-none data-[selected=true]:bg-muted [&_svg]:size-4"
+      className="group flex h-10 cursor-pointer items-center gap-3 rounded-lg px-3 text-sm outline-none data-[selected=true]:bg-primary/[0.08] data-[selected=true]:text-primary-emphasis [&_svg]:size-4"
     >
-      <span className="text-muted-foreground group-data-[selected=true]:text-foreground">{icon}</span>
+      <span className="text-muted-foreground group-data-[selected=true]:text-primary-emphasis">{icon}</span>
       <span className="flex-1 truncate">{children}</span>
       {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
-      <ArrowRight
-        className="text-muted-foreground opacity-0 group-data-[selected=true]:opacity-100"
-        aria-hidden
-      />
     </Command.Item>
   )
 }
@@ -64,7 +60,7 @@ export function CommandPalette() {
         <DialogPrimitive.Overlay className={overlayClasses} />
         <DialogPrimitive.Content
           aria-describedby={undefined}
-          className="fixed left-1/2 top-[12vh] z-50 w-[calc(100vw-1.5rem)] max-w-xl -translate-x-1/2 overflow-hidden rounded-2xl border border-border bg-surface-raised shadow-overlay data-[state=open]:animate-pop-in"
+          className="fixed left-1/2 top-[12vh] z-50 w-[calc(100vw-1.5rem)] max-w-xl -translate-x-1/2 overflow-hidden rounded-xl border border-border bg-surface-raised shadow-overlay data-[state=open]:animate-pop-in"
         >
           <DialogPrimitive.Title className="sr-only">{t('palette.placeholder')}</DialogPrimitive.Title>
           <Command loop className="flex max-h-[min(32rem,70vh)] flex-col">
@@ -147,19 +143,6 @@ export function CommandPalette() {
                 </Item>
               </Command.Group>
             </Command.List>
-            <div className="flex items-center gap-4 border-t border-border bg-surface-sunken/60 px-4 py-2.5 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <Kbd>↑</Kbd>
-                <Kbd>↓</Kbd>
-                {t('palette.hint')}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Kbd>
-                  <CornerDownLeft className="size-3" aria-hidden />
-                </Kbd>
-                {t('palette.select')}
-              </span>
-            </div>
           </Command>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

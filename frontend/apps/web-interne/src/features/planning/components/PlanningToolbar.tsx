@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { optionsOf, type CategorieMateriel } from '@/shared/domain/labels'
 import { cn } from '@/shared/lib/cn'
 import { useChantierOptions } from '@/shared/suivi'
@@ -34,7 +34,6 @@ export function PlanningToolbar(props: PlanningToolbarProps) {
         <div className="flex items-center gap-1">
           <IconButton
             label="Période précédente"
-            variant="secondary"
             icon={<ChevronLeft />}
             onClick={() => {
               props.onNavigate(-1)
@@ -42,13 +41,12 @@ export function PlanningToolbar(props: PlanningToolbarProps) {
           />
           <IconButton
             label="Période suivante"
-            variant="secondary"
             icon={<ChevronRight />}
             onClick={() => {
               props.onNavigate(1)
             }}
           />
-          <Button variant="ghost" leftIcon={<CalendarDays />} onClick={props.onToday}>
+          <Button variant="ghost" onClick={props.onToday}>
             Aujourd&apos;hui
           </Button>
         </div>
@@ -77,7 +75,7 @@ export function PlanningToolbar(props: PlanningToolbarProps) {
         <div
           role="group"
           aria-label="Échelle"
-          className="inline-flex rounded-lg border border-border bg-surface-sunken p-0.5"
+          className="inline-flex gap-0.5"
         >
           {ZOOMS.map((value) => (
             <button
@@ -88,10 +86,10 @@ export function PlanningToolbar(props: PlanningToolbarProps) {
                 props.onZoomChange(value)
               }}
               className={cn(
-                'h-9 rounded-md px-3 text-sm font-medium transition-colors sm:h-8',
+                'h-9 rounded-lg px-3 text-sm transition-colors',
                 zoom === value
-                  ? 'bg-surface text-foreground shadow-xs'
-                  : 'text-muted-foreground hover:text-foreground',
+                  ? 'bg-primary/[0.08] font-medium text-primary-emphasis'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
               )}
             >
               {ZOOM_LABELS[value]}

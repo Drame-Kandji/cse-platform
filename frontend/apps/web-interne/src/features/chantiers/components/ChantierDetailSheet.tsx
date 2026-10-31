@@ -1,4 +1,4 @@
-import { Ban, Pencil, Truck } from 'lucide-react'
+import { Ban, Pencil } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -8,14 +8,12 @@ import { Can } from '@/shared/auth'
 import { EMPTY_VALUE, formatDate, formatMoney, formatNumber } from '@/shared/lib/format'
 import { Button } from '@/shared/ui/button'
 import { ConfirmDialog } from '@/shared/ui/alert-dialog'
-import { EmptyState } from '@/shared/ui/empty-state'
 import { ErrorState } from '@/shared/ui/error-state'
 import { Sheet, SheetContent } from '@/shared/ui/sheet'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { StatusBadge } from '@/shared/ui/status-badge'
 import { useAffectationsChantier, useChantier, useTerminerChantier } from '../hooks/useChantiers'
 import type { Chantier } from '../api/types'
-import { BudgetBar } from './BudgetBar'
 
 function Ligne({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -33,16 +31,16 @@ function MaterielsEnCours({ chantierId }: { chantierId: string }) {
   if (query.isError)
     return <ErrorState size="compact" error={query.error} onRetry={() => void query.refetch()} />
   if (query.data.content.length === 0) {
-    return <EmptyState size="compact" icon={<Truck aria-hidden />} title={t('detail.materielsVide')} />
+    return <p className="text-sm text-muted-foreground">{t('detail.materielsVide')}</p>
   }
   const reste = query.data.totalElements - query.data.content.length
   return (
-    <ul className="grid gap-1.5">
+    <ul className="grid divide-y divide-border">
       {query.data.content.map((affectation) => (
         <li key={affectation.id}>
           <Link
             to={to.materielDetail(affectation.materielId)}
-            className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted/40"
+            className="-mx-2 flex items-center justify-between gap-3 rounded-lg px-2 py-2.5 text-sm hover:bg-muted/60"
           >
             <span className="min-w-0">
               <span className="block truncate font-medium">{affectation.materielDesignation}</span>
@@ -119,7 +117,7 @@ export function ChantierDetailSheet({ chantierId, onClose, onEdit }: Props) {
       <SheetContent
         size="lg"
         title={chantier ? chantier.nom : t('page.title')}
-        description={chantier ? `${chantier.code} · ${chantier.localisation}` : undefined}
+        description={chantier?.code}
         footer={footer || undefined}
       >
         {query.isPending ? (
@@ -132,14 +130,9 @@ export function ChantierDetailSheet({ chantierId, onClose, onEdit }: Props) {
         ) : chantier ? (
           <div className="grid gap-6">
             <StatusBadge kind="statutChantier" value={chantier.statut} className="justify-self-start" />
-            <BudgetBar budget={chantier.budget} montantMarche={chantier.montantMarche} />
             <dl className="divide-y divide-border">
               <Ligne label={t('detail.localisation')}>
                 {chantier.localisation} · {chantier.region}
-              </Ligne>
-              <Ligne label={t('detail.coordonnees')}>
-                {formatNumber(chantier.latitude, { decimals: 4 })},{' '}
-                {formatNumber(chantier.longitude, { decimals: 4 })}
               </Ligne>
               <Ligne label={t('detail.chef')}>{chantier.chefChantierNom ?? EMPTY_VALUE}</Ligne>
               <Ligne label={t('detail.periode')}>
@@ -147,7 +140,6 @@ export function ChantierDetailSheet({ chantierId, onClose, onEdit }: Props) {
               </Ligne>
               <Ligne label={t('detail.budget')}>{formatMoney(chantier.budget)}</Ligne>
               <Ligne label={t('detail.montantMarche')}>{formatMoney(chantier.montantMarche)}</Ligne>
-              <Ligne label={t('detail.ecart')}>{formatMoney(chantier.montantMarche - chantier.budget)}</Ligne>
             </dl>
             <section className="grid gap-2">
               <h3 className="text-sm font-semibold">

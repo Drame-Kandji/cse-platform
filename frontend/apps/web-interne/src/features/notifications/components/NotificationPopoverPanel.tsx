@@ -66,12 +66,7 @@ export function NotificationPopoverPanel({ unreadCount, onClose }: NotificationP
         ) : query.isError ? (
           <ErrorState size="compact" error={query.error} onRetry={() => void query.refetch()} />
         ) : items.length === 0 ? (
-          <EmptyState
-            size="compact"
-            icon={<BellOff aria-hidden />}
-            title="Aucune notification"
-            description="Les alertes de validation, de maintenance et de livraison apparaîtront ici."
-          />
+          <EmptyState size="compact" icon={<BellOff aria-hidden />} title="Aucune notification" />
         ) : (
           <ul className="divide-y divide-border">
             {items.map((notification) => (

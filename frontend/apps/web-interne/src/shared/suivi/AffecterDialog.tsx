@@ -43,11 +43,7 @@ export interface AffecterDialogProps {
 export function AffecterDialog({ open, onOpenChange, ...props }: AffecterDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        size="md"
-        title="Affecter un matériel"
-        description="Le matériel doit être disponible et libre sur toute la période."
-      >
+      <DialogContent size="md" title="Affecter un matériel">
         {open && (
           <AffecterForm
             {...props}
@@ -139,7 +135,7 @@ function AffecterForm({
           )}
         </FormField>
       )}
-      <FormField control={form.control} name="chantierId" label="Chantier de destination" required>
+      <FormField control={form.control} name="chantierId" label="Chantier" required>
         {({ field, control }) => (
           <Combobox
             {...control}
@@ -150,7 +146,7 @@ function AffecterForm({
               form.setValue('besoinId', null)
             }}
             loading={chantiers.isPending}
-            placeholder="Choisir un chantier en cours"
+            placeholder="Choisir un chantier"
           />
         )}
       </FormField>
@@ -174,7 +170,6 @@ function AffecterForm({
         name="besoinId"
         label="Besoin satisfait"
         optional
-        hint={chantierId ? 'Besoins validés du chantier choisi' : "Choisissez d'abord un chantier"}
       >
         {({ field, control }) => (
           <Combobox

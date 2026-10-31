@@ -59,19 +59,10 @@ export function Component() {
         title={materiel.designation}
         meta={
           <>
-            <Badge tone="neutral" variant="outline" className="font-mono">
-              {materiel.code}
-            </Badge>
-            {materiel.immatriculation && (
-              <Badge tone="neutral" className="font-mono">
-                {materiel.immatriculation}
-              </Badge>
-            )}
+            <span className="font-mono text-sm text-muted-foreground">{materiel.code}</span>
             <StatusBadge kind="etatMateriel" value={materiel.etat} />
             {materiel.reformeDemandee && materiel.etat !== 'REFORME' && (
-              <Badge tone="danger" variant="outline">
-                Réforme demandée
-              </Badge>
+              <Badge tone="danger">Réforme demandée</Badge>
             )}
           </>
         }

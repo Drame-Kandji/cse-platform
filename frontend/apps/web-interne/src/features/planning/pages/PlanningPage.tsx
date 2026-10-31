@@ -45,7 +45,7 @@ export function Component() {
           )
         }
       />
-      <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-card">
+      <div className="overflow-hidden rounded-xl border border-border bg-surface">
         <PlanningToolbar
           zoom={state.zoom}
           periode={state.periode}
@@ -70,7 +70,6 @@ export function Component() {
           <EmptyState
             icon={<CalendarRange aria-hidden />}
             title="Aucune affectation sur la période"
-            description="Changez de période ou de filtres pour voir l'occupation du parc."
           />
         ) : (
           <PlanningTimeline
@@ -102,7 +101,7 @@ export function Component() {
             </span>
           ))}
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-3 w-0.5 bg-danger" aria-hidden />
+            <span className="h-3 w-px bg-foreground/60" aria-hidden />
             Aujourd&apos;hui
           </span>
         </div>

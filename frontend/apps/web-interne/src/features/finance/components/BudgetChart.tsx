@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Bar, BarChart, CartesianGrid, Cell, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts'
 import { formatMoney } from '@/shared/lib/format'
 import { Card, CardContent, CardHeader } from '@/shared/ui/card'
 import { ChartContainer, ChartTooltipContent } from '@/shared/ui/chart'
@@ -16,7 +16,7 @@ import type { SyntheseFinance } from '../api/types'
 
 const compactMoney = (value: number) => formatMoney(value, { compact: true })
 
-/** Comparaison engage / facture / mandate / paye (une barre par etape, libelles visibles). */
+/** Engage / facture / mandate / paye cumules (une seule serie bleue). */
 export function BudgetChart({
   synthese,
   loading,
@@ -35,12 +35,12 @@ export function BudgetChart({
     : []
   return (
     <Card>
-      <CardHeader title={t('chart.title')} description={t('chart.description')} />
+      <CardHeader title={t('chart.title')} />
       <CardContent>
         {loading || !synthese ? (
-          <Skeleton className="h-[240px] w-full" />
+          <Skeleton className="h-[220px] w-full" />
         ) : (
-          <ChartContainer label={t('chart.label')} height={240}>
+          <ChartContainer label={t('chart.label')} height={220}>
             <BarChart data={data} margin={chartMargin}>
               <CartesianGrid {...gridProps} />
               <XAxis dataKey="etape" {...axisProps} />
@@ -56,11 +56,13 @@ export function BudgetChart({
                 cursor={cursorProps}
                 content={<ChartTooltipContent valueFormatter={(value) => formatMoney(value)} />}
               />
-              <Bar dataKey="montant" name={t('columns.montant')} radius={[4, 4, 0, 0]} maxBarSize={56}>
-                {data.map((entry, index) => (
-                  <Cell key={entry.etape} fill={chartColor(index)} />
-                ))}
-              </Bar>
+              <Bar
+                dataKey="montant"
+                name={t('columns.montant')}
+                fill={chartColor(0)}
+                radius={[4, 4, 0, 0]}
+                maxBarSize={48}
+              />
             </BarChart>
           </ChartContainer>
         )}

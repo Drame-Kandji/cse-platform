@@ -1,5 +1,5 @@
 import { addDays, format, parseISO } from 'date-fns'
-import { CheckCircle2, PackageSearch, ShoppingCart } from 'lucide-react'
+import { CheckCircle2, ShoppingCart } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/lib/cn'
@@ -78,14 +78,13 @@ export function ValiderDialog({ besoin, open, onOpenChange }: Props) {
       <DialogContent
         size="lg"
         title={t('valider.title', { reference: besoin.reference })}
-        description={t('valider.description')}
       >
         <div className="grid gap-4">
           <section aria-label={t('valider.disponibilite')} className="grid gap-3">
             {dispo.isPending ? (
               <Skeleton className="h-14 w-full" />
             ) : dispo.isError || !data ? (
-              <p className={cn('rounded-lg p-3 text-sm ring-1 ring-inset', softToneClasses.warning)}>
+              <p className="rounded-lg bg-muted/60 p-3 text-sm text-muted-foreground">
                 {t('valider.indisponible')}
               </p>
             ) : (
@@ -93,7 +92,7 @@ export function ValiderDialog({ besoin, open, onOpenChange }: Props) {
                 <p
                   className={cn(
                     'flex items-start gap-2 rounded-lg p-3 text-sm ring-1 ring-inset',
-                    data.disponible ? softToneClasses.success : softToneClasses.info,
+                    softToneClasses.primary,
                   )}
                 >
                   {data.disponible ? (
@@ -108,10 +107,9 @@ export function ValiderDialog({ besoin, open, onOpenChange }: Props) {
                 </p>
                 {data.disponible && data.materiels.length > 0 && (
                   <fieldset className="grid gap-2">
-                    <legend className="mb-1 text-sm font-medium">{t('valider.choixMateriels')}</legend>
-                    <p className="text-xs text-muted-foreground">
-                      {t('valider.choixHint', { max: besoin.quantite })}
-                    </p>
+                    <legend className="mb-1 text-sm font-medium" title={t('valider.choixHint', { max: besoin.quantite })}>
+                      {t('valider.choixMateriels')}
+                    </legend>
                     <ul className="scrollbar-thin grid max-h-56 gap-1.5 overflow-y-auto">
                       {data.materiels.map((materiel) => {
                         const checked = choix.includes(materiel.id)
@@ -131,12 +129,6 @@ export function ValiderDialog({ besoin, open, onOpenChange }: Props) {
                       })}
                     </ul>
                   </fieldset>
-                )}
-                {data.disponible && data.materiels.length === 0 && (
-                  <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <PackageSearch className="size-4" aria-hidden />
-                    {t('valider.choixHint', { max: besoin.quantite })}
-                  </p>
                 )}
               </>
             )}

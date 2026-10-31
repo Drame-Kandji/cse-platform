@@ -1,10 +1,8 @@
-import { ArrowRight, CheckCheck } from 'lucide-react'
+import { CheckCheck } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { to } from '@/app/routes'
-import { labelOf } from '@/shared/domain/labels'
 import { formatDate, formatNumber, formatRelative } from '@/shared/lib/format'
-import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
 import { EmptyState } from '@/shared/ui/empty-state'
 import { ErrorState } from '@/shared/ui/error-state'
@@ -25,7 +23,7 @@ export function ValidationQueue() {
     return (
       <div className="grid gap-3" aria-busy>
         {[0, 1, 2].map((i) => (
-          <Skeleton key={i} className="h-32 w-full rounded-xl" />
+          <Skeleton key={i} className="h-16 w-full rounded-xl" />
         ))}
       </div>
     )
@@ -51,51 +49,40 @@ export function ValidationQueue() {
   }
   return (
     <div className="grid gap-3">
-      <ul className="grid gap-3" aria-label={t('validation.fileTab')}>
-        {besoins.map((besoin) => (
-          <li key={besoin.id}>
-            <Card className="flex flex-col gap-4 p-4 sm:p-5 lg:flex-row lg:items-center">
-              <div className="min-w-0 flex-1 space-y-2">
+      <Card>
+        <ul className="divide-y divide-border" aria-label={t('validation.fileTab')}>
+          {besoins.map((besoin) => (
+            <li
+              key={besoin.id}
+              className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div className="min-w-0 space-y-0.5">
                 <div className="flex flex-wrap items-center gap-2">
-                  <StatusBadge kind="priorite" value={besoin.priorite} />
-                  <span className="font-mono text-xs text-muted-foreground">{besoin.reference}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {t('validation.attenteDepuis', { duree: formatRelative(besoin.createdAt) })}
-                  </span>
+                  <Link
+                    to={to.besoinDetail(besoin.id)}
+                    className="truncate font-medium hover:text-primary-emphasis hover:underline"
+                  >
+                    {formatNumber(besoin.quantite)} × {besoin.designation}
+                  </Link>
+                  {besoin.priorite !== 'NORMAL' && <StatusBadge kind="priorite" value={besoin.priorite} />}
                 </div>
-                <p className="font-semibold">
-                  {formatNumber(besoin.quantite)} × {besoin.designation}
-                  <span className="ml-2 text-sm font-normal text-muted-foreground">
-                    {labelOf('categorieMateriel', besoin.categorie)}
-                  </span>
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {t('validation.pourChantier', {
-                    chantier: besoin.chantierNom,
-                    demandeur: besoin.demandeurNom,
-                  })}
+                <p className="truncate text-sm text-muted-foreground" title={besoin.justification ?? undefined}>
+                  <span className="font-mono text-xs">{besoin.reference}</span>
+                  {' · '}
+                  {besoin.chantierNom}
                   {' · '}
                   {t('columns.dateBesoin')} {formatDate(besoin.dateBesoin)}
+                  {' · '}
+                  {formatRelative(besoin.createdAt)}
                 </p>
-                {besoin.justification && (
-                  <p className="line-clamp-2 text-sm italic text-muted-foreground">
-                    « {besoin.justification} »
-                  </p>
-                )}
               </div>
-              <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-                <Button asChild variant="ghost" className="max-sm:h-11">
-                  <Link to={to.besoinDetail(besoin.id)}>
-                    {t('validation.voir')}
-                    <ArrowRight aria-hidden />
-                  </Link>
-                </Button>
-                <BesoinActions besoin={besoin} />
+              <div className="flex shrink-0 flex-wrap items-center gap-2">
+                <BesoinActions besoin={besoin} size="sm" />
               </div>
-            </Card>
-          </li>
-        ))}
-      </ul>
+            </li>
+          ))}
+        </ul>
+      </Card>
       {query.data.totalElements > besoins.length && (
         <p className="text-center text-sm text-muted-foreground">
           {t('validation.plusDe', { count: besoins.length, total: query.data.totalElements })}

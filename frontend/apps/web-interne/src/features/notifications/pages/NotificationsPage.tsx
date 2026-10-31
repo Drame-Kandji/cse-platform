@@ -98,7 +98,6 @@ export function Component() {
           <ul className="grid gap-5 p-5" aria-label="Chargement">
             {[0, 1, 2, 3, 4].map((index) => (
               <li key={index} className="flex gap-3">
-                <Skeleton className="size-8 rounded-lg" />
                 <div className="grid flex-1 gap-1.5">
                   <Skeleton className="h-4 w-1/2" />
                   <Skeleton className="h-3 w-3/4" />
@@ -112,11 +111,6 @@ export function Component() {
           <EmptyState
             icon={<BellOff aria-hidden />}
             title={filtre === 'non-lues' ? 'Tout est lu' : 'Aucune notification'}
-            description={
-              filtre === 'non-lues'
-                ? 'Vous avez traité toutes vos notifications.'
-                : 'Les événements qui vous concernent apparaîtront ici en temps réel.'
-            }
           />
         ) : (
           <ul className="divide-y divide-border">

@@ -89,7 +89,7 @@ export function BesoinForm({ defaultValues, submitLabel, onSubmit, onCancel }: B
   }))
 
   return (
-    <form onSubmit={(event) => void submit(event)} noValidate className="grid gap-5 pb-24 sm:pb-0">
+    <form onSubmit={(event) => void submit(event)} noValidate className="grid gap-6 pb-24 sm:pb-0">
       <Card>
         <CardHeader title={t('form.sectionQuoi')} />
         <CardContent className="grid gap-4">
@@ -97,8 +97,7 @@ export function BesoinForm({ defaultValues, submitLabel, onSubmit, onCancel }: B
             {({ field, control }) => (
               <RadioGroup
                 {...control}
-                variant="card"
-                className="grid-cols-1 sm:grid-cols-2"
+                className="grid-cols-2 gap-x-4 gap-y-3 lg:grid-cols-4"
                 options={optionsOf('categorieMateriel')}
                 value={field.value ?? undefined}
                 onValueChange={field.onChange}
@@ -164,44 +163,40 @@ export function BesoinForm({ defaultValues, submitLabel, onSubmit, onCancel }: B
 
       <Card>
         <CardHeader title={t('form.sectionQuand')} />
-        <CardContent className="grid gap-4 sm:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="chantierId"
-            label={t('form.chantier')}
-            required
-            hint={chantiers.isSuccess && chantierOptions.length === 0 ? t('form.chantierEmpty') : undefined}
-          >
-            {({ field, control }) =>
-              chantiers.isPending ? (
-                <Skeleton className="h-10 w-full" />
-              ) : (
-                <Select
-                  {...control}
-                  options={chantierOptions}
-                  value={field.value || undefined}
-                  onValueChange={field.onChange}
-                  placeholder={t('form.chantierPlaceholder')}
-                />
-              )
-            }
-          </FormField>
-          <FormField control={form.control} name="dateBesoin" label={t('form.dateBesoin')} required>
-            {({ field, control }) => (
-              <DatePicker
-                {...control}
-                value={field.value}
-                onChange={field.onChange}
-                min={startOfDay(new Date())}
-              />
-            )}
-          </FormField>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader title={t('form.sectionUrgence')} />
         <CardContent className="grid gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="chantierId"
+              label={t('form.chantier')}
+              required
+              hint={chantiers.isSuccess && chantierOptions.length === 0 ? t('form.chantierEmpty') : undefined}
+            >
+              {({ field, control }) =>
+                chantiers.isPending ? (
+                  <Skeleton className="h-10 w-full" />
+                ) : (
+                  <Select
+                    {...control}
+                    options={chantierOptions}
+                    value={field.value || undefined}
+                    onValueChange={field.onChange}
+                    placeholder={t('form.chantierPlaceholder')}
+                  />
+                )
+              }
+            </FormField>
+            <FormField control={form.control} name="dateBesoin" label={t('form.dateBesoin')} required>
+              {({ field, control }) => (
+                <DatePicker
+                  {...control}
+                  value={field.value}
+                  onChange={field.onChange}
+                  min={startOfDay(new Date())}
+                />
+              )}
+            </FormField>
+          </div>
           <FormField control={form.control} name="priorite" label={t('form.priorite')} required>
             {({ field, control }) => (
               <RadioGroup
@@ -223,7 +218,6 @@ export function BesoinForm({ defaultValues, submitLabel, onSubmit, onCancel }: B
             label={t('form.justification')}
             required={justificationObligatoire}
             optional={!justificationObligatoire}
-            hint={t('form.justificationHint')}
           >
             {({ field, control }) => (
               <Textarea {...control} {...field} rows={3} placeholder={t('form.justificationPlaceholder')} />

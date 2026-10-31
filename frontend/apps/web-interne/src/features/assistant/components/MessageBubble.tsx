@@ -1,4 +1,4 @@
-import { CircleAlert, RotateCw, Sparkles, TriangleAlert } from 'lucide-react'
+import { CircleAlert, RotateCw } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { cn } from '@/shared/lib/cn'
 import { formatDateTime } from '@/shared/lib/format'
@@ -49,19 +49,13 @@ export function MessageBubble({ message, onRetry, onNavigate }: MessageBubblePro
     )
   }
   return (
-    <li className="flex gap-3">
-      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary/10 text-primary-emphasis">
-        <Sparkles className="size-4" aria-hidden />
-      </span>
-      <div className="grid min-w-0 max-w-[85%] gap-2">
+    <li className="flex">
+      <div className="grid min-w-0 max-w-[90%] gap-2">
         <span className="sr-only">Assistant :</span>
         {message.modeDegrade && (
-          <p className="flex items-start gap-2 rounded-lg bg-warning/10 px-3 py-2 text-xs text-warning-emphasis">
-            <TriangleAlert className="mt-px size-3.5 shrink-0" aria-hidden />
-            <span>
-              <strong className="font-semibold">Mode dégradé</strong> — l'IA générative est momentanément
-              indisponible ; réponse construite à partir des données de la plateforme.
-            </span>
+          <p className="text-xs text-muted-foreground" title="IA générative momentanément indisponible">
+            <strong className="font-medium text-foreground">Mode dégradé</strong> · réponse issue des données
+            de la plateforme
           </p>
         )}
         <div className="rounded-2xl rounded-tl-sm border border-border bg-surface-sunken px-4 py-3 text-foreground">

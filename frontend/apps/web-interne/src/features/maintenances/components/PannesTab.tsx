@@ -1,4 +1,4 @@
-import { AlertOctagon, Link2, Wrench } from 'lucide-react'
+import { AlertOctagon, Wrench } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -6,8 +6,7 @@ import { access } from '@/app/access'
 import { to } from '@/app/routes'
 import { useHasRole } from '@/shared/auth'
 import { STATUT_PANNE, optionsOf } from '@/shared/domain/labels'
-import { EMPTY_VALUE, formatDateTime, formatRelative } from '@/shared/lib/format'
-import { Badge } from '@/shared/ui/badge'
+import { formatDateTime, formatRelative } from '@/shared/lib/format'
 import { Button } from '@/shared/ui/button'
 import { DataTable, useTableState, type ColumnDef } from '@/shared/ui/data-table'
 import { EmptyState } from '@/shared/ui/empty-state'
@@ -36,35 +35,29 @@ export function PannesTab({ onSignaler, onCreerOt }: Props) {
   const columns = useMemo<ColumnDef<Panne>[]>(
     () => [
       {
+        accessorKey: 'description',
+        header: t('columns.panne'),
+        meta: { mobilePrimary: true, minWidth: 260 },
+        cell: ({ row }) => (
+          <div className="min-w-0 max-w-xl">
+            <p className="line-clamp-1 font-medium" title={row.original.description}>
+              {row.original.description}
+            </p>
+            <Link
+              to={to.materielDetail(row.original.materielId)}
+              className="block truncate text-xs text-muted-foreground hover:text-foreground hover:underline"
+            >
+              <span className="font-mono">{row.original.materielCode}</span> · {row.original.materielDesignation}
+              {row.original.chantierNom ? ` · ${row.original.chantierNom}` : ''}
+            </Link>
+          </div>
+        ),
+      },
+      {
         accessorKey: 'gravite',
         header: t('columns.gravite'),
         meta: { nowrap: true },
         cell: ({ row }) => <StatusBadge kind="gravitePanne" value={row.original.gravite} />,
-      },
-      {
-        accessorKey: 'materielDesignation',
-        header: t('columns.materiel'),
-        meta: { mobilePrimary: true, minWidth: 200 },
-        cell: ({ row }) => (
-          <Link to={to.materielDetail(row.original.materielId)} className="group block min-w-0">
-            <span className="line-clamp-2 font-medium group-hover:underline">
-              {row.original.materielDesignation}
-            </span>
-            <span className="block font-mono text-xs text-muted-foreground">{row.original.materielCode}</span>
-          </Link>
-        ),
-      },
-      {
-        accessorKey: 'description',
-        header: t('columns.description'),
-        meta: { minWidth: 240 },
-        cell: ({ row }) => <p className="line-clamp-2 max-w-md text-sm">{row.original.description}</p>,
-      },
-      {
-        accessorKey: 'chantierNom',
-        header: t('columns.chantier'),
-        meta: { hideOnMobile: true, minWidth: 160, hideBelow: 'xl' },
-        cell: ({ row }) => row.original.chantierNom ?? EMPTY_VALUE,
       },
       {
         accessorKey: 'statut',
@@ -90,10 +83,7 @@ export function PannesTab({ onSignaler, onCreerOt }: Props) {
         meta: { align: 'right', label: t('columns.actions') },
         cell: ({ row }) =>
           row.original.maintenanceId ? (
-            <Badge tone="primary">
-              <Link2 aria-hidden />
-              {t('actions.otLie')}
-            </Badge>
+            <span className="text-sm text-muted-foreground">{t('actions.otLie')}</span>
           ) : gestion && row.original.statut !== 'RESOLUE' ? (
             <Button
               size="sm"
@@ -145,7 +135,6 @@ export function PannesTab({ onSignaler, onCreerOt }: Props) {
           <EmptyState
             icon={<AlertOctagon aria-hidden />}
             title={t('pannes.emptyTitle')}
-            description={t('pannes.emptyDescription')}
             action={peutSignaler ? <Button onClick={onSignaler}>{t('page.signaler')}</Button> : undefined}
           />
         )

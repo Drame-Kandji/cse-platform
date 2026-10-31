@@ -24,13 +24,13 @@ const DEFAULT_SORT = [{ id: 'nom', desc: false }]
 type Vue = 'cartes' | 'tableau'
 const TOUS = 'TOUS'
 
-/** Chantiers : cartes ou tableau, filtres, detail lateral (?chantier=id), creation / edition / cloture. */
+/** Chantiers : tableau (par defaut) ou cartes, filtres, detail lateral (?chantier=id), creation / edition / cloture. */
 export function Component() {
   const { t } = useTranslation('chantiers')
   const [params, setParams] = useSearchParams()
   const table = useTableState({ defaultSort: DEFAULT_SORT, defaultPageSize: 20 })
   const estChef = useHasRole(['CHEF_CHANTIER'])
-  const [vue, setVue] = useState<Vue>('cartes')
+  const [vue, setVue] = useState<Vue>('tableau')
   const [edition, setEdition] = useState<{ chantier: Chantier | null } | null>(null)
 
   const statutParam = params.get('statut')
@@ -65,7 +65,6 @@ export function Component() {
   const nouveau = (
     <Can roles={access.chantierGestion}>
       <Button
-        size="lg"
         leftIcon={<Plus />}
         onClick={() => {
           setEdition({ chantier: null })
@@ -104,16 +103,7 @@ export function Component() {
       canReset={filtresActifs}
       onReset={reset}
       actions={
-        <div className="flex items-center gap-1" role="group" aria-label={t('page.vueCartes')}>
-          <IconButton
-            label={t('page.vueCartes')}
-            icon={<LayoutGrid />}
-            variant={vue === 'cartes' ? 'subtle' : 'ghost'}
-            aria-pressed={vue === 'cartes'}
-            onClick={() => {
-              setVue('cartes')
-            }}
-          />
+        <div className="flex items-center gap-1" role="group" aria-label={t('page.vue')}>
           <IconButton
             label={t('page.vueTableau')}
             icon={<Table2 />}
@@ -121,6 +111,15 @@ export function Component() {
             aria-pressed={vue === 'tableau'}
             onClick={() => {
               setVue('tableau')
+            }}
+          />
+          <IconButton
+            label={t('page.vueCartes')}
+            icon={<LayoutGrid />}
+            variant={vue === 'cartes' ? 'subtle' : 'ghost'}
+            aria-pressed={vue === 'cartes'}
+            onClick={() => {
+              setVue('cartes')
             }}
           />
         </div>

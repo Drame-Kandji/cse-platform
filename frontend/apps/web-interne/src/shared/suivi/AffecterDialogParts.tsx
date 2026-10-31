@@ -1,4 +1,4 @@
-import { AlertTriangle, CalendarX2, Truck } from 'lucide-react'
+import { AlertTriangle, CalendarX2 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { getErrorMessage, isApiError } from '@/shared/api/errors'
 import { labelOf, type EtatMateriel, type Tone } from '@/shared/domain/labels'
@@ -47,10 +47,7 @@ export function MaterielSummary({
   loading: boolean
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-border bg-surface-sunken/60 px-3.5 py-3">
-      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary-emphasis">
-        <Truck className="size-4" aria-hidden />
-      </span>
+    <div className="flex items-center gap-3 rounded-lg bg-muted/60 px-3.5 py-3">
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{materiel.designation}</p>
         <p className="font-mono text-xs text-muted-foreground">{materiel.code}</p>

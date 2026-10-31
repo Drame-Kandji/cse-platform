@@ -5,20 +5,6 @@ import { Card, CardHeader } from '@/shared/ui/card'
 import { formatTaux } from '../lib/format'
 import type { LigneChantier } from '../types'
 
-function UtilisationBar({ value }: { value: number }) {
-  return (
-    <span className="flex items-center justify-end gap-2">
-      <span className="hidden h-1.5 w-16 overflow-hidden rounded-full bg-muted sm:block" aria-hidden>
-        <span
-          className="block h-full rounded-full bg-chart-1"
-          style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
-        />
-      </span>
-      <span className="w-12 text-right tabular-nums">{formatTaux(value, 0)}</span>
-    </span>
-  )
-}
-
 const columns: ColumnDef<LigneChantier>[] = [
   {
     accessorKey: 'chantierNom',
@@ -48,19 +34,12 @@ const columns: ColumnDef<LigneChantier>[] = [
     cell: ({ row }) => formatMoney(row.original.montantEngage, { compact: true }),
   },
   {
-    id: 'couts',
-    accessorFn: (row) => row.coutExploitation + row.coutMaintenance,
-    header: 'Coûts (expl. + maint.)',
-    enableSorting: true,
-    meta: { align: 'right', hideOnMobile: true },
-    cell: ({ row }) =>
-      formatMoney(row.original.coutExploitation + row.original.coutMaintenance, { compact: true }),
-  },
-  {
     accessorKey: 'marge',
-    header: 'Marge',
+    header: () => (
+      <span title="Montant du marché − engagements − coûts d'exploitation et de maintenance">Marge</span>
+    ),
     enableSorting: true,
-    meta: { align: 'right' },
+    meta: { align: 'right', label: 'Marge' },
     cell: ({ row }) => {
       const { marge, montantMarche } = row.original
       return (
@@ -68,7 +47,7 @@ const columns: ColumnDef<LigneChantier>[] = [
           <span
             className={cn(
               'font-medium tabular-nums',
-              marge < 0 ? 'text-danger-emphasis' : 'text-success-emphasis',
+              marge < 0 && 'text-danger-emphasis',
             )}
           >
             {formatMoney(marge, { compact: true })}
@@ -87,14 +66,7 @@ const columns: ColumnDef<LigneChantier>[] = [
     header: 'Utilisation',
     enableSorting: true,
     meta: { align: 'right' },
-    cell: ({ row }) => <UtilisationBar value={row.original.tauxUtilisation} />,
-  },
-  {
-    accessorKey: 'materielsAffectes',
-    header: 'Matériels',
-    enableSorting: true,
-    meta: { align: 'right', hideOnMobile: true },
-    cell: ({ row }) => formatNumber(row.original.materielsAffectes),
+    cell: ({ row }) => formatTaux(row.original.tauxUtilisation, 0),
   },
   {
     accessorKey: 'besoinsEnAttente',
@@ -117,7 +89,6 @@ export function ChantiersTable({
     <Card className="overflow-hidden">
       <CardHeader
         title={title}
-        description="Marge = montant du marché − engagements − coûts d'exploitation et de maintenance"
         className="pb-4"
       />
       <DataTable
@@ -125,6 +96,7 @@ export function ChantiersTable({
         columns={columns}
         data={chantiers}
         getRowId={(row) => row.chantierId}
+        enableColumnVisibility={false}
         className="rounded-none border-0 border-t shadow-none"
       />
     </Card>

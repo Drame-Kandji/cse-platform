@@ -36,13 +36,12 @@ export function Component() {
         actions={
           <>
             <Can roles={access.panneSignalement}>
-              <Button variant="secondary" size="lg" leftIcon={<AlertOctagon />} onClick={signaler}>
+              <Button variant="secondary" leftIcon={<AlertOctagon />} onClick={signaler}>
                 {t('page.signaler')}
               </Button>
             </Can>
             <Can roles={access.maintenanceGestion}>
               <Button
-                size="lg"
                 leftIcon={<CalendarPlus />}
                 onClick={() => {
                   setPlanification({ panne: null })

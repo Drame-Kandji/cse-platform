@@ -1,70 +1,58 @@
-import { differenceInCalendarDays } from 'date-fns'
-import { CalendarClock, Coins, Gauge, Timer, Wallet } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { labelOf } from '@/shared/domain/labels'
 import type { MaterielDetail } from '@/shared/domain/types'
-import { formatDate, formatMoney, formatNumber, toDate } from '@/shared/lib/format'
+import { cn } from '@/shared/lib/cn'
+import { formatDate, formatMoney, formatNumber } from '@/shared/lib/format'
 import { Card } from '@/shared/ui/card'
-import { StatCard } from '@/shared/ui/stat-card'
 import { maintenanceRatio } from '../../lib/compteurs'
-import { MaintenanceGauge } from '../MaintenanceGauge'
 
-function prochaineHint(date: string | null | undefined, due: boolean): string | undefined {
-  if (due) return 'Maintenance due : à planifier'
-  const target = toDate(date)
-  if (!target) return 'Aucune échéance planifiée'
-  const days = differenceInCalendarDays(target, new Date())
-  if (days < 0) return `En retard de ${String(-days)} j`
-  if (days === 0) return "Aujourd'hui"
-  return `Dans ${String(days)} j`
+function Fact({ label, children, alert }: { label: string; children: ReactNode; alert?: boolean }) {
+  return (
+    <div className="grid content-start gap-0.5">
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd className={cn('text-sm font-medium tabular-nums', alert && 'text-danger-emphasis')}>{children}</dd>
+    </div>
+  )
 }
 
-/** Indicateurs cles de la fiche engin (compteurs, maintenance, valeur). */
+/** Faits cles de la fiche engin en une grille compacte (identite, compteurs, maintenance, valeur). */
 export function MaterielMetrics({ materiel }: { materiel: MaterielDetail }) {
   const ratio = maintenanceRatio(materiel)
+  const modele = [materiel.marque, materiel.modele].filter(Boolean).join(' ')
+  const depuis =
+    materiel.seuilMaintenanceHeures && materiel.seuilMaintenanceHeures > 0
+      ? `${formatNumber(materiel.heuresDepuisMaintenance)} / ${formatNumber(materiel.seuilMaintenanceHeures)} h`
+      : `${formatNumber(materiel.heuresDepuisMaintenance)} h`
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
-      <StatCard
-        label="Heures de fonctionnement"
-        value={`${formatNumber(materiel.heuresFonctionnement)} h`}
-        icon={<Timer />}
-        hint="Compteur total"
-      />
-      <Card className="flex flex-col gap-3 p-5 sm:col-span-2 lg:col-span-1">
-        <div className="flex items-start justify-between gap-3">
-          <p className="text-sm font-medium text-muted-foreground">Depuis la maintenance</p>
-          <span className="grid size-8 place-items-center rounded-lg bg-warning/10 text-warning-emphasis [&_svg]:size-4">
-            <Gauge aria-hidden />
+    <Card className="p-5">
+      <dl className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3 lg:grid-cols-4">
+        <Fact label="Type">
+          {materiel.typeEnginLibelle ?? labelOf('categorieMateriel', materiel.categorie)}
+        </Fact>
+        <Fact label="Marque / modèle">{modele || '—'}</Fact>
+        <Fact label="Immatriculation">
+          <span className="font-mono">{materiel.immatriculation ?? '—'}</span>
+        </Fact>
+        <Fact label="Heures de fonctionnement">{`${formatNumber(materiel.heuresFonctionnement)} h`}</Fact>
+        <Fact label="Depuis la maintenance" alert={ratio !== null && ratio >= 1}>
+          {depuis}
+        </Fact>
+        <Fact label="Prochaine maintenance" alert={materiel.maintenanceDue}>
+          {materiel.maintenanceDue
+            ? 'Maintenance due'
+            : materiel.prochaineMaintenance
+              ? formatDate(materiel.prochaineMaintenance)
+              : 'Non planifiée'}
+        </Fact>
+        <Fact label="Tarif journalier">{formatMoney(materiel.tarifJournalier)}</Fact>
+        <Fact label="Valeur d'acquisition">
+          <span
+            title={materiel.dateAcquisition ? `Acquis le ${formatDate(materiel.dateAcquisition)}` : undefined}
+          >
+            {formatMoney(materiel.valeurAcquisition)}
           </span>
-        </div>
-        <MaintenanceGauge materiel={materiel} size="lg" />
-        <p className="text-xs text-muted-foreground">
-          {ratio === null
-            ? 'Aucun seuil défini pour ce type d’engin'
-            : ratio >= 1
-              ? 'Seuil de maintenance préventive dépassé'
-              : `Reste ${formatNumber(Math.max(0, (materiel.seuilMaintenanceHeures ?? 0) - materiel.heuresDepuisMaintenance))} h avant le seuil`}
-        </p>
-      </Card>
-      <StatCard
-        label="Prochaine maintenance"
-        value={materiel.prochaineMaintenance ? formatDate(materiel.prochaineMaintenance) : 'Non planifiée'}
-        icon={<CalendarClock />}
-        iconTone={materiel.maintenanceDue ? 'danger' : 'info'}
-        hint={prochaineHint(materiel.prochaineMaintenance, materiel.maintenanceDue)}
-      />
-      <StatCard
-        label="Tarif journalier"
-        value={formatMoney(materiel.tarifJournalier)}
-        icon={<Coins />}
-        iconTone="accent"
-        hint="Base de refacturation chantier"
-      />
-      <StatCard
-        label="Valeur d'acquisition"
-        value={formatMoney(materiel.valeurAcquisition)}
-        icon={<Wallet />}
-        iconTone="success"
-        hint={materiel.dateAcquisition ? `Acquis le ${formatDate(materiel.dateAcquisition)}` : undefined}
-      />
-    </div>
+        </Fact>
+      </dl>
+    </Card>
   )
 }

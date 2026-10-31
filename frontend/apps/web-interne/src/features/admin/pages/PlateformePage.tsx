@@ -1,4 +1,4 @@
-import { CircleCheck, RefreshCw, Server, ServerCrash, TriangleAlert } from 'lucide-react'
+import { RefreshCw, Server } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '@/shared/lib/cn'
 import { formatDateTime } from '@/shared/lib/format'
@@ -71,34 +71,23 @@ export function Component() {
           />
         </Card>
       ) : (
-        <div className="grid gap-6">
+        <div className="grid gap-4">
           <div
             role="status"
             className={cn(
-              'flex flex-wrap items-center gap-3 rounded-xl border px-4 py-3 text-sm',
-              down > 0
-                ? 'border-danger/30 bg-danger/10 text-danger-emphasis'
-                : slow > 0
-                  ? 'border-warning/30 bg-warning/10 text-warning-emphasis'
-                  : 'border-success/30 bg-success/10 text-success-emphasis',
+              'flex flex-wrap items-center gap-x-3 gap-y-1 text-sm',
+              down > 0 ? 'text-danger-emphasis' : 'text-foreground',
             )}
           >
-            {down > 0 ? (
-              <ServerCrash className="size-5" aria-hidden />
-            ) : slow > 0 ? (
-              <TriangleAlert className="size-5" aria-hidden />
-            ) : (
-              <CircleCheck className="size-5" aria-hidden />
-            )}
-            <span className="font-semibold">
+            <span className="font-medium">
               {down > 0
                 ? `${down} service(s) indisponible(s) sur ${services.length}`
                 : slow > 0
                   ? `Tous les services répondent, ${slow} avec une latence élevée`
                   : `Les ${services.length} services sont opérationnels`}
             </span>
-            <span className="ml-auto text-xs opacity-80">
-              Dernière mesure : {formatDateTime(query.dataUpdatedAt)}
+            <span className="text-xs text-muted-foreground">
+              Mesure : {formatDateTime(query.dataUpdatedAt)}
             </span>
           </div>
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-label="Services">

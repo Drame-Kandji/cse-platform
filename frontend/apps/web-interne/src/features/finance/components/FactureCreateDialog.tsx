@@ -83,7 +83,7 @@ export function FactureCreateDialog({
 
   return (
     <Dialog open={open} onOpenChange={close}>
-      <DialogContent title={t('form.title')} description={t('form.description')} size="lg">
+      <DialogContent title={t('form.title')} size="lg">
         <form onSubmit={(event) => void submit(event)} className="grid gap-4 sm:grid-cols-2" noValidate>
           <FormField
             control={form.control}

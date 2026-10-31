@@ -45,12 +45,7 @@ export function AssistantPanel() {
   }, [isDesktop, setAssistantOpen])
   return (
     <Sheet open={assistantOpen} onOpenChange={setAssistantOpen}>
-      <SheetContent
-        title={t('assistant.title')}
-        description={t('assistant.subtitle')}
-        size="lg"
-        bodyClassName="flex flex-col overflow-hidden p-0"
-      >
+      <SheetContent title={t('assistant.title')} size="lg" bodyClassName="flex flex-col overflow-hidden p-0">
         <AssistantChat chat={chat} firstName={user.name.split(' ')[0]} onNavigate={onNavigate} />
       </SheetContent>
     </Sheet>

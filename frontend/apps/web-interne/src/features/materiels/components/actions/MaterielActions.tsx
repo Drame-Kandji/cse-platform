@@ -2,7 +2,6 @@ import {
   AlertOctagon,
   ArrowRightLeft,
   Archive,
-  CheckCircle2,
   Gauge,
   Gavel,
   MoreHorizontal,
@@ -106,8 +105,8 @@ export function MaterielActions({ materiel }: { materiel: MaterielDetail }) {
       {(secondary.length > 0 || can.demanderReforme) && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="secondary" leftIcon={<MoreHorizontal />}>
-              Actions
+            <Button variant="secondary" size="icon" aria-label="Actions" title="Actions">
+              <MoreHorizontal aria-hidden />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
@@ -138,12 +137,6 @@ export function MaterielActions({ materiel }: { materiel: MaterielDetail }) {
             )}
           </DropdownMenuContent>
         </DropdownMenu>
-      )}
-      {materiel.reformeDemandee && !can.validerReforme && materiel.etat !== 'REFORME' && (
-        <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-          <CheckCircle2 className="size-3.5" aria-hidden />
-          Réforme soumise à la Direction Générale
-        </span>
       )}
 
       <AffecterDialog

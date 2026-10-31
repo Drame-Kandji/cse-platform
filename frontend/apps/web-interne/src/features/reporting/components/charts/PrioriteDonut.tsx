@@ -24,11 +24,8 @@ export function PrioriteDonut({ besoins }: { besoins: SectionBesoins }) {
   const total = data.reduce((sum, item) => sum + item.value, 0)
   return (
     <Card className="flex h-full flex-col">
-      <CardHeader
-        title="Besoins par priorité"
-        description={`${formatNumber(total)} besoins sur la période`}
-      />
-      <CardContent className="flex flex-1 flex-col items-center gap-4 sm:flex-row lg:flex-col xl:flex-row">
+      <CardHeader title="Besoins par priorité" />
+      <CardContent className="flex min-w-0 flex-1 flex-col items-center justify-center gap-5">
         {total === 0 ? (
           <EmptyState
             size="compact"
@@ -65,7 +62,7 @@ export function PrioriteDonut({ besoins }: { besoins: SectionBesoins }) {
                 <span className="text-2xs text-muted-foreground">besoins</span>
               </div>
             </div>
-            <ul className="grid w-full gap-2.5 text-sm">
+            <ul className="grid w-full min-w-0 max-w-xs gap-2.5 text-sm">
               {data.map((item) => (
                 <li key={item.priorite} className="flex items-center gap-2.5">
                   <span
@@ -73,9 +70,9 @@ export function PrioriteDonut({ besoins }: { besoins: SectionBesoins }) {
                     style={{ backgroundColor: COLORS[item.priorite] }}
                     aria-hidden
                   />
-                  <span className="flex-1 text-muted-foreground">{item.name}</span>
+                  <span className="min-w-0 flex-1 truncate text-muted-foreground">{item.name}</span>
                   <span className="font-medium tabular-nums">{formatNumber(item.value)}</span>
-                  <span className="w-12 text-right text-xs tabular-nums text-muted-foreground">
+                  <span className="w-10 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
                     {formatPercent(item.value / total, { decimals: 0 })}
                   </span>
                 </li>

@@ -8,12 +8,12 @@ import type { Besoin } from '../api/types'
  */
 export function BesoinWorkflow({ besoin }: { besoin: Pick<Besoin, 'statut' | 'orientationEnAttente'> }) {
   const { t } = useTranslation('besoins')
-  const soumis: Step = { id: 'soumis', label: t('steps.soumis'), description: t('steps.soumisDesc') }
+  const soumis: Step = { id: 'soumis', label: t('steps.soumis') }
 
   if (besoin.statut === 'REJETE') {
     return (
       <Stepper
-        steps={[soumis, { id: 'rejete', label: t('steps.rejete'), description: t('steps.validationDesc') }]}
+        steps={[soumis, { id: 'rejete', label: t('steps.rejete') }]}
         current={1}
         errorIndex={1}
       />
@@ -22,20 +22,14 @@ export function BesoinWorkflow({ besoin }: { besoin: Pick<Besoin, 'statut' | 'or
 
   const validation: Step =
     besoin.statut === 'EN_ATTENTE'
-      ? { id: 'validation', label: t('steps.validation'), description: t('steps.validationDesc') }
-      : { id: 'validation', label: t('steps.valide'), description: t('steps.validationDesc') }
+      ? { id: 'validation', label: t('steps.validation') }
+      : { id: 'validation', label: t('steps.valide') }
   const orientation: Step =
     besoin.statut === 'AFFECTE_DIRECT'
-      ? { id: 'orientation', label: t('steps.affecte'), description: t('steps.affecteDesc') }
+      ? { id: 'orientation', label: t('steps.affecte') }
       : besoin.statut === 'EN_ACHAT'
-        ? { id: 'orientation', label: t('steps.achat'), description: t('steps.achatDesc') }
-        : {
-            id: 'orientation',
-            label: t('steps.orientation'),
-            description: besoin.orientationEnAttente
-              ? t('steps.orientationAttenteDesc')
-              : t('steps.orientationDesc'),
-          }
+        ? { id: 'orientation', label: t('steps.achat') }
+        : { id: 'orientation', label: t('steps.orientation') }
   const current = { EN_ATTENTE: 1, VALIDE: 2, EN_ACHAT: 2, AFFECTE_DIRECT: 3 }[besoin.statut]
   return <Stepper steps={[soumis, validation, orientation]} current={current} />
 }

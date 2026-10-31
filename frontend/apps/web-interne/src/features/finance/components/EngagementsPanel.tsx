@@ -1,4 +1,3 @@
-import { Check, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -46,33 +45,28 @@ export function EngagementsPanel() {
         ),
       },
       {
-        accessorKey: 'fournisseurNom',
-        header: t('columns.fournisseur'),
-        meta: { minWidth: 160 },
-      },
-      {
         accessorKey: 'objet',
         header: t('columns.objet'),
-        meta: { minWidth: 200 },
+        meta: { minWidth: 220 },
         cell: ({ row }) => (
           <span className="grid">
-            <span className="line-clamp-2">{row.original.objet}</span>
-            {row.original.chantierNom && (
-              <span className="text-xs text-muted-foreground">{row.original.chantierNom}</span>
-            )}
+            <span className="line-clamp-1">{row.original.objet}</span>
+            <span className="line-clamp-1 text-xs text-muted-foreground">
+              {[row.original.fournisseurNom, row.original.chantierNom].filter(Boolean).join(' · ')}
+            </span>
           </span>
         ),
       },
       {
         accessorKey: 'montant',
         header: t('columns.montant'),
-        meta: { align: 'right' },
-        cell: ({ row }) => formatMoney(row.original.montant),
+        meta: { align: 'right', nowrap: true },
+        cell: ({ row }) => <span className="tabular-nums">{formatMoney(row.original.montant)}</span>,
       },
       {
         accessorKey: 'dateDemande',
         header: t('columns.dateDemande'),
-        meta: { nowrap: true },
+        meta: { nowrap: true, hideOnMobile: true },
         enableSorting: true,
         cell: ({ row }) => formatDate(row.original.dateDemande),
       },
@@ -80,16 +74,19 @@ export function EngagementsPanel() {
         accessorKey: 'statut',
         header: t('columns.statut'),
         meta: { nowrap: true },
-        cell: ({ row }) => <StatusBadge kind="statutApprobation" value={row.original.statut} />,
-      },
-      {
-        id: 'decision',
-        header: t('columns.decision'),
-        meta: { hideBelow: '2xl' },
-        cell: ({ row }) =>
-          row.original.dateDecision
-            ? `${row.original.parNom ?? EMPTY_VALUE}, ${formatDate(row.original.dateDecision)}`
-            : EMPTY_VALUE,
+        cell: ({ row }) => (
+          <span className="grid justify-items-start gap-0.5">
+            <StatusBadge kind="statutApprobation" value={row.original.statut} />
+            {row.original.dateDecision && (
+              <span className="text-xs text-muted-foreground">
+                {t('columns.decidePar', {
+                  nom: row.original.parNom ?? EMPTY_VALUE,
+                  date: formatDate(row.original.dateDecision),
+                })}
+              </span>
+            )}
+          </span>
+        ),
       },
     ]
     if (!peutDecider) return base
@@ -104,8 +101,7 @@ export function EngagementsPanel() {
             <div className="flex justify-end gap-2">
               <Button
                 size="sm"
-                variant="secondary"
-                leftIcon={<X />}
+                variant="ghost"
                 onClick={() => {
                   setDecision({ engagement: row.original, approuve: false })
                 }}
@@ -114,7 +110,6 @@ export function EngagementsPanel() {
               </Button>
               <Button
                 size="sm"
-                leftIcon={<Check />}
                 onClick={() => {
                   setDecision({ engagement: row.original, approuve: true })
                 }}

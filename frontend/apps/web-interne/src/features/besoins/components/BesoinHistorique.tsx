@@ -25,12 +25,13 @@ export function BesoinHistorique({ besoinId }: { besoinId: string }) {
   if (query.data.length === 0) return <EmptyState size="compact" title={t('detail.historiqueVide')} />
   const items: TimelineItem[] = [...query.data].reverse().map((event) => {
     const statut = describeStatus('statutBesoin', event.statut)
+    // Ligne secondaire courte : l'auteur seulement (le titre porte deja l'action).
     return {
       id: event.id,
       title: labelOf('actionHistoriqueBesoin', event.action),
       description: event.commentaire ?? undefined,
       date: event.date,
-      actor: `${event.auteurNom} · ${statut.label}`,
+      actor: event.auteurNom,
       tone: statut.tone,
     }
   })

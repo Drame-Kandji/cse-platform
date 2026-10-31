@@ -27,7 +27,7 @@ export function Component() {
           </Button>
         }
       />
-      <div className="relative isolate flex h-[calc(100dvh-var(--topbar-height)-13rem)] min-h-[28rem] overflow-hidden rounded-xl border border-border bg-surface shadow-card md:h-[calc(100dvh-var(--topbar-height)-11rem)]">
+      <div className="relative isolate flex h-[calc(100dvh-var(--topbar-height)-13rem)] min-h-[28rem] overflow-hidden rounded-xl border border-border bg-surface md:h-[calc(100dvh-var(--topbar-height)-11rem)]">
         <ProgressBar
           active={query.isFetching && !query.isPending}
           className="absolute inset-x-0 top-0 z-[1001]"

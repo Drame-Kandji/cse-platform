@@ -47,7 +47,6 @@ function defaults(utilisateur?: Utilisateur | null): UtilisateurFormInput {
 const ROLE_OPTIONS = ROLES.map((role) => ({
   value: role,
   label: ROLE_LABELS[role].label,
-  description: ROLE_LABELS[role].description,
 }))
 
 /**
@@ -88,11 +87,6 @@ export function UserFormDialog({ open, onOpenChange, utilisateur }: UserFormDial
       <DialogContent
         size="lg"
         title={creation ? 'Nouvel utilisateur' : `Modifier ${utilisateur.prenom} ${utilisateur.nom}`}
-        description={
-          creation
-            ? 'Le compte est créé dans Keycloak avec un mot de passe temporaire à changer à la première connexion.'
-            : 'Les modifications sont synchronisées avec Keycloak.'
-        }
       >
         <form
           id="utilisateur-form"
@@ -132,13 +126,7 @@ export function UserFormDialog({ open, onOpenChange, utilisateur }: UserFormDial
           </FormField>
 
           {role === 'CHEF_CHANTIER' && (
-            <FormField
-              control={form.control}
-              name="chantierIds"
-              label="Chantiers rattachés"
-              required
-              hint="Le chef de chantier ne voit que les données de ces chantiers."
-            >
+            <FormField control={form.control} name="chantierIds" label="Chantiers rattachés" required>
               {({ field, control }) => (
                 <ChantiersPicker {...control} value={field.value} onChange={field.onChange} />
               )}
@@ -150,7 +138,7 @@ export function UserFormDialog({ open, onOpenChange, utilisateur }: UserFormDial
               name="seuilDelegation"
               label="Seuil de délégation (FCFA)"
               required
-              hint="Au-delà, l'attribution d'un marché requiert l'approbation de la Direction Générale (R11)."
+              hint="Au-delà : approbation de la Direction Générale (R11)"
             >
               {({ field, control }) => (
                 <Input {...control} {...field} inputMode="numeric" placeholder="150000000" />
@@ -165,13 +153,7 @@ export function UserFormDialog({ open, onOpenChange, utilisateur }: UserFormDial
             </FormField>
           )}
           {role === 'RESPONSABLE_MATERIEL' && (
-            <FormField
-              control={form.control}
-              name="perimetreParc"
-              label="Périmètre du parc"
-              optional
-              hint="Ex. région, catégorie de matériel ou dépôt géré."
-            >
+            <FormField control={form.control} name="perimetreParc" label="Périmètre du parc" optional>
               {({ field, control }) => <Input {...control} {...field} placeholder="Dakar, Thiès" />}
             </FormField>
           )}
@@ -182,7 +164,7 @@ export function UserFormDialog({ open, onOpenChange, utilisateur }: UserFormDial
               name="motDePasseTemporaire"
               label="Mot de passe temporaire"
               required
-              hint="Communiquez-le de manière sécurisée ; il devra être changé à la première connexion."
+              hint="À changer à la première connexion"
             >
               {({ field, control }) => (
                 <PasswordInput

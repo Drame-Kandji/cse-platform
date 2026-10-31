@@ -74,6 +74,7 @@ describe('AuditPage', () => {
     expect(requests[0]?.get('page')).toBe('0')
 
     await user.type(screen.getByRole('searchbox', { name: 'Rechercher dans le journal…' }), 'BES-2026')
+    await user.click(screen.getByRole('button', { name: /^Filtres/ }))
     await user.type(screen.getByRole('textbox', { name: 'Entité' }), 'Besoin')
     await waitFor(() => {
       const last = requests[requests.length - 1]

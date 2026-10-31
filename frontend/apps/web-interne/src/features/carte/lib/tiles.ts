@@ -16,26 +16,31 @@ export const OSM_TILES: TileConfig = {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">contributeurs OpenStreetMap</a>',
 }
 
+/*
+ * Charte bleu + blanc : bleu = affecte (en activite), gris = disponible, gris clair = reforme,
+ * rouge = en maintenance (seule couleur d'alerte).
+ */
+
 /** Classes de remplissage SVG par etat (jetons semantiques, generes par Tailwind). */
 export const ETAT_FILL: Readonly<Record<EtatMateriel, string>> = {
-  DISPONIBLE: 'fill-success',
+  DISPONIBLE: 'fill-muted-foreground',
   AFFECTE: 'fill-primary',
-  EN_MAINTENANCE: 'fill-warning',
-  REFORME: 'fill-muted-foreground',
+  EN_MAINTENANCE: 'fill-danger',
+  REFORME: 'fill-border-strong',
 }
 
 /** Classes de fond par etat (pastilles HTML des marqueurs et de la legende). */
 export const ETAT_BG: Readonly<Record<EtatMateriel, string>> = {
-  DISPONIBLE: 'bg-success',
+  DISPONIBLE: 'bg-muted-foreground',
   AFFECTE: 'bg-primary',
-  EN_MAINTENANCE: 'bg-warning',
-  REFORME: 'bg-muted-foreground',
+  EN_MAINTENANCE: 'bg-danger',
+  REFORME: 'bg-border-strong',
 }
 
 /** Texte contraste sur `ETAT_BG`. */
 export const ETAT_TEXT: Readonly<Record<EtatMateriel, string>> = {
-  DISPONIBLE: 'text-success-foreground',
+  DISPONIBLE: 'text-surface',
   AFFECTE: 'text-primary-foreground',
-  EN_MAINTENANCE: 'text-warning-foreground',
-  REFORME: 'text-surface',
+  EN_MAINTENANCE: 'text-danger-foreground',
+  REFORME: 'text-foreground',
 }

@@ -11,9 +11,9 @@ import { useSignalerPanne } from './hooks'
 import { panneSchema, type PanneFormInput, type PanneFormOutput } from './schemas'
 
 const GRAVITE_HINTS = {
-  MINEURE: 'Le matériel reste utilisable',
-  MAJEURE: 'Utilisation dégradée, intervention à planifier',
-  BLOQUANTE: 'Matériel immobilisé',
+  MINEURE: 'Reste utilisable',
+  MAJEURE: 'Usage dégradé',
+  BLOQUANTE: 'Immobilisé',
 } as const
 
 export interface SignalerPanneDialogProps {
@@ -87,7 +87,7 @@ function PanneForm({
             {...control}
             {...field}
             rows={4}
-            placeholder="Symptômes constatés, circonstances, localisation sur le chantier…"
+            placeholder="Symptômes constatés…"
           />
         )}
       </FormField>

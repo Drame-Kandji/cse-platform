@@ -58,20 +58,12 @@ export function EngagementDecisionDialog({ engagement, approuve, onClose }: Prop
       >
         {engagement && (
           <form onSubmit={(event) => void submit(event)} className="grid gap-4" noValidate>
-            <dl className="grid grid-cols-2 gap-3 rounded-lg border border-border bg-surface-sunken p-3 text-sm">
-              <div>
-                <dt className="text-xs text-muted-foreground">{t('columns.fournisseur')}</dt>
-                <dd className="font-medium">{engagement.fournisseurNom}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-muted-foreground">{t('columns.montant')}</dt>
-                <dd className="font-medium tabular-nums">{formatMoney(engagement.montant)}</dd>
-              </div>
-              <div className="col-span-2">
-                <dt className="text-xs text-muted-foreground">{t('columns.objet')}</dt>
-                <dd>{engagement.objet}</dd>
-              </div>
-            </dl>
+            <p className="text-sm">
+              <span className="font-medium">{engagement.fournisseurNom}</span>
+              <span className="text-muted-foreground"> · </span>
+              <span className="font-medium tabular-nums">{formatMoney(engagement.montant)}</span>
+              <span className="mt-0.5 block text-muted-foreground">{engagement.objet}</span>
+            </p>
             <FormField
               control={form.control}
               name="commentaire"

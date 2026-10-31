@@ -1,4 +1,4 @@
-import { AlarmClock, Plus } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -6,9 +6,7 @@ import { access } from '@/app/access'
 import { to } from '@/app/routes'
 import { useHasRole } from '@/shared/auth'
 import { optionsOf, type StatutFacture } from '@/shared/domain/labels'
-import { cn } from '@/shared/lib/cn'
-import { EMPTY_VALUE, formatDate, formatMoney } from '@/shared/lib/format'
-import { Badge } from '@/shared/ui/badge'
+import { formatDate, formatMoney } from '@/shared/lib/format'
 import { Button } from '@/shared/ui/button'
 import { DataTable, useTableState, type ColumnDef } from '@/shared/ui/data-table'
 import { EmptyState } from '@/shared/ui/empty-state'
@@ -49,14 +47,11 @@ export function FacturesPanel() {
         enableSorting: true,
         meta: { mobilePrimary: true, nowrap: true },
         cell: ({ row }) => (
-          <span className="flex flex-wrap items-center gap-2 font-medium">
-            {row.original.numero}
-            {row.original.enRetard && (
-              <Badge tone="danger" size="sm">
-                <AlarmClock aria-hidden />
-                {t('factures.overdue')}
-              </Badge>
-            )}
+          <span className="grid">
+            <span className="font-medium">{row.original.numero}</span>
+            <span className="max-w-56 truncate text-xs text-muted-foreground">
+              {row.original.fournisseurNom}
+            </span>
           </span>
         ),
       },
@@ -74,18 +69,12 @@ export function FacturesPanel() {
         ),
       },
       {
-        accessorKey: 'fournisseurNom',
-        header: t('columns.fournisseur'),
-        meta: { minWidth: 160 },
-      },
-      {
         accessorKey: 'montantTtc',
         header: t('columns.montantTtc'),
-        meta: { align: 'right' },
+        meta: { align: 'right', nowrap: true },
         cell: ({ row }) => (
-          <span className="grid">
-            <span className="font-medium">{formatMoney(row.original.montantTtc)}</span>
-            <span className="text-xs text-muted-foreground">HT {formatMoney(row.original.montantHt)}</span>
+          <span className="tabular-nums" title={`HT ${formatMoney(row.original.montantHt)}`}>
+            {formatMoney(row.original.montantTtc)}
           </span>
         ),
       },
@@ -95,8 +84,11 @@ export function FacturesPanel() {
         meta: { nowrap: true },
         enableSorting: true,
         cell: ({ row }) => (
-          <span className={cn(row.original.enRetard && 'font-medium text-danger-emphasis')}>
-            {formatDate(row.original.dateEcheance)}
+          <span className="grid">
+            <span className="tabular-nums">{formatDate(row.original.dateEcheance)}</span>
+            {row.original.enRetard && (
+              <span className="text-xs font-medium text-danger-emphasis">{t('factures.overdue')}</span>
+            )}
           </span>
         ),
       },
@@ -105,25 +97,19 @@ export function FacturesPanel() {
         header: t('columns.statut'),
         meta: { nowrap: true },
         enableSorting: true,
-        cell: ({ row }) => (
-          <span className="grid gap-0.5">
-            <StatusBadge kind="statutFacture" value={row.original.statut} />
-            {row.original.motifRejet && (
-              <span
-                className="max-w-48 truncate text-xs text-muted-foreground"
-                title={row.original.motifRejet}
-              >
-                {row.original.motifRejet}
-              </span>
-            )}
-          </span>
-        ),
-      },
-      {
-        accessorKey: 'referenceMandat',
-        header: t('columns.mandat'),
-        meta: { nowrap: true, hideBelow: '2xl' },
-        cell: ({ row }) => row.original.referenceMandat ?? EMPTY_VALUE,
+        cell: ({ row }) => {
+          const secondaire = row.original.motifRejet ?? row.original.referenceMandat
+          return (
+            <span className="grid justify-items-start gap-0.5">
+              <StatusBadge kind="statutFacture" value={row.original.statut} />
+              {secondaire && (
+                <span className="max-w-48 truncate text-xs text-muted-foreground" title={secondaire}>
+                  {secondaire}
+                </span>
+              )}
+            </span>
+          )
+        },
       },
     ]
     if (!peutGerer) return base

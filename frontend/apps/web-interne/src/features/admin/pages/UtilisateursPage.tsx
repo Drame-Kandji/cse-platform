@@ -1,7 +1,7 @@
-import { KeyRound, MoreHorizontal, Pencil, Power, ShieldCheck, ShieldOff, UserPlus } from 'lucide-react'
+import { KeyRound, MoreHorizontal, Pencil, Power, UserPlus } from 'lucide-react'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { describeStatus, ROLES } from '@/shared/domain/labels'
+import { describeStatus } from '@/shared/domain/labels'
 import { formatDate } from '@/shared/lib/format'
 import { Avatar } from '@/shared/ui/avatar'
 import { Badge } from '@/shared/ui/badge'
@@ -25,11 +25,6 @@ import { useChangerStatut, useUtilisateurs } from '../hooks/useUtilisateurs'
 import type { Utilisateur } from '../types'
 
 const TOUS = 'TOUS'
-const ROLE_FILTER = [
-  { value: TOUS, label: 'Tous les rôles' },
-  ...ROLES.map((role) => ({ value: role, label: describeStatus('role', role).label })),
-  { value: 'FOURNISSEUR', label: 'Fournisseur' },
-]
 const STATUT_FILTER = [
   { value: TOUS, label: 'Tous les statuts' },
   { value: 'true', label: 'Actifs' },
@@ -68,21 +63,15 @@ function columns(actions: RowActions): ColumnDef<Utilisateur>[] {
       accessorKey: 'role',
       header: 'Rôle',
       meta: { nowrap: true },
-      cell: ({ row }) => {
-        const role = describeStatus('role', row.original.role)
-        return (
-          <Badge tone={role.tone} size="sm">
-            {row.original.role === 'FOURNISSEUR' ? 'Fournisseur' : role.label}
-          </Badge>
-        )
-      },
+      cell: ({ row }) =>
+        row.original.role === 'FOURNISSEUR' ? 'Fournisseur' : describeStatus('role', row.original.role).label,
     },
     {
       accessorKey: 'actif',
       header: 'Statut',
       meta: { nowrap: true },
       cell: ({ row }) => (
-        <Badge tone={row.original.actif ? 'success' : 'neutral'} dot size="sm">
+        <Badge size="sm" variant={row.original.actif ? 'soft' : 'outline'}>
           {row.original.actif ? 'Actif' : 'Désactivé'}
         </Badge>
       ),
@@ -91,16 +80,11 @@ function columns(actions: RowActions): ColumnDef<Utilisateur>[] {
       accessorKey: 'otpConfigure',
       header: 'OTP',
       meta: { hideOnMobile: true, nowrap: true, hideBelow: 'xl' },
-      cell: ({ row }) =>
-        row.original.otpConfigure ? (
-          <Badge tone="info" size="sm">
-            <ShieldCheck aria-hidden /> Configuré
-          </Badge>
-        ) : (
-          <Badge tone="warning" variant="outline" size="sm">
-            <ShieldOff aria-hidden /> Non configuré
-          </Badge>
-        ),
+      cell: ({ row }) => (
+        <span className={row.original.otpConfigure ? undefined : 'text-muted-foreground'}>
+          {row.original.otpConfigure ? 'Configuré' : 'Non configuré'}
+        </span>
+      ),
     },
     {
       accessorKey: 'createdAt',
@@ -214,7 +198,7 @@ export function Component() {
           </Button>
         }
       />
-      <div className="grid gap-6">
+      <div className="grid gap-4">
         <RolesOverview
           selected={role}
           onSelect={(value) => {
@@ -246,15 +230,6 @@ export function Component() {
                 setParams(new URLSearchParams(), { replace: true })
               }}
             >
-              <Select
-                aria-label="Filtrer par rôle"
-                className="w-auto min-w-44"
-                options={ROLE_FILTER}
-                value={role ?? TOUS}
-                onValueChange={(value) => {
-                  setFilter('role', value === TOUS ? undefined : value)
-                }}
-              />
               <Select
                 aria-label="Filtrer par statut"
                 className="w-auto min-w-40"

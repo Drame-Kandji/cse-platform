@@ -74,11 +74,7 @@ export function PlanifierDialog({ open, onOpenChange, panne }: Props) {
       <DialogContent
         size="lg"
         title={panne ? t('planifier.titlePanne') : t('planifier.title')}
-        description={
-          panne
-            ? t('planifier.descriptionPanne', { materiel: panne.materielCode })
-            : t('planifier.description')
-        }
+        description={panne ? panne.materielCode : undefined}
       >
         <form id="planifier-form" onSubmit={(event) => void submit(event)} noValidate className="grid gap-4">
           <FormField control={form.control} name="materielId" label={t('planifier.materiel')} required>

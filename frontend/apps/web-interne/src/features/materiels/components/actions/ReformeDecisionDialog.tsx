@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { InlineAlert } from '@/shared/suivi'
 import { Button } from '@/shared/ui/button'
 import { Dialog, DialogContent, DialogFooter } from '@/shared/ui/dialog'
 import { Field } from '@/shared/ui/field'
@@ -40,15 +39,12 @@ export function ReformeDecisionDialog({
   }
   return (
     <Dialog open={open} onOpenChange={(next) => (next ? onOpenChange(true) : close())}>
-      <DialogContent title="Décision sur la réforme" description="Demande du Responsable Matériel.">
+      <DialogContent title="Décision sur la réforme" description="Décision définitive.">
         <div className="grid gap-4">
-          <div className="rounded-lg border border-border bg-surface-sunken/60 px-3.5 py-3 text-sm">
-            <p className="text-xs font-medium text-muted-foreground">Motif de la demande</p>
+          <div className="rounded-lg bg-muted/60 px-3.5 py-3 text-sm">
+            <p className="text-xs text-muted-foreground">Motif de la demande</p>
             <p className="mt-1 whitespace-pre-line">{motif ?? 'Aucun motif renseigné.'}</p>
           </div>
-          <InlineAlert tone="warning" title="Décision définitive">
-            Un matériel réformé ne peut plus être affecté ni remis en service.
-          </InlineAlert>
           <Field label="Commentaire" optional>
             {(control) => (
               <Textarea

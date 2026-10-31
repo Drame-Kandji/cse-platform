@@ -40,7 +40,7 @@ export function AffectationBar({
           data-testid="planning-bar"
           aria-label={`${affectation.materielCode} sur ${affectation.chantierNom}, ${periode}, ${labelOf('statutAffectation', affectation.statut)}`}
           className={cn(
-            'absolute inset-y-1.5 z-[1] flex items-center overflow-hidden rounded-md px-1.5 text-2xs font-medium shadow-xs transition-colors',
+            'absolute inset-y-1.5 z-[1] flex items-center overflow-hidden rounded-md px-1.5 text-2xs font-medium transition-colors',
             BAR_CLASSES[affectation.statut],
             position.coupeeAvant && 'rounded-l-none',
             position.coupeeApres && 'rounded-r-none',

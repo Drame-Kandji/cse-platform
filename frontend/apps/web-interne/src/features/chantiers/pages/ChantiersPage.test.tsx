@@ -56,7 +56,8 @@ describe('ChantiersPage', () => {
     expect(await screen.findByText('Extension autoroute Dakar–AIBD')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Nouveau chantier/ })).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: /CH-DKR-01/ }))
+    // Vue tableau par defaut : un clic sur la ligne ouvre le detail.
+    await user.click(screen.getByText('Extension autoroute Dakar–AIBD'))
     const sheet = await screen.findByRole('dialog')
     expect(await within(sheet).findByText(/Aucun matériel n'est affecté/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Terminer le chantier' })).toBeInTheDocument()

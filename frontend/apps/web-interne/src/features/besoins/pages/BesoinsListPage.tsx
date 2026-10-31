@@ -31,7 +31,9 @@ export function Component() {
   const query = useBesoins({ ...filtres, ...table.pageParams })
   const chantiers = useChantiersSelectionnables()
   const columns = useMemo(() => besoinColumns(t), [t])
-  const secondaires = [filtres.statut, filtres.categorie, filtres.chantierId, filtres.du].filter(Boolean).length
+  // Le statut VALIDE n'a pas d'onglet : il n'est compte comme filtre secondaire que dans ce cas.
+  const statutHorsOnglet = filtres.statut === 'VALIDE' ? filtres.statut : undefined
+  const secondaires = [statutHorsOnglet, filtres.categorie, filtres.chantierId, filtres.du].filter(Boolean).length
   const chantierOptions = (chantiers.data?.content ?? []).map((c) => ({
     value: c.id,
     label: c.nom,

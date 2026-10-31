@@ -1,4 +1,3 @@
-import { Eye, FileText, Lock, Stamp } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { access } from '@/app/access'
@@ -31,8 +30,7 @@ export function Component() {
         meta={
           !gestion && (
             <Badge tone="neutral" title={t('page.readOnly')}>
-              <Eye aria-hidden />
-              {t('page.readOnly')}
+              {t('page.readOnlyShort')}
             </Badge>
           )
         }
@@ -61,16 +59,14 @@ export function Component() {
         >
           <TabsList>
             <TabsTrigger value="engagements">
-              <Stamp aria-hidden />
               {t('tabs.engagements')}
               {synthese.data && synthese.data.engagementsEnAttente > 0 && (
-                <Badge tone="warning" size="sm">
+                <span className="tabular-nums text-muted-foreground">
                   {synthese.data.engagementsEnAttente}
-                </Badge>
+                </span>
               )}
             </TabsTrigger>
             <TabsTrigger value="factures">
-              <FileText aria-hidden />
               {t('tabs.factures')}
             </TabsTrigger>
           </TabsList>
@@ -82,7 +78,6 @@ export function Component() {
               <FacturesPanel />
             ) : (
               <EmptyState
-                icon={<Lock aria-hidden />}
                 title={t('factures.noAccess')}
                 description={t('factures.noAccessDescription')}
               />

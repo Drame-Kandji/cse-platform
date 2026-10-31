@@ -28,11 +28,7 @@ export function ResetPasswordDialog({ utilisateur, onOpenChange }: ResetPassword
     <Dialog open={utilisateur !== null} onOpenChange={onOpenChange}>
       <DialogContent
         title="Réinitialiser le mot de passe"
-        description={
-          utilisateur
-            ? `${utilisateur.prenom} ${utilisateur.nom} devra définir un nouveau mot de passe à sa prochaine connexion.`
-            : undefined
-        }
+        description={utilisateur ? `${utilisateur.prenom} ${utilisateur.nom}` : undefined}
       >
         <form
           id="reset-password-form"
@@ -51,12 +47,7 @@ export function ResetPasswordDialog({ utilisateur, onOpenChange }: ResetPassword
             )
           }}
         >
-          <Field
-            label="Mot de passe temporaire"
-            required
-            error={touched ? failed?.message : undefined}
-            hint="Copiez-le avant de valider et transmettez-le par un canal sûr."
-          >
+          <Field label="Mot de passe temporaire" required error={touched ? failed?.message : undefined}>
             {(control) => (
               <PasswordInput
                 {...control}

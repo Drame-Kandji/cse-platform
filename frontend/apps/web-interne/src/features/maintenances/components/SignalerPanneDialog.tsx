@@ -63,7 +63,7 @@ export function SignalerPanneDialog({
 
   return (
     <Dialog open={open} onOpenChange={(next) => !pending && onOpenChange(next)}>
-      <DialogContent size="lg" title={t('signaler.title')} description={t('signaler.description')}>
+      <DialogContent size="lg" title={t('signaler.title')}>
         <form id="panne-form" onSubmit={(event) => void submit(event)} noValidate className="grid gap-4">
           <FormField control={form.control} name="materielId" label={t('signaler.materiel')} required>
             {({ field, control }) => (

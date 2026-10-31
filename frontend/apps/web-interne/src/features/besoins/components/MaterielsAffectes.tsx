@@ -1,8 +1,6 @@
-import { Truck } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { to } from '@/app/routes'
-import { EmptyState } from '@/shared/ui/empty-state'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { StatusBadge } from '@/shared/ui/status-badge'
 import { useMaterielsAffectes } from '../hooks/useBesoins'
@@ -12,10 +10,10 @@ export function MaterielsAffectes({ ids }: { ids: readonly string[] }) {
   const { t } = useTranslation('besoins')
   const queries = useMaterielsAffectes(ids)
   if (ids.length === 0) {
-    return <EmptyState size="compact" icon={<Truck aria-hidden />} title={t('detail.materielsVide')} />
+    return <p className="text-sm text-muted-foreground">{t('detail.materielsVide')}</p>
   }
   return (
-    <ul className="grid gap-2">
+    <ul className="grid divide-y divide-border">
       {ids.map((id, index) => {
         const query = queries[index]
         const materiel = query?.data
@@ -23,11 +21,8 @@ export function MaterielsAffectes({ ids }: { ids: readonly string[] }) {
           <li key={id}>
             <Link
               to={to.materielDetail(id)}
-              className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:border-border-strong hover:bg-muted/40"
+              className="-mx-2 flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-muted/60"
             >
-              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground">
-                <Truck className="size-4" aria-hidden />
-              </span>
               {query?.isPending ? (
                 <Skeleton className="h-4 w-40" />
               ) : (

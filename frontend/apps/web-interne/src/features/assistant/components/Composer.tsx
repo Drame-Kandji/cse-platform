@@ -67,11 +67,11 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function 
         />
       </div>
       <p id="assistant-question-aide" className="flex justify-between gap-2 text-2xs text-muted-foreground">
-        <span className="hidden sm:inline">Entrée pour envoyer, Maj + Entrée pour aller à la ligne</span>
+        <span className="sr-only">Entrée pour envoyer, Maj + Entrée pour aller à la ligne</span>
         <span
           className={cn(
             'ml-auto tabular-nums',
-            length >= QUESTION_MAX_LENGTH * 0.9 && 'text-warning-emphasis',
+            length >= QUESTION_MAX_LENGTH * 0.9 && 'text-danger-emphasis',
           )}
           aria-live="polite"
         >

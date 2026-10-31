@@ -11,7 +11,8 @@ interface Props {
 
 /**
  * Onglets de statut avec compteurs (GET /api/besoins/statistiques) :
- * Tous / En attente / Validés / Rejetés. Re-cliquer l'onglet actif revient a "Tous".
+ * Tous / En attente / En achat / Affectés / Rejetés. VALIDE (transitoire, orientation en cours)
+ * reste accessible via le filtre Statut du bouton "Filtres". Re-cliquer l'onglet actif revient a "Tous".
  */
 export function BesoinStats({ onFilter, actif }: Props) {
   const { t } = useTranslation('besoins')
@@ -29,7 +30,8 @@ export function BesoinStats({ onFilter, actif }: Props) {
       items={[
         { value: null, label: t('stats.tous'), count: stats?.total },
         { value: 'EN_ATTENTE', label: t('stats.enAttente'), count: count('EN_ATTENTE') },
-        { value: 'VALIDE', label: t('stats.valides'), count: count('VALIDE') },
+        { value: 'EN_ACHAT', label: t('stats.enAchat'), count: count('EN_ACHAT') },
+        { value: 'AFFECTE_DIRECT', label: t('stats.affectes'), count: count('AFFECTE_DIRECT') },
         { value: 'REJETE', label: t('stats.rejetes'), count: count('REJETE') },
       ]}
     />
