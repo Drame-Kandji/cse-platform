@@ -1,0 +1,48 @@
+@gw = http://localhost:8080
+# Jeton : scripts/token.sh <e-mail> (15 min)
+@token = COLLER_LE_JETON_ICI
+
+### Mon profil (tout utilisateur)
+GET {{gw}}/api/me
+Authorization: Bearer {{token}}
+
+### Utilisateurs (ADMIN_SYSTEME)
+GET {{gw}}/api/admin/utilisateurs?role=CHEF_CHANTIER&actif=true&page=0&size=20&sort=nom,asc
+Authorization: Bearer {{token}}
+
+### Détail d'un utilisateur (Mamadou Diop)
+GET {{gw}}/api/admin/utilisateurs/00000000-0000-0000-0000-000000000101
+Authorization: Bearer {{token}}
+
+### Créer un chef de chantier (compte Keycloak + profil)
+POST {{gw}}/api/admin/utilisateurs
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "email": "moussa.sy@cse.sn",
+  "prenom": "Moussa",
+  "nom": "Sy",
+  "telephone": "+221 77 000 00 00",
+  "role": "CHEF_CHANTIER",
+  "motDePasseTemporaire": "Temporaire@2026",
+  "chantierIds": ["c0000000-0000-0000-0000-000000000005"]
+}
+
+### Activer / désactiver un compte
+PATCH {{gw}}/api/admin/utilisateurs/00000000-0000-0000-0000-000000000102/statut
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "actif": true }
+
+### Réinitialiser le mot de passe (204)
+POST {{gw}}/api/admin/utilisateurs/00000000-0000-0000-0000-000000000102/reinitialiser-mot-de-passe
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "motDePasseTemporaire": "Temporaire@2026" }
+
+### Rôles et nombre d'utilisateurs
+GET {{gw}}/api/admin/roles
+Authorization: Bearer {{token}}

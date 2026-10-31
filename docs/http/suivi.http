@@ -1,0 +1,115 @@
+@gw = http://localhost:8080
+# Jeton : scripts/token.sh <e-mail> (15 min)
+@token = COLLER_LE_JETON_ICI
+
+@materielId = a1000000-0000-0000-0000-000000000023
+@chantierId = c0000000-0000-0000-0000-000000000001
+
+### Chantiers (CHEF : ses chantiers)
+GET {{gw}}/api/chantiers?statut=EN_COURS&page=0&size=20
+Authorization: Bearer {{token}}
+
+### Créer un chantier (RM, ADMIN)
+POST {{gw}}/api/chantiers
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "code": "CH-LGA-01",
+  "nom": "Voirie de Louga",
+  "localisation": "Louga centre",
+  "region": "Louga",
+  "latitude": 15.6144,
+  "longitude": -16.2244,
+  "budget": 850000000,
+  "montantMarche": 1200000000,
+  "dateDebut": "2026-11-01",
+  "dateFinPrevue": "2027-06-30"
+}
+
+### Parc matériel
+GET {{gw}}/api/materiels?etat=DISPONIBLE&categorie=MATERIEL_ROULANT&page=0&size=20&sort=code,asc
+Authorization: Bearer {{token}}
+
+### Fiche matériel (+ historiques)
+GET {{gw}}/api/materiels/{{materielId}}
+Authorization: Bearer {{token}}
+
+### Disponibilité sur une période
+GET {{gw}}/api/materiels/disponibilite?categorie=MATERIEL_ROULANT&designation=chargeuse&quantite=1&du=2026-11-10&au=2026-12-10
+Authorization: Bearer {{token}}
+
+### Carte GeoJSON
+GET {{gw}}/api/materiels/carte?etat=AFFECTE
+Authorization: Bearer {{token}}
+
+### Affecter (RM — R04 ; chevauchement → 409 CONFLIT_AFFECTATION)
+POST {{gw}}/api/materiels/{{materielId}}/affecter
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "chantierId": "{{chantierId}}", "dateDebut": "2026-11-10", "dateFinPrevue": "2026-12-10" }
+
+### Confirmer la réception (CHEF du chantier, RM)
+POST {{gw}}/api/materiels/{{materielId}}/confirmer-reception
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "observations": "Reçu en bon état, compteur 1 250 h" }
+
+### Relevé du compteur horaire (CHEF, RM)
+POST {{gw}}/api/materiels/{{materielId}}/heures
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "heuresFonctionnement": 1300 }
+
+### Libérer (RM)
+POST {{gw}}/api/materiels/{{materielId}}/liberer
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "dateFinReelle": "2026-12-08", "commentaire": "Fin des terrassements" }
+
+### Demander la réforme (RM — R13 étape 1)
+POST {{gw}}/api/materiels/{{materielId}}/reforme/demande
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "motif": "Coût de réparation supérieur à la valeur résiduelle" }
+
+### Valider la réforme (DG — R13 étape 2)
+PATCH {{gw}}/api/materiels/{{materielId}}/reforme/valider
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "approuve": true, "commentaire": "Accord" }
+
+### Planning des affectations (≤ 366 jours)
+GET {{gw}}/api/affectations/planning?du=2026-10-01&au=2026-12-31
+Authorization: Bearer {{token}}
+
+### Planifier une maintenance (RM)
+POST {{gw}}/api/maintenances
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "materielId": "{{materielId}}", "type": "PREVENTIVE", "description": "Vidange et filtres 1 500 h", "datePlanifiee": "2026-11-20", "technicien": "Atelier central" }
+
+### Démarrer / clôturer un ordre de travail (RM)
+PATCH {{gw}}/api/maintenances/REMPLACER_ID/cloturer
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "cout": 450000, "observations": "RAS", "heuresCompteur": 1310 }
+
+### Signaler une panne (CHEF du chantier, RM)
+POST {{gw}}/api/pannes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "materielId": "{{materielId}}", "gravite": "MAJEURE", "description": "Fuite hydraulique sur le vérin de flèche" }
+
+### Types d'engins
+GET {{gw}}/api/referentiels/types-engins
+Authorization: Bearer {{token}}

@@ -26,6 +26,7 @@ L'implémentation précédente a été auditée puis reconstruite (voir ADR-0003
 | ms-reporting + ms-audit | ✅ | 65 + 28 tests |
 | ms-notification + ms-chatbot | ✅ | 65 + 101 tests |
 | Frontend `web-interne` (tous les modules) | ✅ | 174 tests, typecheck/lint stricts |
+| Documentation complète (README, architecture C4, événements, sécurité, exploitation, guides développeur et utilisateur avec captures, rapport qualité, DECISIONS.md, CHANGELOG 2.0.0, collections `.http`) | ✅ | `docs/`, `docs/QUALITY_REPORT.md` (mesures du 31/10/2026) |
 | Intégration réelle (10 services + Keycloak + Kafka) | ✅ | `scripts/smoke.sh` : 6 rôles, RBAC conforme ; QA navigateur sans erreur API |
 
 ## En cours
@@ -37,7 +38,6 @@ L'implémentation précédente a été auditée puis reconstruite (voir ADR-0003
 ## Reste à faire
 
 - Tests Playwright des 3 scénarios critiques (soumission/validation d'un besoin, cycle d'achat, réception + clôture de maintenance).
-- Documentation complète (architecture C4, événements, sécurité, exploitation, guides développeur et utilisateur, rapport qualité).
 
 ## Hors périmètre (décision utilisateur)
 
@@ -50,3 +50,4 @@ L'implémentation précédente a été auditée puis reconstruite (voir ADR-0003
 - Registre SSE et limiteur de débit du chatbot en mémoire (mono-instance).
 - 2FA : rôles concernés marqués `CONFIGURE_TOTP` à la création par ms-auth ; le realm de démonstration n'impose pas l'OTP aux comptes seedés.
 - Client Keycloak `cse-tests-e2e` (mot de passe direct) à retirer du realm de production.
+- Couverture frontend 63 % des lignes (< 80 % visé sur logique/hooks) ; Checkstyle non branché ; journaux au format texte (pas JSON).

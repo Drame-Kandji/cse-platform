@@ -1,0 +1,33 @@
+@gw = http://localhost:8080
+# Jeton : scripts/token.sh <e-mail> (15 min)
+@token = COLLER_LE_JETON_ICI
+
+### Poser une question (≤ 1000 caractères)
+POST {{gw}}/api/chatbot/query
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "question": "Où se trouve la pelle hydraulique PEL-CAT320-01 ?" }
+
+### Continuer une conversation
+POST {{gw}}/api/chatbot/query
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "question": "Et quand est sa prochaine maintenance ?", "conversationId": "REMPLACER_ID" }
+
+### Mes conversations
+GET {{gw}}/api/chatbot/historique?page=0&size=20
+Authorization: Bearer {{token}}
+
+### Une conversation
+GET {{gw}}/api/chatbot/historique/REMPLACER_ID
+Authorization: Bearer {{token}}
+
+### Supprimer (204)
+DELETE {{gw}}/api/chatbot/historique/REMPLACER_ID
+Authorization: Bearer {{token}}
+
+### Questions types selon le rôle
+GET {{gw}}/api/chatbot/suggestions
+Authorization: Bearer {{token}}

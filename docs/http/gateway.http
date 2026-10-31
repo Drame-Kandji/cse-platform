@@ -1,0 +1,16 @@
+@gw = http://localhost:8080
+# Jeton : scripts/token.sh <e-mail> (15 min)
+@token = COLLER_LE_JETON_ICI
+
+### Santé de la passerelle (public)
+GET {{gw}}/actuator/health
+
+### État des microservices (rôle interne)
+GET {{gw}}/api/plateforme/etat
+Authorization: Bearer {{token}}
+
+### Documentation OpenAPI agrégée d'un service (public)
+GET {{gw}}/v3/api-docs/ms-besoins
+
+### Sans jeton : 401 NON_AUTHENTIFIE (ProblemDetail)
+GET {{gw}}/api/besoins

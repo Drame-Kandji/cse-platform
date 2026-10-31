@@ -1,0 +1,24 @@
+@gw = http://localhost:8080
+# Jeton : scripts/token.sh <e-mail> (15 min)
+@token = COLLER_LE_JETON_ICI
+
+### Mes notifications non lues
+GET {{gw}}/api/notifications?lue=false&page=0&size=20
+Authorization: Bearer {{token}}
+
+### Compteur
+GET {{gw}}/api/notifications/non-lues/count
+Authorization: Bearer {{token}}
+
+### Marquer comme lue
+PATCH {{gw}}/api/notifications/REMPLACER_ID/lue
+Authorization: Bearer {{token}}
+
+### Tout lire (204)
+POST {{gw}}/api/notifications/tout-lire
+Authorization: Bearer {{token}}
+
+### Flux SSE (ping toutes les 25 s ; à tester plutôt avec curl -N)
+GET {{gw}}/api/notifications/stream
+Authorization: Bearer {{token}}
+Accept: text/event-stream

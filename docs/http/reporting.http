@@ -1,0 +1,31 @@
+@gw = http://localhost:8080
+# Jeton : scripts/token.sh <e-mail> (15 min)
+@token = COLLER_LE_JETON_ICI
+
+### Tableau de bord (profil par défaut selon le rôle ; 90 derniers jours)
+GET {{gw}}/api/reporting/kpis
+Authorization: Bearer {{token}}
+
+### Tableau d'un profil sur une période (DG : tous les profils)
+GET {{gw}}/api/reporting/kpis?profil=DAF&du=2026-01-01&au=2026-10-31
+Authorization: Bearer {{token}}
+
+### Tableau limité à un chantier
+GET {{gw}}/api/reporting/kpis?profil=RESPONSABLE_MATERIEL&chantierId=c0000000-0000-0000-0000-000000000001
+Authorization: Bearer {{token}}
+
+### Série mensuelle
+GET {{gw}}/api/reporting/series?indicateur=MONTANT_ENGAGE&granularite=MOIS&du=2026-02-01&au=2026-10-31
+Authorization: Bearer {{token}}
+
+### Série hebdomadaire de disponibilité
+GET {{gw}}/api/reporting/series?indicateur=TAUX_DISPONIBILITE&granularite=SEMAINE
+Authorization: Bearer {{token}}
+
+### Export PDF
+GET {{gw}}/api/reporting/export?format=pdf&profil=DG
+Authorization: Bearer {{token}}
+
+### Export Excel
+GET {{gw}}/api/reporting/export?format=xlsx&profil=DG
+Authorization: Bearer {{token}}

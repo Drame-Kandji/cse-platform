@@ -1,206 +1,166 @@
-# CSE Platform - Système de Management et de Suivi des Matériels et Équipements
+# Plateforme CSE — gestion des matériels, achats et pilotage
 
-Compagnie Sahélienne d'Entreprises (CSE) - Plateforme microservices pour la gestion des besoins, achats, fournisseurs, parc matériel, reporting et chatbot IA.
+Système de management et de suivi des matériels et équipements de la **Compagnie Sahélienne d'Entreprises**
+(BTP, Sénégal) : expression et validation des besoins des chantiers, gestion du parc (affectations,
+maintenance, pannes, réforme), achats (appels d'offres anonymisés, évaluation multicritère, contrats,
+engagements, factures), référentiel fournisseurs, tableaux de bord par profil, assistant IA, notifications
+et journal d'audit.
 
-## Démarrage rapide
-```bash
-cp .env.example .env
-make up
-make build
-```
+Projet de Master (MILIA — EPT), encadré par le Pr. Guissé. Version **2.0.0** ([CHANGELOG](CHANGELOG.md)).
+
+![Tableau de bord de la Direction Générale](docs/images/dg-dashboard.png)
+
+## Aperçu
+
+| Validation des besoins (Responsable Matériel) | Carte du parc (mode sombre) |
+|---|---|
+| ![Validation](docs/images/rm-validation.png) | ![Carte](docs/images/dark-rm-carte.png) |
+| **Évaluation des offres d'un appel d'offres** | **Contrat en livraison** |
+| ![Évaluation](docs/images/ra-ao-evaluation.png) | ![Contrat](docs/images/ra-contrat-detail.png) |
+| **Planning des affectations** | **Assistant IA** |
+| ![Planning](docs/images/rm-planning.png) | ![Assistant](docs/images/dg-assistant.png) |
+| **Finance (DAF)** | **Journal d'audit (Administrateur)** |
+| ![Finance](docs/images/daf-finance.png) | ![Audit](docs/images/admin-audit.png) |
+
+Sur mobile : ![Mobile](docs/images/mobile-chef-dashboard.png)
+
+Toutes les captures sont commentées dans le [guide utilisateur](docs/USER_GUIDE.md).
 
 ## Architecture
-Microservices Spring Boot 3.x, Clean/Hexagonale, Kafka, Keycloak, PostgreSQL, React 18+ TypeScript.
 
+```mermaid
+flowchart LR
+  U((Utilisateurs CSE)) --> W["web-interne<br/>React 18 · Vite · Tailwind"]
+  W -->|OIDC PKCE| KC[Keycloak 25]
+  W -->|/api + JWT| GW["ms-gateway :8080<br/>Spring Cloud Gateway"]
+  GW --> AUTH[ms-auth] & BES[ms-besoins] & ACH[ms-achats] & FOU[ms-fournisseurs] & SUI[ms-suivi]
+  GW --> REP[ms-reporting] & BOT[ms-chatbot] & NOT[ms-notification] & AUD[ms-audit]
+  BES -->|REST| SUI
+  ACH -->|REST| FOU
+  BOT -->|REST lecture| SUI & BES & ACH & FOU
+  BES & ACH & FOU & SUI & AUTH -->|outbox| K[[Kafka KRaft]]
+  K --> REP & NOT & AUD & ACH & SUI & FOU & BES
+  AUTH & BES & ACH & FOU & SUI & REP & BOT & NOT & AUD --> PG[("PostgreSQL 15<br/>1 schéma par service")]
+  GW --> R[(Redis)]
+  NOT --> M[MailHog / SMTP]
+  BOT -.-> LLM[LLM optionnel]
+```
 
+Dix microservices en architecture hexagonale, base de données par service, REST synchrone + événements Kafka
+(outbox transactionnelle, consommateurs idempotents, DLT), sécurité Keycloak vérifiée à la passerelle et dans
+chaque service. Détails : [docs/architecture.md](docs/architecture.md).
 
+## Stack
 
-refait moi la partie front au complet ... la partie back est prete :
-en integrant les apis et faites les teste depuis le fornt aussi .. avec des identifiant de test pour chaque profile .
-# MISSION : Refonte et Implémentation Complète du Frontend CSE (`web-interne` & `portail-fournisseur`)
+| Couche | Technologies |
+|---|---|
+| Backend | Java 17, Spring Boot 3.5, Spring Cloud 2025.0 (Gateway, Resilience4j), Spring Security OAuth2 Resource Server, Spring Data JPA, Flyway, Spring Kafka, Spring AI 1.0, springdoc-openapi, OpenPDF, Apache POI |
+| Données et messagerie | PostgreSQL 15, Kafka 3.7 (KRaft), Redis 7 |
+| Identité | Keycloak 25 (realm `cse`, PKCE, rôles realm, claims `chantier_ids` / `fournisseur_id`) |
+| Frontend | React 18, TypeScript strict, Vite 5, Tailwind CSS, Radix UI, TanStack Query/Table, react-hook-form + zod, keycloak-js, i18next, Recharts, react-leaflet |
+| Qualité | JUnit 5, Mockito, AssertJ, Testcontainers, WireMock, ArchUnit, JaCoCo, Spotless ; Vitest, Testing Library, MSW, Playwright ; k6 |
+| Exploitation | Docker multi-étapes non-root, Docker Compose, Nginx HTTPS, sauvegardes `pg_dump`, GitHub Actions |
 
-Tu es un **Architecte Frontend Senior React 18 / TypeScript / Tailwind CSS**.
-Le backend (10 microservices Spring Boot 3 exposés via `ms-gateway` sur `http://localhost:8080`) est **déjà terminé, fonctionnel et peuplé de données**.
-En revanche, le frontend actuel dans `frontend/` est incomplet ou mal aligné avec les contrats JSON réels du backend.
+## Démarrage en 5 commandes
 
-Ta mission est de **réécrire proprement et intégralement** les deux applications du monorepo `frontend/` :
-1. `frontend/apps/web-interne` (port `5173`) — Application métier interne CSE (avec sidebar, header, sélecteur de rôle RBAC, cloche de notifications, tiroir chatbot IA, et 8 pages dédiées avec React Router).
-2. `frontend/apps/portail-fournisseur` (port `5174`) — Portail externe pour les fournisseurs de la CSE.
+Prérequis : **Docker** (Compose v2), **JDK 17**, **Maven ≥ 3.9**, **Node 20 + pnpm** (`corepack enable`),
+environ 12 Go de RAM.
 
----
+```bash
+cp .env.example .env && sed -i "s|^CSE_CRYPTO_KEY=.*|CSE_CRYPTO_KEY=$(head -c32 /dev/urandom | base64)|" .env
+make infra    # PostgreSQL, Kafka, Keycloak (import du realm), Redis, MailHog — attend que Keycloak soit prêt
+make build    # compile les 12 modules Maven (tests inclus ; plusieurs minutes)
+make start    # lance les 10 microservices sur l'hôte (profil dev, données de démonstration) ; make status
+make front    # http://localhost:5173 (la première fois : pnpm --dir frontend install)
+```
 
-## 1. EXIGENCES TECHNIQUES & DESIGN SYSTEM (OBLIGATOIRES)
+Ouvrir http://localhost:5173 et se connecter avec un compte ci-dessous. Les services génèrent leur jeu de
+démonstration au premier démarrage (chantiers, parc, besoins, fournisseurs, appels d'offres, contrats,
+factures sur 9 mois) ; compter 2 à 3 minutes pour que les tableaux de bord soient complets.
 
-1. **Architecture multi-pages propre (`react-router-dom`)** :
-   - Interdiction de tout mettre dans un seul fichier monolithique illisible.
-   - Crée un vrai **Layout industriel BTP moderne** (Sidebar latérale fixe à gauche avec icônes et compteurs, Topbar avec fil d'Ariane, Sélecteur de profil RBAC CSE, Cloche de notifications avec badge non-lues, et Widget Chatbot IA flottant).
-   - Palette de couleurs BTP CSE Sénégal : Bleu marine profond (`slate-900` / `blue-950`), Jaune/Ambre engin de chantier (`amber-500`), Émeraude validation (`emerald-600`), Rouge alerte (`red-600`), fond clair (`slate-50`).
-   - Utilise **Recharts** pour les graphiques dans le tableau de bord et **Leaflet (`react-leaflet`)** (avec tuiles OpenStreetMap + marqueurs GPS réels du Sénégal : Dakar `14.6928, -17.4467`, Thiès `14.7886, -16.9260`, Saint-Louis `16.0179, -16.4896`, Kaolack `14.1520, -16.0726`, Ziguinchor `12.5681, -16.2719`) pour la carte du parc et des chantiers.
-2. **Proxy Vite & Client Axios** :
-   - Dans `vite.config.ts` des deux apps (`5173` et `5174`), configure le proxy `/api` vers `http://localhost:8080`.
-   - Attention : plusieurs endpoints GET du backend retournent un objet paginé `PageResponse<T>` de la forme :
-     `{ content: T[], page: number, size: number, totalElements: number, totalPages: number, last: boolean }`
-     tandis que d'autres retournent directement `T[]`. Ton helper de déballage (`unwrapList`) DOIT gérer les deux : `Array.isArray(data) ? data : (data?.content ?? [])`.
-   - Intercepte les erreurs RFC 7807 (`ProblemDetail` : `data.detail`, `data.title`, `data.code`) et affiche des toasts/bannières d'erreur clairs en français.
+Plateforme entièrement conteneurisée avec frontal HTTPS (https://localhost:8443) : `make up` — voir
+[docs/OPERATIONS.md](docs/OPERATIONS.md).
 
----
+## Comptes de démonstration
 
-## 2. CONTRATS API EXACTS DU BACKEND (À RESPECTER AU CHAMP PRÈS)
+Mot de passe commun : **`Cse@2026`** (realm de développement uniquement).
 
-Ne devine aucun nom de champ : utilise **strictement** les schémas ci-dessous (vérifiés dans les contrôleurs Java du dossier `backend/`) :
+| E-mail | Nom | Rôle | Particularités |
+|---|---|---|---|
+| `chef.chantier@cse.sn` | Mamadou Diop | Chef de chantier (`CHEF_CHANTIER`) | chantiers CH-DKR-01 et CH-THS-01 |
+| `awa.ndiaye@cse.sn` | Awa Ndiaye | Chef de chantier | chantiers CH-STL-01 et CH-KLK-01 |
+| `resp.materiel@cse.sn` | Ibrahima Fall | Responsable Matériel (`RESPONSABLE_MATERIEL`) | valide les besoins, gère le parc |
+| `resp.achats@cse.sn` | Fatou Sarr | Responsable Achats (`RESPONSABLE_ACHATS`) | appels d'offres, contrats, fournisseurs |
+| `daf@cse.sn` | Ousmane Ba | DAF (`DAF`) | engagements, factures |
+| `dg@cse.sn` | Aminata Sow | Direction Générale (`DIRECTION_GENERALE`) | lecture seule + arbitrages R09/R11/R13 |
+| `admin@cse.sn` | Cheikh Ndiaye | Administrateur (`ADMIN_SYSTEME`) | utilisateurs, référentiels, audit |
+| `fournisseur@cse.sn` | Moussa Kane | Fournisseur (`FOURNISSEUR`) | API `/api/portail/**` (pas de front) |
 
-### A. `ms-besoins` (`/api/besoins`) — [BesoinController.java]
-- **Modèle `BesoinMateriel` reçu** :
-  ```json
-  {
-    "id": "c1111111-1111-1111-1111-111111111111",
-    "reference": "BES-2026-001",
-    "designation": "Pelle hydraulique Caterpillar 320D",
-    "quantite": 2,
-    "specifications": "Godet 1.5m3, chenilles renforcées",
-    "priorite": "NORMAL" | "URGENT" | "CRITIQUE",
-    "statut": "EN_ATTENTE" | "VALIDE" | "REJETE" | "EN_ACHAT" | "SATISFAIT",
-    "chantierId": "11111111-1111-1111-1111-111111111111",
-    "demandeurId": "b1111111-1111-1111-1111-111111111111",
-    "dureeUtilisationPrevue": 30,
-    "justification": "Démarrage urgent terrassement Dakar Plateau",
-    "motifRejet": null,
-    "createdAt": "2026-10-27T..."
-  }
-  ```
-  *(Attention : l'enum priorité est `NORMAL`, `URGENT`, `CRITIQUE` au masculin, et le statut initial est `EN_ATTENTE`).*
-- `GET /api/besoins?chantierId=&statut=&page=0&size=20` $\rightarrow$ retourne `PageResponse<BesoinMateriel>`.
-- `POST /api/besoins` $\rightarrow$ Body :
-  `{ "designation": string, "quantite": number, "specifications": string, "priorite": "NORMAL"|"URGENT"|"CRITIQUE", "chantierId": UUID, "demandeurId": UUID, "dureeUtilisationPrevue": number, "justification": string }`
-  *(Règle R08 : si `priorite` est `URGENT` ou `CRITIQUE`, `justification` est obligatoire).*
-- `PATCH /api/besoins/{id}/valider` $\rightarrow$ Body : `{ "validePar": "b2222222-2222-2222-2222-222222222222" }` (Règle R01 : uniquement si `statut === "EN_ATTENTE"`).
-- `PATCH /api/besoins/{id}/rejeter` $\rightarrow$ Body : `{ "motif": string, "rejetePar": "b2222222-2222-2222-2222-222222222222" }` (Règle R05/R08 : `motif` non vide obligatoire).
-- `GET /api/besoins/consolidation` $\rightarrow$ retourne `BesoinMateriel[]`.
-- `GET /api/besoins/{id}/historique` $\rightarrow$ retourne `{ besoinId, statutActuel, dateCreation }[]`.
+Jeton pour les appels en ligne de commande : `TOKEN=$(scripts/token.sh dg@cse.sn)`.
 
-### B. `ms-suivi` (`/api/materiels`, `/api/chantiers`, `/api/maintenances`, `/api/pannes`)
-- **Modèle `Materiel` reçu** :
-  ```json
-  {
-    "id": "aaaa1111-1111-1111-1111-111111111111",
-    "immatriculation": "CSE-PEL-001",
-    "designation": "Pelle hydraulique Caterpillar 320D",
-    "categorie": "PELLE",
-    "marque": "Caterpillar",
-    "modele": "320D",
-    "etat": "DISPONIBLE" | "AFFECTE" | "EN_MAINTENANCE" | "EN_PANNE" | "REFORME",
-    "chantierActuelId": "11111111-1111-1111-1111-111111111111",
-    "latitude": 14.6928,
-    "longitude": -17.4467,
-    "heuresUtilisation": 1250
-  }
-  ```
-- `GET /api/materiels?etat=&categorie=&page=0&size=20` $\rightarrow$ `PageResponse<Materiel>`.
-- `GET /api/materiels/disponibilite?categorie=PELLE&designation=Caterpillar&quantite=1` $\rightarrow$ `{ disponible: boolean, quantiteDisponible: number, materielsDisponibles: Materiel[] }`.
-- `GET /api/materiels/carte` $\rightarrow$ `{ type: "FeatureCollection", features: Materiel[] }`.
-- `POST /api/materiels/{id}/affecter` (Règle R04) $\rightarrow$ Body :
-  `{ "chantierId": UUID, "besoinId": UUID | null, "demandeurId": UUID, "dateDebut": "YYYY-MM-DD", "dateFinPrevue": "YYYY-MM-DD", "motif": string, "affectePar": "resp.materiel@cse.sn" }`.
-- `POST /api/materiels/{id}/confirmer-reception` $\rightarrow$ `{ id, status: "RECEPTIONNE" }`.
-- `POST /api/materiels/{id}/reforme/demande` $\rightarrow$ demande la réforme (R13).
-- `PATCH /api/materiels/{id}/reforme/valider` $\rightarrow$ valide la réforme par la DG (R13) et passe l'engin à `REFORME`.
-- `GET /api/chantiers` $\rightarrow$ retourne `ChantierDto[]` : `{ id, nom, adresse, ville, latitude, longitude, statut, budget }`.
-- `POST /api/chantiers` $\rightarrow$ Body : `{ "nom": string, "adresse": string, "ville": string, "latitude": number, "longitude": number, "budget": number }`.
-- `GET /api/maintenances` $\rightarrow$ retourne `MaintenanceDto[]` : `{ id, numeroOt, materielId, typeMaintenance, statut, datePlanifiee, technicien, motif, cout }`.
-- `POST /api/maintenances` $\rightarrow$ Body : `{ "materielId": UUID, "typeMaintenance": "PREVENTIVE"|"CORRECTIVE"|"LOURDE", "datePlanifiee": "YYYY-MM-DD", "technicien": string, "motif": string, "coutEstime": number }`.
-- `PATCH /api/maintenances/{id}/cloturer` $\rightarrow$ clôture l'OT et remet le matériel `DISPONIBLE`.
-- `POST /api/pannes` $\rightarrow$ Body : `{ "materielId": UUID, "chantierId": UUID, "description": string, "urgence": "NORMALE"|"URGENTE"|"CRITIQUE" }`.
-- `GET /api/affectations/planning` $\rightarrow$ retourne `{ materielImmatriculation, designation, chantier, dateDebut, dateFinPrevue }[]`.
+## URL utiles
 
-### C. `ms-achats` (`/api/appels-offres`, `/api/contrats`, `/api/engagements`, `/api/commandes`, `/api/factures`)
-- **Modèle `AppelOffreDto`** : `{ id, reference, objet, typeAo, besoinId, dateLimite, statut: "PUBLIE"|"CLOTURE"|"ATTRIBUE", offreRetenueId }`.
-- `GET /api/appels-offres?statut=&page=0&size=20` $\rightarrow$ `PageResponse<AppelOffreDto>`.
-- `POST /api/appels-offres` $\rightarrow$ Body : `{ "objet": string, "typeAo": "APPEL_OFFRES"|"CONSULTATION_RESTREINTE", "besoinId": UUID, "dateLimite": "YYYY-MM-DD" }`.
-- `GET /api/appels-offres/{id}/offres` $\rightarrow$ retourne `OffreDto[]` : `{ id, appelOffreId, fournisseurId, codeAnonyme, montantPropose, delaiLivraisonJours, noteTechnique }` (Règle R10 : `fournisseurId` est `null` tant que l'AO est `PUBLIE`).
-- `POST /api/portail/appels-offres/{id}/offres` (Règle R02) $\rightarrow$ Body :
-  `{ "fournisseurId": UUID, "montantPropose": number, "delaiLivraisonJours": number, "noteTechnique": number }`.
-- `POST /api/appels-offres/{id}/cloturer` $\rightarrow$ passe l'AO à `CLOTURE` et lève l'anonymat R10.
-- `GET /api/appels-offres/{id}/comparatif` $\rightarrow$ retourne `{ offreId, codeAnonyme, montantPropose, delaiLivraisonJours, noteTechnique, scoreGlobalPondere }[]`.
-- `POST /api/appels-offres/{id}/attribuer` (R03) $\rightarrow$ Body : `{ "offreId": UUID }`.
-- `GET /api/contrats` $\rightarrow$ retourne `ContratDto[]` : `{ id, numero, appelOffreId, offreId, fournisseurId, montantTotal, statut, engagementValideDaf }`.
-- `POST /api/contrats` (R03/R11 : exige un AO `ATTRIBUE`, ex: `d2222222-2222-2222-2222-222222222222`) $\rightarrow$ Body : `{ "appelOffreId": UUID, "offreId": UUID, "fournisseurId": UUID, "montantTotal": number }`.
-- `POST /api/contrats/{id}/signer` $\rightarrow$ signe le contrat.
-- `POST /api/engagements/{contratId}/valider` (R06 : validation DAF) $\rightarrow$ passe `engagementValideDaf` à `true` et `statut` à `"ENGAGEMENT_VALIDE"`.
-- `GET /api/commandes` $\rightarrow$ `{ id, numeroCommande, contratNumero, statut, delaiContractuelJours }[]`.
-- `GET /api/factures` $\rightarrow$ `{ id, numeroFacture, contratId, montantTtc, statut }[]`.
-- `POST /api/factures/{id}/mandater` $\rightarrow$ `{ factureId, statut: "PAIEMENT_MANDATE" }`.
+| Service | URL | Accès |
+|---|---|---|
+| Application web interne | http://localhost:5173 (dev) · https://localhost:8443 (`make up`) | comptes ci-dessus |
+| Passerelle d'API | http://localhost:8080/api | Bearer JWT |
+| Swagger UI agrégé | http://localhost:8080/swagger-ui.html | bouton « Authorize » (client `cse-swagger`, PKCE) |
+| Swagger d'un service | http://localhost:808N/swagger-ui.html | idem |
+| État de la plateforme | http://localhost:8080/api/plateforme/etat · écran Administration | rôle interne |
+| Console Keycloak | http://localhost:8180/admin | `KEYCLOAK_ADMIN` / `KEYCLOAK_ADMIN_PASSWORD` de `.env` |
+| MailHog (e-mails envoyés) | http://localhost:8025 | — |
+| Kafka | `localhost:9092` (hôte), `kafka:29092` (conteneurs) | `docker exec cse-kafka-1 kafka-topics.sh --bootstrap-server localhost:29092 --list` |
+| PostgreSQL | `localhost:5433`, base `cse` | `ms_<service>` / `CSE_DB_PASSWORD` |
 
-### D. `ms-fournisseurs` (`/api/fournisseurs`)
-- **Modèle `Fournisseur`** :
-  ```json
-  {
-    "id": "f1111111-1111-1111-1111-111111111111",
-    "raisonSociale": "Sénégal Équipements BTP SA",
-    "ninea": "SN-DKR-2020-00145",
-    "rc": "RC-DKR-1450",
-    "email": "contact@senegal-equipements.sn",
-    "telephone": "+221 33 821 00 00",
-    "specialite": "MATERIEL_ROULANT",
-    "statut": "ACTIF" | "EN_ATTENTE_VALIDATION" | "SUSPENDU" | "BLACKLISTE",
-    "scorePerformance": 91.5,
-    "demandeBlacklistage": false,
-    "motifBlacklistage": null,
-    "createdAt": "..."
-  }
-  ```
-- `GET /api/fournisseurs?specialite=&statut=&page=0&size=20` $\rightarrow$ `PageResponse<Fournisseur>`.
-- `POST /api/fournisseurs` $\rightarrow$ Body : `{ "raisonSociale": string, "ninea": string, "rc": string, "email": string, "telephone": string, "specialite": string }`.
-- `PATCH /api/fournisseurs/{id}/valider-inscription` $\rightarrow$ valide l'homologation (`statut` devient `"ACTIF"`).
-- `POST /api/fournisseurs/{id}/evaluer` (R07) $\rightarrow$ Body : `{ "noteQualite": number, "noteDelai": number, "noteConformite": number, "noteSav": number, "commentaire": string }`.
-- `PATCH /api/fournisseurs/{id}/suspendre` (R14) $\rightarrow$ suspend le fournisseur.
-- `POST /api/fournisseurs/{id}/blacklistage/demande` (R09 Étape 1 — Resp. Achats) $\rightarrow$ Body : `{ "motif": string }`.
-- `PATCH /api/fournisseurs/{id}/blacklister` (R09 Étape 2 — Direction Générale) $\rightarrow$ confirme le blacklistage (`statut` devient `"BLACKLISTE"`).
-- `GET /api/fournisseurs/classement?categorie=` $\rightarrow$ `Fournisseur[]` trié par `scorePerformance` décroissant.
-- `GET /api/fournisseurs/{id}/catalogue` $\rightarrow$ `{ reference, designation, categorie, prixUnitaireFcfa, delaiJours }[]`.
-- `GET /api/fournisseurs/comparaison-prix?categorie=MATERIEL_ROULANT` $\rightarrow$ `{ fournisseur, categorie, designation, prixUnitaireFcfa, scoreFournisseur }[]`.
-- `POST /api/fournisseurs/{id}/litiges` $\rightarrow$ Body : `{ "motif": string }`.
+Ports des services : gateway 8080, auth 8081, besoins 8082, achats 8083, fournisseurs 8084, suivi 8085,
+reporting 8086, chatbot 8087, notification 8088, audit 8089.
 
-### E. `ms-reporting`, `ms-auth`, `ms-audit`, `ms-notification`, `ms-chatbot`
-- **Reporting** :
-  - `GET /api/reporting/kpis?profil=DIRECTION_GENERALE&periode=2026-Q4` $\rightarrow$ `{ profil, periode, tauxDisponibiliteParcPct, tauxUtilisationMoyennePct, delaiMoyenApprovisionnementJours, budgetEngageFcfa, budgetRealiseFcfa, chantiersActifs, enginsEnMaintenance, fournisseursActifs }`.
-  - `GET /api/reporting/series?kpi=TAUX_DISPONIBILITE&granularite=MENSUEL` $\rightarrow$ `{ periode, kpi, valeur }[]` (afficher avec un vrai graphique `ResponsiveContainer` + `AreaChart` / `BarChart` de `recharts`).
-  - `GET /api/reporting/export?format=pdf&periode=2026-Q4` $\rightarrow$ `{ status, format, periode, fichier }`.
-- **Administration Utilisateurs (`ms-auth`)** :
-  - `GET /api/admin/utilisateurs?page=0&size=20` $\rightarrow$ `PageResponse<UtilisateurDto>` (`{ id, nom, prenom, email, role, actif, chantierAttribueId, perimetreParc }`).
-  - `POST /api/admin/utilisateurs` $\rightarrow$ Body : `{ "nom": string, "prenom": string, "email": string, "role": string, "chantierAttribueId": UUID | null, "perimetreParc": string | null }`.
-  - `PATCH /api/admin/utilisateurs/{id}/statut` $\rightarrow$ Body : `{ "actif": boolean }`.
-- **Audit (`ms-audit`)** :
-  - `GET /api/audit?utilisateur=&entite=&action=&page=0&size=20` $\rightarrow$ `PageResponse<AuditLogDto>` (`{ id, utilisateur, action, entite, entiteId, details, timestamp }`).
-- **Notifications (`ms-notification`)** :
-  - `GET /api/notifications?destinataire=` $\rightarrow$ `{ id, destinataire, type, sujet, message, lue, createdAt }[]`.
-  - `POST /api/notifications` $\rightarrow$ `{ "destinataire": string, "type": string, "sujet": string, "message": string }`.
-  - `PATCH /api/notifications/{id}/lue` $\rightarrow$ marque la notification comme lue.
-- **Chatbot IA (`ms-chatbot`)** :
-  - `POST /api/chatbot/query` $\rightarrow$ Body : `{ "question": string }` $\rightarrow$ retourne `{ id, question, intentionDetectee, reponse, horodatage }`.
-  - `GET /api/chatbot/historique` $\rightarrow$ retourne la liste des `ConversationEntry`.
-  - `DELETE /api/chatbot/historique/{id}` $\rightarrow$ supprime une entrée de l'historique.
+## Commandes `make`
 
----
+| Cible | Effet |
+|---|---|
+| `make infra` | démarre l'infrastructure Docker |
+| `make build` | compile et installe tous les modules (tests inclus) |
+| `make start` / `make stop` / `make status` | microservices sur l'hôte (journaux dans `logs/`) |
+| `make front` | application web interne en développement |
+| `make test` | tests backend |
+| `make verify` | **porte de qualité** : `mvn verify` (Spotless, tests, ArchUnit, OpenAPI, JaCoCo ≥ 80 %) puis typecheck, lint, tests et build du front |
+| `make front-verify` | porte de qualité du front seule |
+| `make e2e` | tests de bout en bout (plateforme démarrée) |
+| `make up` / `make images` / `make certs` | plateforme conteneurisée, images, certificats de développement |
+| `make backup` / `make restore DUMP=…` | sauvegarde / restauration PostgreSQL |
+| `make perf` | test de charge k6 |
+| `make logs` / `make down` / `make clean` | journaux de l'infrastructure, arrêt complet, nettoyage |
 
-## 3. ÉCRANS À LIVRER & CRITÈRES D'ACCEPTATION
+Réinitialiser les données de démonstration : `scripts/cse.sh reset`.
 
-1. **`apps/web-interne` (port `5173`)** :
-   - **Page 1 (`/`) — Dashboard & Reporting** : Cartes KPI dynamiques selon le rôle sélectionné, graphiques **Recharts** (`AreaChart` évolution disponibilité, `BarChart` budget engagé vs réalisé), boutons d'export PDF/XLSX fonctionnels.
-   - **Page 2 (`/besoins`) — Expression & Validation des Besoins** : Onglet liste filtrable, badges de statut/priorité, modale de création avec validation **R08** (`URGENT`/`CRITIQUE`), boutons d'action Valider (**R01**) et Rejeter avec modale motif obligatoire (**R05**), onglet Consolidation et modale Historique.
-   - **Page 3 (`/parc`) — Parc Matériel, Chantiers & Maintenances** : Liste des engins avec filtres par état/catégorie, **vraie carte interactive Leaflet (`react-leaflet`)** centrée sur le Sénégal (`[14.4974, -14.4524]`, zoom 7) affichant les chantiers et engins avec popups, modale d'affectation (**R04**), confirmation de réception, déclaration de panne, onglet Ordres de Travail de maintenance (création + clôture), et workflow de réforme (**R13** : demande RM + validation DG).
-   - **Page 4 (`/achats`) — Appels d'Offres, Comparatif & Contrats** : Création d'AO, liste des offres anonymisées (`codeAnonyme` - **R10**), bouton de clôture AO, tableau comparatif multicritères (`scoreGlobalPondere`), bouton d'attribution (**R03**), onglet Contrats (création à partir d'un AO attribué **R11** + signature) et Bons de commande.
-   - **Page 5 (`/fournisseurs`) — Annuaire, Évaluation R07, Catalogue & Blacklistage R09** : Liste paginée avec barre de progression `scorePerformance` (rouge si `< 50` - **R07**), modale d'évaluation à 4 curseurs (`noteQualite`, `noteDelai`, `noteConformite`, `noteSav`), validation d'inscription, suspension (**R14**), workflow de blacklistage en 2 étapes (**R09** : bouton "Demander Blacklistage" pour RM/RA $\rightarrow$ bouton "Confirmer Blacklistage DG" quand `demandeBlacklistage === true`), onglet Classement, onglet Comparateur de prix & Catalogue, modale d'ouverture de litige.
-   - **Page 6 (`/finance`) — Espace DAF** : Liste des contrats avec bouton de validation d'engagement budgétaire DAF (`POST /api/engagements/{contratId}/valider` - **R06**), liste des factures et bouton de mandatement de paiement (`POST /api/factures/{id}/mandater`).
-   - **Page 7 (`/admin`) — Administration IAM & Journal d'Audit** : CRUD Utilisateurs (`ms-auth`) avec activation/désactivation et table du journal d'audit immuable (`ms-audit`) avec filtres par utilisateur, entité et action.
-   - **Page 8 (`/chatbot`) + Widget flottant** : Interface conversationnelle complète avec badges d'`intentionDetectee`, suggestions rapides et suppression d'entrées d'historique.
+## Organisation du dépôt
 
-2. **`apps/portail-fournisseur` (port `5174`)** :
-   - Sélecteur du fournisseur connecté en haut à droite (chargé depuis `GET /api/fournisseurs`) affichant son statut (`ACTIF`, `EN_ATTENTE_VALIDATION`, `SUSPENDU`, `BLACKLISTE`) et son `scorePerformance`.
-   - **Vue Appels d'Offres Ouverts** : Liste des AO `PUBLIE` et modale de dépôt d'offre (`POST /api/portail/appels-offres/{id}/offres` avec `fournisseurId`, `montantPropose`, `delaiLivraisonJours`, `noteTechnique`) + affichage du `codeAnonyme` reçu (**R10**).
-   - **Vue Mon Catalogue** : Affichage de `GET /api/fournisseurs/{id}/catalogue` et comparatif marché.
-   - **Vue Commandes & Factures** : Suivi des commandes (`GET /api/commandes`) et statut des factures (`GET /api/factures`).
-   - **Vue Devenir Fournisseur CSE** : Formulaire d'inscription (`POST /api/fournisseurs`).
+```
+backend/             Maven : cse-common (socle), cse-events (contrats d'événements), ms-* (10 services, README chacun)
+frontend/            pnpm : apps/web-interne, apps/portail-fournisseur (hors périmètre), packages/*
+infra/               docker-compose.yml, init PostgreSQL, realm Keycloak, Nginx, sauvegardes
+scripts/             cse.sh, token.sh, smoke.sh, backup-now.sh, restore.sh, gen-certs.sh
+tests/               perf (k6), tests de bout en bout
+docs/                documentation, adr/, http/ (collections de requêtes), images/, inputs/ (sources du projet)
+```
 
-3. **Vérification Finale Obligatoire** :
-   - Installe les dépendances manquantes éventuelles (`lucide-react` si souhaité, `@types/leaflet` pour TypeScript) et importe le CSS de Leaflet (`leaflet/dist/leaflet.css`) dans `index.html` ou `main.tsx`.
-   - Exécute `pnpm -r build` dans `frontend/` et corrige **toutes** les erreurs TypeScript (`tsc`) et Vite jusqu'à obtenir un build 100 % vert.
-surprime le front complet et refait le complet ...en basant sur les apis ... 
+## Documentation
+
+| Document | Contenu |
+|---|---|
+| [docs/USER_GUIDE.md](docs/USER_GUIDE.md) | guide utilisateur par rôle, avec captures |
+| [docs/architecture.md](docs/architecture.md) | C4, microservices, flux, séquences, correspondance UML ↔ code |
+| [docs/API_CONTRACT.md](docs/API_CONTRACT.md) | contrat d'API et d'événements (référence) |
+| [docs/events.md](docs/events.md) | catalogue Kafka, outbox, idempotence, DLT, audit |
+| [docs/SECURITY.md](docs/SECURITY.md) | Keycloak, RBAC, matrice d'accès, chiffrement, OWASP |
+| [docs/OPERATIONS.md](docs/OPERATIONS.md) | déploiement, variables, supervision, sauvegardes, dépannage |
+| [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) | conventions, recettes, tests, portes de qualité, Git |
+| [docs/BACKEND_CONVENTIONS.md](docs/BACKEND_CONVENTIONS.md) · [frontend CONVENTIONS](frontend/apps/web-interne/CONVENTIONS.md) | conventions détaillées |
+| [docs/QUALITY_REPORT.md](docs/QUALITY_REPORT.md) | tests, couverture, DoD, dette |
+| [DECISIONS.md](DECISIONS.md) · [docs/adr/](docs/adr/) | décisions d'architecture |
+| [docs/http/](docs/http/) | collections de requêtes `.http` par service |
+| [tests/perf/README.md](tests/perf/README.md) | test de charge |
+| [PROGRESS.md](PROGRESS.md) · [CHANGELOG.md](CHANGELOG.md) | état d'avancement, versions |
+| [docs/SPEC_IMPLEMENTATION.md](docs/SPEC_IMPLEMENTATION.md) · `docs/inputs/` | spécification d'implémentation, cahier des charges, annexe UML |
+| [AGENTS.md](AGENTS.md) | règles permanentes du projet |

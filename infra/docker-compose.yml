@@ -142,7 +142,8 @@ services:
     environment:
       <<: *service-env
       DB_PASSWORD: ${DB_PASSWORD_BESOINS:-${CSE_DB_PASSWORD}}
-      MS_SUIVI_URL: http://ms-suivi:8085
+      # ms-besoins lit cse.besoins.suivi.base-url (variable SUIVI_BASE_URL).
+      SUIVI_BASE_URL: http://ms-suivi:8085
   ms-achats:
     <<: *service
     build: { context: ../backend, dockerfile: Dockerfile, args: { SERVICE: ms-achats } }

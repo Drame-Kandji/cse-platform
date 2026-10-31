@@ -1,0 +1,19 @@
+@gw = http://localhost:8080
+# Jeton : scripts/token.sh <e-mail> (15 min)
+@token = COLLER_LE_JETON_ICI
+
+### Journal (ADMIN_SYSTEME) — filtres combinables
+GET {{gw}}/api/audit?service=ms-achats&action=MARCHE_ATTRIBUE&du=2026-10-01&au=2026-10-31&page=0&size=20&sort=occurredAt,desc
+Authorization: Bearer {{token}}
+
+### Recherche libre
+GET {{gw}}/api/audit?q=BES-2026-0037
+Authorization: Bearer {{token}}
+
+### Actions d'un utilisateur (Ibrahima Fall)
+GET {{gw}}/api/audit?utilisateurId=00000000-0000-0000-0000-000000000201
+Authorization: Bearer {{token}}
+
+### Statistiques
+GET {{gw}}/api/audit/statistiques
+Authorization: Bearer {{token}}

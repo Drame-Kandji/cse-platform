@@ -1,0 +1,142 @@
+@gw = http://localhost:8080
+# Jeton : scripts/token.sh <e-mail> (15 min)
+@token = COLLER_LE_JETON_ICI
+
+@aoId = 8380a79a-77e8-4763-a553-a5f52dce4f13
+@contratId = REMPLACER_PAR_UN_ID_DE_CONTRAT
+
+### Besoins à acheter (RA, RM) — projection de BESOIN_EN_ACHAT
+GET {{gw}}/api/besoins-a-acheter?page=0&size=20
+Authorization: Bearer {{token}}
+
+### Appels d'offres
+GET {{gw}}/api/appels-offres?statut=PUBLIE&page=0&size=20&sort=datePublication,desc
+Authorization: Bearer {{token}}
+
+### Publier un appel d'offres (RA) — invités ACTIF vérifiés (R14), poids sommés à 100
+POST {{gw}}/api/appels-offres
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "objet": "Acquisition d'une pelle hydraulique 20 t",
+  "description": "Remplacement de la pelle du chantier CH-THS-01",
+  "type": "APPEL_OFFRES",
+  "categorie": "MATERIEL_ROULANT",
+  "quantite": 1,
+  "specifications": "Godet 1 m³",
+  "budgetEstime": 95000000,
+  "dateLimite": "2026-11-30T17:00:00Z",
+  "criteres": [
+    { "code": "PRIX", "poids": 50 },
+    { "code": "DELAI", "poids": 30 },
+    { "code": "GARANTIE", "poids": 20 }
+  ],
+  "fournisseurIdsInvites": ["f0000000-0000-0000-0000-000000000001", "f0000000-0000-0000-0000-000000000002"]
+}
+
+### Saisir une offre reçue hors portail (RA) — avant dateLimite (R02)
+POST {{gw}}/api/appels-offres/{{aoId}}/offres
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "fournisseurId": "f0000000-0000-0000-0000-000000000001", "montantPropose": 92000000, "delaiLivraisonJours": 45, "garantieMois": 24, "description": "Pelle neuve, formation incluse" }
+
+### Offres (anonymisées tant que PUBLIE, R10)
+GET {{gw}}/api/appels-offres/{{aoId}}/offres
+Authorization: Bearer {{token}}
+
+### Clôturer (RA)
+POST {{gw}}/api/appels-offres/{{aoId}}/cloturer
+Authorization: Bearer {{token}}
+
+### Noter une offre (RA, RM ; AO CLOTURE requis)
+PUT {{gw}}/api/appels-offres/{{aoId}}/offres/REMPLACER_OFFRE_ID/evaluation
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "GARANTIE": 80, "QUALITE_TECHNIQUE": 75 }
+
+### Comparatif
+GET {{gw}}/api/appels-offres/{{aoId}}/comparatif
+Authorization: Bearer {{token}}
+
+### Proposer l'attribution (RA)
+POST {{gw}}/api/appels-offres/{{aoId}}/attribuer
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "offreId": "REMPLACER_OFFRE_ID", "justification": "Meilleur score pondéré" }
+
+### Co-valider (RM, R11)
+POST {{gw}}/api/appels-offres/{{aoId}}/attribution/co-valider
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "approuve": true, "commentaire": "Conforme au besoin" }
+
+### Approuver (DG, si montant > seuil de délégation)
+POST {{gw}}/api/appels-offres/{{aoId}}/attribution/approuver
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "approuve": true }
+
+### Procès-verbal PDF (OUVERTURE après clôture, EVALUATION après attribution)
+GET {{gw}}/api/appels-offres/{{aoId}}/proces-verbaux/EVALUATION
+Authorization: Bearer {{token}}
+
+### Contrats
+GET {{gw}}/api/contrats?statut=EN_LIVRAISON&page=0&size=20
+Authorization: Bearer {{token}}
+
+### Clauses (BROUILLON)
+PUT {{gw}}/api/contrats/{{contratId}}/clauses
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "garantieMois": 24, "conditionsLivraison": "Rendu chantier", "penaliteRetardPctParJour": 0.1, "delaiLivraisonJours": 45, "jalons": [{ "libelle": "Livraison", "datePrevue": "2026-12-20" }] }
+
+### Signer (RA) → engagement demandé à la DAF
+POST {{gw}}/api/contrats/{{contratId}}/signer
+Authorization: Bearer {{token}}
+
+### Valider l'engagement (DAF, R06)
+POST {{gw}}/api/engagements/{{contratId}}/valider
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "approuve": true, "commentaire": "Crédits disponibles" }
+
+### Démarrer la livraison (RA ; 422 ENGAGEMENT_NON_VALIDE sinon)
+POST {{gw}}/api/contrats/{{contratId}}/livraison/demarrer
+Authorization: Bearer {{token}}
+
+### Confirmer la livraison (RA) → LIVRAISON_EFFECTUEE : matériels créés dans ms-suivi
+POST {{gw}}/api/contrats/{{contratId}}/livraison/confirmer
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "dateLivraisonReelle": "2026-12-18", "numeroBonLivraison": "BL-2026-0456", "observations": "Livré complet" }
+
+### Engagements (DAF, RA, DG)
+GET {{gw}}/api/engagements?statut=EN_ATTENTE
+Authorization: Bearer {{token}}
+
+### Enregistrer une facture (RA, DAF)
+POST {{gw}}/api/factures
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "contratId": "{{contratId}}", "numero": "FAC-SE-2026-118", "montantHt": 78000000, "tva": 14040000, "dateEmission": "2026-12-20", "dateEcheance": "2027-01-19" }
+
+### Mandater / payer / rejeter (DAF)
+POST {{gw}}/api/factures/REMPLACER_FACTURE_ID/mandater
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "referenceMandat": "MDT-2026-0091" }
+
+### Synthèse financière (DAF, DG)
+GET {{gw}}/api/finance/synthese
+Authorization: Bearer {{token}}

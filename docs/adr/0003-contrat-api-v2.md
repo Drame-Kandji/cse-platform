@@ -4,7 +4,7 @@ Date : 2026-10-30
 Statut : Accepté
 
 ## Contexte
-La première implémentation renvoyait des données codées en dur (Map.of), plaçait les règles dans les contrôleurs et un filtre de développement (DevSwaggerAuthFilter) accordait **tous les rôles** à toute requête sans jeton, activé par défaut. Aucun convertisseur ne lisait les rôles Keycloak : les `@PreAuthorize` ne pouvaient pas fonctionner avec de vrais jetons. Le frontend et le backend divergeaient sur les formats.
+La première implémentation renvoyait des données codées en dur (Map.of), plaçait les règles dans les contrôleurs et un filtre de développement de la v1 accordait **tous les rôles** à toute requête sans jeton, activé par défaut. Aucun convertisseur ne lisait les rôles Keycloak : les `@PreAuthorize` ne pouvaient pas fonctionner avec de vrais jetons. Le frontend et le backend divergeaient sur les formats.
 
 ## Décision
 - `docs/API_CONTRACT.md` devient la référence unique (routes, DTO, énumérations, rôles, événements, données de démonstration) pour backend et frontend.

@@ -1,3 +1,399 @@
-# Guide Utilisateur
+# Guide utilisateur — Plateforme interne CSE
 
-Guide par rôle en français.
+Ce guide explique, rôle par rôle, comment réaliser les tâches courantes dans l'application web interne de
+la Compagnie Sahélienne d'Entreprises. Les captures proviennent de l'environnement de démonstration
+(données fictives).
+
+**Sommaire** : [1. Prise en main](#1-prise-en-main) · [2. Chef de chantier](#2-chef-de-chantier) ·
+[3. Responsable Matériel](#3-responsable-matériel) · [4. Responsable Achats](#4-responsable-des-achats) ·
+[5. DAF](#5-direction-administrative-et-financière-daf) · [6. Direction Générale](#6-direction-générale) ·
+[7. Administrateur](#7-administrateur-système) · [8. Questions fréquentes](#8-questions-fréquentes)
+
+---
+
+## 1. Prise en main
+
+### 1.1 Se connecter
+
+1. Ouvrir l'adresse communiquée par l'administrateur (démonstration : http://localhost:5173 ou
+   https://localhost:8443).
+2. Saisir son **adresse e-mail professionnelle** et son mot de passe sur la page de connexion CSE.
+3. À la première connexion d'un compte créé par l'administrateur, choisir un nouveau mot de passe ; pour les
+   rôles sensibles (DAF, Direction Générale, Responsable Achats, Administrateur), configurer aussi le code
+   à usage unique (application d'authentification sur téléphone) demandé par l'écran.
+
+![Page de connexion](images/login.png)
+
+La session expire après une heure d'inactivité. Le bouton avec vos initiales (en haut à droite) donne accès
+à **Mon profil** et à la **déconnexion**.
+
+### 1.2 L'écran principal
+
+![Tableau de bord du chef de chantier](images/chef-dashboard.png)
+
+- **Menu de gauche** : seuls les écrans autorisés pour votre rôle apparaissent, regroupés par thème
+  (Pilotage, Besoins, Parc & chantiers, Achats, Finance, Administration). Le bouton en bas réduit le menu.
+- **Recherche** (`Ctrl` + `K`, ou la barre « Rechercher… ») : ouvre une palette pour aller à un écran ou
+  lancer une action rapide.
+- **Cloche** : notifications non lues (mise à jour en temps réel). **Soleil/lune** : thème clair ou sombre.
+- **Assistant IA** (bouton bleu en bas à droite) : poser une question en français sur le parc, les
+  besoins, les chantiers ou les achats.
+- **Tableau de bord** : indicateurs de votre périmètre sur 30 jours, 90 jours, 12 mois ou une plage
+  personnalisée, et une liste **À traiter** des actions qui vous attendent.
+
+| Palette de commandes (`Ctrl` + `K`) | Assistant IA |
+|---|---|
+| ![Palette](images/dg-palette.png) | ![Assistant](images/dg-assistant.png) |
+
+### 1.3 Listes, filtres et mobile
+
+Toutes les listes se filtrent (recherche, puces de filtre), se trient en cliquant sur l'en-tête des colonnes
+signalées par une flèche et se paginent (20 lignes par défaut, 50 au maximum). Le bouton **Colonnes**
+masque ou affiche des colonnes. Un clic sur une ligne ouvre la fiche détaillée.
+
+Sur téléphone, le menu s'ouvre par le bouton en haut à gauche et les tableaux deviennent des cartes :
+
+| Tableau de bord sur mobile | Liste des besoins sur mobile | Mode sombre (mobile) |
+|---|---|---|
+| ![Mobile](images/mobile-chef-dashboard.png) | ![Mobile besoins](images/mobile-chef-besoins.png) | ![Mobile sombre](images/mobile-dark-dg-dashboard.png) |
+
+### 1.4 Notifications
+
+La page **Notifications** (cloche → « Tout voir ») liste les messages qui vous sont destinés ou destinés à
+votre rôle (besoin validé, réception à confirmer, engagement à valider…). Un clic ouvre l'élément concerné ;
+**Tout marquer comme lu** vide le compteur. Certaines notifications sont aussi envoyées par e-mail.
+
+![Notifications](images/dg-notifications.png)
+
+---
+
+## 2. Chef de chantier
+
+Vous voyez uniquement **vos chantiers**, leurs matériels et vos besoins.
+
+### 2.1 Exprimer un besoin en matériel
+
+1. Menu **Besoins** → bouton **Nouveau besoin**.
+2. Choisir la **catégorie** (matériel roulant, outillage, équipement informatique, consommable), saisir la
+   **désignation**, la **quantité** et la **durée d'utilisation** (jours), et si besoin les spécifications.
+3. Choisir le **chantier** (parmi les vôtres) et la **date souhaitée**.
+4. Choisir la **priorité**. Pour **Urgent** ou **Critique**, la **justification est obligatoire** (règle R08).
+5. **Envoyer le besoin**. Il reçoit une référence (`BES-2026-0042`) et le statut **En attente** ; le Responsable
+   Matériel est notifié.
+
+![Formulaire de besoin](images/chef-besoin-nouveau.png)
+
+### 2.2 Suivre ses besoins
+
+Menu **Besoins** : la liste montre statut, priorité et chantier. La fiche affiche l'avancement
+(Soumis → Validation → Orientation), les matériels affectés et l'historique complet.
+
+![Liste des besoins](images/chef-besoins.png)
+
+![Détail d'un besoin](images/chef-besoin-detail.png)
+
+| Statut | Signification |
+|---|---|
+| En attente | en cours d'examen par le Responsable Matériel ; **modifiable** par vous (bouton **Modifier**) |
+| Validé | accepté, orientation en cours (plus modifiable : règle R05) |
+| Affecté directement | des engins du parc vous sont affectés |
+| En achat | transmis au service Achats |
+| Rejeté | refusé, le motif est affiché dans la fiche |
+
+### 2.3 Confirmer la réception d'un matériel
+
+Quand un engin est affecté à votre chantier (depuis le parc ou après une livraison fournisseur), il apparaît
+dans **À traiter → Réceptions à confirmer** du tableau de bord.
+
+1. Ouvrir l'élément, puis la fiche du matériel.
+2. Bouton **Confirmer la réception**, saisir d'éventuelles observations (état, compteur), confirmer.
+3. Le matériel passe à l'état **Affecté** sur votre chantier ; la réception est tracée.
+
+### 2.4 Parc de vos chantiers, compteur et pannes
+
+- **Parc matériel** : engins présents sur vos chantiers, état, prochaine maintenance. **Carte** et
+  **Planning des affectations** montrent la localisation et l'occupation dans le temps.
+- Fiche d'un matériel → **Actions** → **Enregistrer le relevé** du compteur horaire.
+- **Signaler une panne** : menu **Maintenance & pannes** → bouton **Signaler une panne** (ou depuis la
+  fiche du matériel) ; choisir le matériel, la **gravité** (mineure, majeure, bloquante) et décrire le
+  problème. Une panne bloquante alerte immédiatement le Responsable Matériel.
+
+![Parc matériel](images/chef-materiels.png)
+
+![Maintenance et pannes](images/chef-maintenances.png)
+
+---
+
+## 3. Responsable Matériel
+
+### 3.1 Valider ou rejeter les besoins (R01)
+
+1. Menu **Validation** : la **file d'attente** classe les besoins du plus prioritaire au plus ancien.
+2. **Valider** : l'écran indique combien d'engins disponibles correspondent. Ajouter un commentaire si utile,
+   puis **Valider le besoin**. La plateforme oriente automatiquement :
+   - parc suffisant → affectation directe des engins (le chef doit ensuite confirmer la réception) ;
+   - parc insuffisant → **En achat** (le besoin apparaît dans les « besoins à acheter » du service Achats).
+3. **Rejeter** : le **motif est obligatoire** ; il est communiqué au demandeur.
+
+![File de validation](images/rm-validation.png)
+
+![Validation d'un besoin](images/rm-validation-dialog.png)
+
+> Si le service de suivi du parc était momentanément indisponible, le besoin reste **Validé** avec la mention
+> « Orientation en attente » : ouvrir la fiche et cliquer **Relancer l'orientation**.
+
+L'onglet **Consolidation** regroupe les demandes similaires (même catégorie et désignation) pour mutualiser
+les commandes et signale les **doublons potentiels**.
+
+![Consolidation](images/rm-consolidation.png)
+
+### 3.2 Gérer le parc
+
+- **Parc matériel** : filtrer par état, catégorie, chantier, « maintenance due ». Bouton d'ajout d'un
+  matériel (code, désignation, catégorie, type d'engin, tarif journalier, valeur d'acquisition).
+- Fiche matériel : indicateurs (heures, maintenance, tarif), onglets **Affectations**, **Maintenances**,
+  **Pannes**, **Mouvements** ; bouton **Affecter** et menu **Actions** (libérer, changer l'état, relevé de
+  compteur, demander la réforme).
+
+![Parc matériel](images/rm-materiels.png)
+
+![Fiche matériel](images/rm-materiel-detail.png)
+
+### 3.3 Affecter un matériel à un chantier (R04)
+
+Depuis la fiche (**Affecter**) ou le **Planning des affectations** (**Affecter un matériel**, ou clic sur un
+créneau libre) : choisir le chantier et la période. Seul un matériel **Disponible** est affectable et deux
+affectations ne peuvent pas se chevaucher (message « Conflit d'affectation »). **Libérer** termine
+l'affectation et rend le matériel disponible.
+
+![Planning des affectations](images/rm-planning.png)
+
+La **Carte** situe chantiers et engins (pastilles par état) ; la liste de droite permet d'ouvrir chaque
+chantier.
+
+| Carte (clair) | Carte (sombre) |
+|---|---|
+| ![Carte](images/rm-carte.png) | ![Carte sombre](images/dark-rm-carte.png) |
+
+### 3.4 Maintenance et pannes
+
+Menu **Maintenance & pannes** :
+
+1. **Planifier une maintenance** (préventive, corrective ou lourde) : matériel, description, date, technicien.
+   Un ordre de travail `OT-2026-NNNN` est créé. Depuis l'onglet **Pannes**, **Créer un OT** rattache l'ordre à
+   une panne signalée.
+2. **Démarrer** l'OT : le matériel passe **En maintenance**.
+3. **Clôturer l'OT** : saisir le **coût**, les observations et le compteur ; le matériel redevient
+   **Disponible** (ou **Affecté** s'il avait une affectation en cours).
+
+Les alertes de maintenance préventive (seuils d'heures ou de jours du type d'engin) arrivent chaque matin
+dans les notifications.
+
+![Maintenances](images/rm-maintenances.png)
+
+### 3.5 Réforme d'un matériel (R13)
+
+Fiche matériel → **Actions** → **Demander la réforme**, motif obligatoire. Le matériel doit être libéré et
+hors maintenance. La Direction Générale décide ; une fois réformé, l'engin ne peut plus être affecté.
+
+### 3.6 Chantiers
+
+Menu **Chantiers** : **Nouveau chantier** (code, nom, localisation, région, coordonnées, budget, montant du
+marché, dates, chef) et modification. **Terminer** un chantier n'est possible que lorsqu'aucun matériel n'y
+est encore affecté.
+
+![Chantiers](images/rm-chantiers.png)
+
+### 3.7 Participation aux achats
+
+- **Co-valider** chaque proposition d'attribution d'un marché (fiche de l'appel d'offres → onglet
+  **Attribution**, règle R11).
+- **Noter** les offres (qualité technique, garantie, SAV, références) dans l'onglet **Évaluation**.
+- **Évaluer** un fournisseur après une livraison et **Ouvrir un litige**.
+
+---
+
+## 4. Responsable des Achats
+
+### 4.1 Lancer un appel d'offres
+
+1. Menu **Appels d'offres** → **Lancer un AO** (ou depuis un « besoin à acheter »).
+2. Renseigner objet, type (appel d'offres ou demande de prix), catégorie, quantité, spécifications, budget
+   estimé, **date et heure limite**.
+3. Pondérer les **critères** (prix, délai, qualité technique, garantie, SAV, références : total 100 %).
+4. Choisir les **fournisseurs invités** : seuls les fournisseurs **actifs** de la spécialité sont proposés (R14).
+5. **Publier l'appel d'offres** : référence `AO-2026-NNN`, statut **Publié**.
+
+![Appels d'offres](images/ra-appels-offres.png)
+
+### 4.2 Recevoir et évaluer les offres
+
+- Onglet **Offres** : **Saisir une offre reçue** (offres arrivées hors portail) avant la date limite (R02).
+  Tant que l'AO est publié, les offres sont **anonymisées** (codes `OFR-…`, règle R10).
+- **Clôturer** l'AO (automatique à la date limite) : l'anonymat est levé.
+- Onglet **Évaluation** : saisir les notes ; prix et délai sont calculés automatiquement. L'onglet
+  **Comparatif** classe les offres par score pondéré.
+
+![AO publié, offres anonymisées](images/ra-ao-detail.png)
+
+![Évaluation des offres](images/ra-ao-evaluation.png)
+
+### 4.3 Attribuer le marché (R11)
+
+Onglet **Attribution** : choisir l'offre, justifier, **Proposer l'attribution**. Le Responsable Matériel
+co-valide ; au-delà du seuil de délégation (150 000 000 FCFA), la Direction Générale approuve aussi. Une fois
+toutes les approbations obtenues, l'AO passe **Attribué** et un **contrat brouillon** est généré (lien
+**Voir le contrat**). L'onglet **Procès-verbaux** permet de **Télécharger le PDF** d'ouverture et d'évaluation.
+
+![Attribution](images/ra-ao-attribution.png)
+
+### 4.4 Exécuter le contrat
+
+Menu **Contrats & commandes** → fiche du contrat ; la frise montre Brouillon → Signé → Engagement validé →
+En livraison → Livré → Clôturé.
+
+1. Compléter les **clauses** (garantie, pénalité de retard, jalons) puis **Signer le contrat** : une demande
+   d'engagement part à la DAF.
+2. Après validation de l'engagement (R06) : **Démarrer la livraison**.
+3. À réception : **Confirmer la livraison** (date réelle, numéro de bon de livraison). Les matériels sont
+   créés automatiquement dans le parc et affectés au chantier du besoin ; le chef confirme ensuite la
+   réception. Les retards sont signalés et les pénalités calculées.
+4. **Clôturer le contrat** une fois toutes les factures payées.
+
+![Contrats](images/ra-contrats.png)
+
+![Contrat en livraison](images/ra-contrat-detail.png)
+
+### 4.5 Fournisseurs
+
+Menu **Fournisseurs** : onglets **Liste**, **Classement** (score de performance), **Comparaison de prix**.
+**Nouveau fournisseur** pour l'enregistrer. Dans la fiche : informations légales, contact, coordonnées
+bancaires (visibles du RA et de la DAF seulement), documents administratifs (alerte si expirés),
+évaluations, catalogue, litiges ; actions **Valider l'inscription**, **Suspendre**, réactiver,
+**Demander le blacklistage** (fournisseur suspendu uniquement, décision de la Direction Générale — R09).
+
+![Fournisseurs](images/ra-fournisseurs.png)
+
+![Fiche fournisseur](images/ra-fournisseur-detail.png)
+
+| Classement | Comparaison de prix |
+|---|---|
+| ![Classement](images/ra-fournisseurs-classement.png) | ![Comparaison](images/ra-fournisseurs-comparaison.png) |
+
+### 4.6 Factures
+
+Le RA est autorisé par l'API à enregistrer et consulter les factures, mais l'écran **Finance** n'est ouvert
+qu'à la DAF et à la Direction Générale : dans l'interface actuelle, la saisie des factures reçues se fait donc
+par la DAF (§5.2). Limite connue de la version 2.0.0.
+
+---
+
+## 5. Direction Administrative et Financière (DAF)
+
+### 5.1 Valider les engagements (R06)
+
+Menu **Finance** → onglet **Engagements à valider** : pour chaque contrat signé, **Valider** ou **Refuser**
+(commentaire). Sans engagement validé, la livraison ne peut pas démarrer.
+
+![Finance](images/daf-finance.png)
+
+### 5.2 Traiter les factures
+
+Onglet **Factures** : **Enregistrer une facture**, puis pour chaque facture **Mandater** (référence du mandat),
+**Payer** ou **Rejeter** (motif). Les factures dont l'échéance est dépassée sont signalées « en retard ».
+
+### 5.3 Pilotage financier
+
+Le tableau de bord DAF et la page **Finance** présentent : montant engagé, engagements en attente, facturé,
+mandaté, payé, factures en retard, exécution budgétaire. Les montants sont en FCFA.
+
+![Tableau de bord DAF](images/daf-dashboard.png)
+
+---
+
+## 6. Direction Générale
+
+La Direction Générale consulte tout en **lecture seule** (règle R12) et n'intervient que pour trois
+décisions.
+
+### 6.1 Tableaux de bord et rapports
+
+- **Tableau de bord** : sélecteur de vue (Direction Générale, DAF, Achats, Matériel), période, indicateurs
+  (engagé, payé, coût de maintenance, disponibilité opérationnelle, utilisation, pannes, besoins, délai
+  d'approvisionnement), graphiques et liste **À traiter**.
+- **Rapports** : synthèse par section (parc, besoins, achats, fournisseurs, finances, chantiers), filtrable
+  par période et chantier ; **Exporter en PDF** ou **Exporter en Excel**.
+
+![Tableau de bord DG](images/dg-dashboard.png)
+
+![Tableau de bord DG en mode sombre](images/dark-dg-dashboard.png)
+
+![Rapports](images/dg-rapports.png)
+
+### 6.2 Décisions réservées
+
+| Décision | Où | Règle |
+|---|---|---|
+| Approuver ou refuser une **attribution** de marché au-delà du seuil de délégation | Appels d'offres → fiche → **Attribution** → **Approuver** / **Refuser** | R11 |
+| Approuver ou refuser un **blacklistage** de fournisseur | Fournisseurs → fiche → **Approuver le blacklistage** / **Refuser le blacklistage** | R09 |
+| Décider de la **réforme** d'un matériel | Parc matériel → fiche → **Décider de la réforme** → **Approuver la réforme** / **Refuser** | R13 |
+
+Ces demandes apparaissent dans **À traiter** et dans les notifications.
+
+---
+
+## 7. Administrateur système
+
+### 7.1 Utilisateurs
+
+Menu **Utilisateurs** : liste filtrable par rôle et statut.
+
+1. **Nouvel utilisateur** : prénom, nom, e-mail, téléphone, **rôle** (un seul) et attributs du rôle
+   (chantiers rattachés pour un chef, périmètre du parc, budget géré…). Un **mot de passe temporaire** est
+   généré (bouton **Générer un mot de passe**, **Copier le mot de passe**) : le communiquer par un canal sûr.
+   L'utilisateur devra le changer, et configurer l'OTP pour les rôles sensibles.
+2. Modifier un compte (y compris changer son rôle), **Désactiver** / réactiver, **Réinitialiser le mot de
+   passe**. Un administrateur ne peut pas agir sur son propre compte.
+
+![Utilisateurs](images/admin-utilisateurs.png)
+
+![Nouvel utilisateur](images/admin-utilisateur-nouveau.png)
+
+### 7.2 Référentiels
+
+Menu **Référentiels** : types d'engins (**Nouveau type d'engin** : code, libellé, catégorie, seuils de
+maintenance en heures et en jours, actif). Ces seuils déclenchent les alertes de maintenance préventive.
+
+![Référentiels](images/admin-referentiels.png)
+
+### 7.3 Journal d'audit
+
+Menu **Journal d'audit** : toutes les actions métier de la plateforme (qui, quoi, quand, sur quelle entité),
+filtrables par utilisateur, service, entité, action, période et texte. Le journal est **immuable**.
+
+![Journal d'audit](images/admin-audit.png)
+
+### 7.4 État de la plateforme
+
+Menu **État de la plateforme** : disponibilité et temps de réponse de chaque service, actualisation
+automatique toutes les 15 secondes.
+
+![État de la plateforme](images/admin-plateforme.png)
+
+---
+
+## 8. Questions fréquentes
+
+| Question | Réponse |
+|---|---|
+| Je ne vois pas un menu | Les menus dépendent de votre rôle ; demander à l'administrateur de vérifier votre compte. |
+| « Accès refusé » sur une action | Votre rôle ne permet pas cette opération (ex. un chef ne peut agir que sur ses chantiers). |
+| Je ne peux plus modifier mon besoin | Il a été validé ou rejeté (règle R05). |
+| « Conflit d'affectation » | Le matériel est déjà affecté sur une période qui chevauche celle demandée. |
+| La livraison ne démarre pas | L'engagement du contrat n'est pas encore validé par la DAF (R06). |
+| Un fournisseur n'apparaît pas parmi les invités | Il n'est pas **actif** ou n'a pas la spécialité de l'appel d'offres (R14). |
+| L'assistant répond « mode dégradé » | Le moteur d'IA n'est pas configuré ou indisponible : la réponse est construite à partir des données, sans reformulation. |
+| Mot de passe oublié | Lien « Mot de passe oublié » de la page de connexion, ou demande à l'administrateur. |
+| Une erreur affiche un « identifiant de suivi » | Le communiquer au support : il permet de retrouver la requête dans les journaux. |
+
+Comptes de démonstration (mot de passe `Cse@2026`) : voir le [README](../README.md#comptes-de-démonstration).

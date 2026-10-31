@@ -1,0 +1,89 @@
+@gw = http://localhost:8080
+# Jeton : scripts/token.sh <e-mail> (15 min)
+@token = COLLER_LE_JETON_ICI
+
+@fournisseurId = f0000000-0000-0000-0000-000000000001
+
+### Lister (RA, RM, DAF, DG)
+GET {{gw}}/api/fournisseurs?statut=ACTIF&specialite=MATERIEL_ROULANT&page=0&size=20&sort=scorePerformance,desc
+Authorization: Bearer {{token}}
+
+### Détail (coordonnées bancaires visibles du RA et de la DAF seulement)
+GET {{gw}}/api/fournisseurs/{{fournisseurId}}
+Authorization: Bearer {{token}}
+
+### Créer (RA)
+POST {{gw}}/api/fournisseurs
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "raisonSociale": "Kayar Location BTP",
+  "ninea": "009876543 2A1",
+  "rccm": "SN-DKR-2026-B-01234",
+  "adresse": "Route de Rufisque",
+  "ville": "Dakar",
+  "pays": "Sénégal",
+  "telephone": "+221 33 800 00 00",
+  "email": "contact@kayar-btp.sn",
+  "contactNom": "Awa Diallo",
+  "contactFonction": "Directrice commerciale",
+  "specialites": ["MATERIEL_ROULANT"],
+  "certifications": ["ISO 9001"],
+  "coordonneesBancaires": { "banque": "Banque fictive", "iban": "SN08SN0100152000000000000000" }
+}
+
+### Évaluer (RA, RM — score recalculé, R07)
+POST {{gw}}/api/fournisseurs/{{fournisseurId}}/evaluer
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "qualite": 8, "delais": 7, "conformite": 9, "sav": 6, "prix": 7, "commentaire": "Livraison conforme" }
+
+### Classement des fournisseurs actifs
+GET {{gw}}/api/fournisseurs/classement?categorie=MATERIEL_ROULANT
+Authorization: Bearer {{token}}
+
+### Comparaison des prix
+GET {{gw}}/api/fournisseurs/comparaison-prix?categorie=MATERIEL_ROULANT&q=pelle
+Authorization: Bearer {{token}}
+
+### Catalogue
+GET {{gw}}/api/fournisseurs/{{fournisseurId}}/catalogue
+Authorization: Bearer {{token}}
+
+### Suspendre (RA)
+PATCH {{gw}}/api/fournisseurs/{{fournisseurId}}/suspendre
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "motif": "Documents administratifs expirés" }
+
+### Demander le blacklistage d'un fournisseur SUSPENDU (RA — R09 étape 1)
+POST {{gw}}/api/fournisseurs/f0000000-0000-0000-0000-000000000006/blacklistage/demande
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "motif": "Fraude documentaire avérée" }
+
+### Statuer (DG — R09 étape 2)
+PATCH {{gw}}/api/fournisseurs/f0000000-0000-0000-0000-000000000006/blacklister
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "approuve": true, "commentaire": "Accord de la Direction" }
+
+### Litiges
+GET {{gw}}/api/litiges?statut=OUVERT&page=0&size=20
+Authorization: Bearer {{token}}
+
+### Ouvrir un litige (RA, RM)
+POST {{gw}}/api/fournisseurs/{{fournisseurId}}/litiges
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "objet": "Retard de livraison", "description": "Livraison avec 12 jours de retard", "gravite": "MOYENNE" }
+
+### Statistiques
+GET {{gw}}/api/fournisseurs/statistiques
+Authorization: Bearer {{token}}
