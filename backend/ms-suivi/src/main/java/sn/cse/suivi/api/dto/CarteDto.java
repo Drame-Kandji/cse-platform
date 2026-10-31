@@ -72,6 +72,7 @@ public record CarteDto(@Schema(example = "FeatureCollection") String type, List<
    * @param categorie catégorie (matériel)
    * @param etat état (matériel)
    * @param statut statut (chantier)
+   * @param chantierId chantier d'affectation courant (matériel)
    * @param chantierNom chantier courant (matériel)
    * @param nombreMateriels matériels présents (chantier)
    */
@@ -87,6 +88,7 @@ public record CarteDto(@Schema(example = "FeatureCollection") String type, List<
       @Schema(example = "MATERIEL_ROULANT", nullable = true) CategorieMateriel categorie,
       @Schema(example = "AFFECTE", nullable = true) EtatMateriel etat,
       @Schema(example = "EN_COURS", nullable = true) StatutChantier statut,
+      @Schema(example = "c0000000-0000-0000-0000-000000000001", nullable = true) UUID chantierId,
       @Schema(example = "Extension autoroute Dakar–AIBD", nullable = true) String chantierNom,
       @Schema(example = "8", nullable = true) Long nombreMateriels) {}
 }

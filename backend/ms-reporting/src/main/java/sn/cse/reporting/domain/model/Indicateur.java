@@ -12,8 +12,11 @@ import sn.cse.common.exception.InvalidRequestException;
  * est accessible si l'un des profils autorisés de l'utilisateur affiche l'une de ses sections.
  */
 public enum Indicateur {
-  /** Disponibles / (total − réformés), en %, d'après les instantanés quotidiens du parc. */
-  TAUX_DISPONIBILITE("Taux de disponibilité (%)", true, EnumSet.of(Section.PARC)),
+  /**
+   * Disponibilité opérationnelle = (total − en maintenance − réformés) / (total − réformés), en %,
+   * d'après les instantanés quotidiens du parc (reconstitués avant le premier enregistré).
+   */
+  TAUX_DISPONIBILITE("Disponibilité opérationnelle (%)", true, EnumSet.of(Section.PARC)),
   /** Jours affectés / jours disponibles, en %. */
   TAUX_UTILISATION("Taux d'utilisation (%)", true, EnumSet.of(Section.PARC)),
   /** Montant des engagements validés (FCFA). */

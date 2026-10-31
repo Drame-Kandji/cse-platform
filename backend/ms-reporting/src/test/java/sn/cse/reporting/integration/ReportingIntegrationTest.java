@@ -214,7 +214,16 @@ class ReportingIntegrationTest {
         json(
             EventTypes.FACTURE_PAYEE,
             new FacturePayload(
-                UUID.randomUUID(), "FA-IT", K, F, valueOf(1_000_000), "PAYEE", AUJ.plusDays(30)),
+                UUID.randomUUID(),
+                "FA-IT",
+                K,
+                F,
+                valueOf(1_000_000),
+                "PAYEE",
+                AUJ.minusDays(5),
+                AUJ.plusDays(30),
+                AUJ.minusDays(4),
+                AUJ.minusDays(3)),
             ilYa(2)));
     listener.surAchats(
         json(
@@ -308,7 +317,19 @@ class ReportingIntegrationTest {
                 .with(CseJwt.as(UUID.randomUUID(), Roles.RESPONSABLE_MATERIEL)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].periode").value(AUJ.toString()))
-        .andExpect(jsonPath("$[0].valeur").value(0.0));
+        // Disponibilité opérationnelle : le matériel affecté est opérationnel.
+        .andExpect(jsonPath("$[0].valeur").value(100.0));
+    // Avant le premier instantané enregistré (aujourd'hui) : jour reconstitué depuis l'historique.
+    mvc.perform(
+            get("/api/reporting/series")
+                .param("indicateur", "TAUX_DISPONIBILITE")
+                .param("granularite", "JOUR")
+                .param("du", AUJ.minusDays(5).toString())
+                .param("au", AUJ.minusDays(5).toString())
+                .with(CseJwt.as(UUID.randomUUID(), Roles.RESPONSABLE_MATERIEL)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].periode").value(AUJ.minusDays(5).toString()))
+        .andExpect(jsonPath("$[0].valeur").value(100.0));
 
     mvc.perform(
             get("/api/reporting/export")

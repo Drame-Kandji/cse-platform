@@ -108,7 +108,7 @@ public class PortailFournisseurService implements PortailFournisseurUseCase {
   @Transactional(readOnly = true)
   public PageResponse<ContratAchat> attributions(CurrentUser fournisseur, PageQuery page) {
     return contrats.rechercher(
-        new ContratRepository.Filtre(null, fournisseurDe(fournisseur), null), page);
+        new ContratRepository.Filtre(null, fournisseurDe(fournisseur), null, null), page);
   }
 
   @Override

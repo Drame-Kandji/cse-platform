@@ -3,12 +3,14 @@ package sn.cse.achats.infrastructure.persistence;
 import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,6 +59,19 @@ public class ContratRepositoryAdapter implements ContratRepository {
   }
 
   @Override
+  @Transactional(readOnly = true)
+  public Map<UUID, UUID> idsParAppelOffre(Collection<UUID> appelOffreIds) {
+    if (appelOffreIds.isEmpty()) {
+      return Map.of();
+    }
+    return jpa.findIdsByAppelOffreIdIn(appelOffreIds).stream()
+        .collect(
+            Collectors.toMap(
+                ContratAchatJpaRepository.ContratParAppelOffre::getAppelOffreId,
+                ContratAchatJpaRepository.ContratParAppelOffre::getId));
+  }
+
+  @Override
   public PageResponse<ContratAchat> rechercher(Filtre filtre, PageQuery page) {
     return Pages.reponse(
         jpa.findAll(specification(filtre), Pages.pageable(page)),
@@ -102,6 +117,9 @@ public class ContratRepositoryAdapter implements ContratRepository {
       }
       if (filtre.fournisseurId() != null) {
         predicats.add(cb.equal(root.get("fournisseurId"), filtre.fournisseurId()));
+      }
+      if (filtre.appelOffreId() != null) {
+        predicats.add(cb.equal(root.get("appelOffreId"), filtre.appelOffreId()));
       }
       if (filtre.q() != null && !filtre.q().isBlank()) {
         String motif = "%" + filtre.q().trim().toLowerCase(Locale.ROOT) + "%";

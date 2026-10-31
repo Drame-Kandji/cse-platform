@@ -114,16 +114,20 @@ public class CalculateurTableau {
                       e.get(EtatMateriel.DISPONIBLE),
                       e.get(EtatMateriel.AFFECTE),
                       e.get(EtatMateriel.EN_MAINTENANCE),
+                      operationnels(mc.size(), e),
                       utilisation(periode, aujourdhui, d, perimetre, Set.of(c), immobilisations));
                 })
             .toList();
+    long operationnels = operationnels(total, parEtat);
     return new Tableau.Parc(
         total,
         parEtat.get(EtatMateriel.DISPONIBLE),
         parEtat.get(EtatMateriel.AFFECTE),
         parEtat.get(EtatMateriel.EN_MAINTENANCE),
         reformes,
-        Arrondis.taux(parEtat.get(EtatMateriel.DISPONIBLE), total - reformes),
+        operationnels,
+        // Disponibilité opérationnelle : un matériel affecté reste disponible pour l'exploitation.
+        Arrondis.taux(operationnels, total - reformes),
         utilisation(
             periode, aujourdhui, d, perimetre, Set.of(CategorieMateriel.values()), immobilisations),
         d.maintenances().stream().filter(m -> m.enCours()).count(),
@@ -430,6 +434,16 @@ public class CalculateurTableau {
     return CalculateurUtilisation.tauxPerimetre(
             periode, aujourdhui, d, perimetre, categories::contains, immobilisations)
         .orElse(BigDecimal.ZERO.setScale(1));
+  }
+
+  /**
+   * @param total matériels
+   * @param parEtat comptes par état
+   * @return matériels opérationnels = total − en maintenance − réformés (un matériel dont l'état
+   *     est encore inconnu est compté opérationnel)
+   */
+  static long operationnels(long total, Map<EtatMateriel, Long> parEtat) {
+    return total - parEtat.get(EtatMateriel.EN_MAINTENANCE) - parEtat.get(EtatMateriel.REFORME);
   }
 
   private static Map<EtatMateriel, Long> compterParEtat(List<MaterielVue> materiels) {

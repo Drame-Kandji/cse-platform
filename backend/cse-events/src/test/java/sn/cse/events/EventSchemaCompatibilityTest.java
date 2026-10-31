@@ -8,9 +8,11 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import sn.cse.events.payload.BesoinPayload;
 import sn.cse.events.payload.ContratPayload;
+import sn.cse.events.payload.FacturePayload;
 
 /**
  * Vérifie que les exemples JSON committés restent lisibles par les records courants : une rupture
@@ -55,5 +57,26 @@ class EventSchemaCompatibilityTest {
     EventEnvelope relu = mapper.readValue(mapper.writeValueAsString(original), EventEnvelope.class);
 
     assertThat(relu).isEqualTo(original);
+  }
+
+  @Test
+  void should_read_facture_business_dates_when_present() throws IOException {
+    FacturePayload payload = lire(EventTypes.FACTURE_PAYEE).payloadAs(FacturePayload.class, mapper);
+
+    assertThat(payload.dateEmission()).isEqualTo(LocalDate.of(2026, 9, 5));
+    assertThat(payload.dateMandatement()).isEqualTo(LocalDate.of(2026, 9, 20));
+    assertThat(payload.datePaiement()).isEqualTo(LocalDate.of(2026, 10, 2));
+  }
+
+  @Test
+  void should_read_facture_without_business_dates_when_event_predates_them() throws IOException {
+    FacturePayload payload =
+        lire("FACTURE_MANDATEE_V1_SANS_DATES").payloadAs(FacturePayload.class, mapper);
+
+    assertThat(payload.statut()).isEqualTo("MANDATEE");
+    assertThat(payload.dateEcheance()).isEqualTo(LocalDate.of(2026, 10, 5));
+    assertThat(payload.dateEmission()).isNull();
+    assertThat(payload.dateMandatement()).isNull();
+    assertThat(payload.datePaiement()).isNull();
   }
 }

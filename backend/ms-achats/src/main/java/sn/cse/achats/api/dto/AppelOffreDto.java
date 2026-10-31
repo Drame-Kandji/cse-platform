@@ -34,6 +34,7 @@ import sn.cse.achats.domain.model.TypeAppelOffre;
  * @param offreRetenueId offre retenue
  * @param montantAttribue montant attribué
  * @param attribution proposition d'attribution
+ * @param contratId contrat généré une fois l'appel d'offres attribué (null sinon)
  * @param creeParNom auteur
  * @param version version (verrou optimiste)
  */
@@ -62,5 +63,9 @@ public record AppelOffreDto(
     @Schema(example = "6b1f6c1e-2a41-4d63-9a59-1f3e9b7f0c11") UUID offreRetenueId,
     @Schema(example = "285000000") BigDecimal montantAttribue,
     AttributionDto attribution,
+    @Schema(
+            description = "Contrat généré une fois l'appel d'offres ATTRIBUE (absent sinon)",
+            example = "a0000000-0000-0000-0000-000000000001")
+        UUID contratId,
     @Schema(example = "Fatou Sarr") String creeParNom,
     @Schema(example = "3") long version) {}

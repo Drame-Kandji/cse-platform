@@ -32,6 +32,9 @@ sn.cse.achats
 Évaluation : PRIX = 100 × meilleur prix / prix, DELAI = 100 × meilleur délai / délai, autres critères saisis
 (0..100) ; score = Σ poids × note / 100 (poids sommés à 100) ; départage prix puis antériorité du dépôt.
 
+Lien AO → contrat : `AppelOffre.contratId` expose le contrat généré une fois l'AO `ATTRIBUE` (une requête
+groupée par page) ; `GET /api/contrats?appelOffreId=` filtre les contrats par AO d'origine.
+
 Contrat : `BROUILLON → SIGNE → ENGAGEMENT_VALIDE → EN_LIVRAISON → LIVRE → CLOTURE` (+ `SIGNE → BROUILLON`
 quand la DAF refuse l'engagement). Pénalités = montant × `penaliteRetardPctParJour` × jours de retard,
 plafonnées à `plafond-penalites-pct`. Clôture refusée si des factures restent à payer (409 `FACTURES_EN_COURS`).
@@ -49,7 +52,8 @@ retry + circuit breaker `fournisseurs`). En cas d'échec : repli sur la projecti
   `ATTRIBUTION_PROPOSEE`, `ATTRIBUTION_REFUSEE`, `MARCHE_ATTRIBUE` (`AppelOffrePayload`) ; `CONTRAT_GENERE`,
   `CONTRAT_SIGNE`, `ENGAGEMENT_DEMANDE`, `ENGAGEMENT_VALIDE`, `ENGAGEMENT_REJETE`, `LIVRAISON_DEMARREE`,
   `LIVRAISON_EFFECTUEE`, `ALERTE_RETARD_LIVRAISON`, `CONTRAT_CLOTURE` (`ContratPayload`, avec
-  `tarifJournalierEstime` = prix unitaire × `taux-tarif-journalier`) ; `FACTURE_*` (`FacturePayload`).
+  `tarifJournalierEstime` = prix unitaire × `taux-tarif-journalier`) ; `FACTURE_*` (`FacturePayload`, avec les dates métier
+  `dateEmission`, `dateMandatement`, `datePaiement` pour dater mandats et paiements côté reporting).
 - Consommés (idempotents, rejeu + DLT) : `BESOIN_EN_ACHAT` (`cse.besoins.events`) → `besoin_a_acheter` ;
   `FOURNISSEUR_*`, `SCORE_RECALCULE`, `DOCUMENT_EXPIRE` (`cse.fournisseurs.events`) → statut local (ignorés si plus anciens).
 

@@ -301,6 +301,15 @@ class CycleAchatIntegrationTest extends IntegrationTestBase {
     // R03 : contrat BROUILLON généré à l'attribution, unique.
     String contratId =
         contrats.parAppelOffre(UUID.fromString(aoId)).orElseThrow().getId().toString();
+    mvc.perform(get("/api/appels-offres/{id}", aoId).with(role(RA, Roles.RESPONSABLE_ACHATS)))
+        .andExpect(jsonPath("$.contratId").value(contratId));
+    mvc.perform(
+            get("/api/appels-offres?statut=ATTRIBUE&q=pelle")
+                .with(role(RA, Roles.RESPONSABLE_ACHATS)))
+        .andExpect(jsonPath("$.content[?(@.id=='" + aoId + "')].contratId").value(contratId));
+    mvc.perform(get("/api/contrats?appelOffreId={ao}", aoId).with(role(DAF, Roles.DAF)))
+        .andExpect(jsonPath("$.totalElements").value(1))
+        .andExpect(jsonPath("$.content[0].id").value(contratId));
     mvc.perform(
             corps(post("/api/contrats"), "{'appelOffreId':'" + aoId + "'}")
                 .with(role(RA, Roles.RESPONSABLE_ACHATS)))
@@ -428,6 +437,17 @@ class CycleAchatIntegrationTest extends IntegrationTestBase {
     assertThat(livraison.at("/payload/chantierId").asText())
         .isEqualTo("c0000000-0000-0000-0000-000000000001");
     assertThat(livraison.at("/payload/designation").asText()).isEqualTo("Pelle hydraulique 20 t");
+    // FACTURE_PAYEE porte les dates métier (reporting date paiements et mandats sur celles-ci).
+    JsonNode paiement =
+        mapper.readTree(
+            jdbc.queryForObject(
+                "SELECT payload FROM outbox_event WHERE event_type = 'FACTURE_PAYEE' AND message_key = ?",
+                String.class,
+                facture.get("id").asText()));
+    assertThat(paiement.at("/payload/dateEmission").asText())
+        .isEqualTo(facture.get("dateEmission").asText());
+    assertThat(paiement.at("/payload/dateMandatement").asText()).isNotBlank();
+    assertThat(paiement.at("/payload/datePaiement").asText()).isNotBlank();
     assertThat(livraison.at("/payload/quantite").asInt()).isEqualTo(2);
     assertThat(livraison.at("/payload/tarifJournalierEstime").asLong()).isEqualTo(373_000L);
     assertThat(livraison.at("/payload/dateLivraisonReelle").asText()).isEqualTo("2026-12-04");

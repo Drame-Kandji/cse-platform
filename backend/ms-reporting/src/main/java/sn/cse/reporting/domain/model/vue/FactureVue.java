@@ -9,8 +9,9 @@ import sn.cse.reporting.domain.model.Periode;
 import sn.cse.reporting.domain.model.StatutFacture;
 
 /**
- * Vue d'une facture fournisseur. Le payload ne porte pas les dates de mandatement et de paiement :
- * elles sont prises au jour des événements {@code FACTURE_MANDATEE} / {@code FACTURE_PAYEE}.
+ * Vue d'une facture fournisseur. Mandatement et paiement sont datés par les dates métier du payload
+ * ({@code dateMandatement}, {@code datePaiement}) ; à défaut (événements antérieurs à leur
+ * introduction), par le jour des événements {@code FACTURE_MANDATEE} / {@code FACTURE_PAYEE}.
  *
  * @param id identifiant
  * @param numero numéro
@@ -43,19 +44,42 @@ public record FactureVue(
   }
 
   /**
-   * Dates déduites du statut d'un instantané reçu à l'instant {@code quand}.
+   * Dates déduites du statut d'un instantané reçu à l'instant {@code quand} : les dates métier du
+   * payload priment ; à défaut, le jour de l'événement. La réception est ramenée à la date
+   * d'émission si celle-ci est antérieure (factures historiques publiées a posteriori).
    *
    * @param statut statut de l'instantané
+   * @param dates dates métier portées par le payload (éléments éventuellement nuls)
    * @param quand instant de l'événement
    * @return tableau {réception, mandatement, paiement} (éléments éventuellement nuls)
    */
-  public static LocalDate[] datesDeduites(StatutFacture statut, Instant quand) {
+  public static LocalDate[] datesDeduites(StatutFacture statut, DatesMetier dates, Instant quand) {
     LocalDate jour = Horodatage.jour(quand);
-    LocalDate reception = jour;
+    LocalDate reception = Horodatage.min(jour, dates.emission());
     LocalDate mandatement =
-        statut == StatutFacture.MANDATEE || statut == StatutFacture.PAYEE ? jour : null;
-    LocalDate paiement = statut == StatutFacture.PAYEE ? jour : null;
+        statut == StatutFacture.MANDATEE || statut == StatutFacture.PAYEE
+            ? Horodatage.sinon(dates.mandatement(), jour)
+            : null;
+    LocalDate paiement =
+        statut == StatutFacture.PAYEE ? Horodatage.sinon(dates.paiement(), jour) : null;
     return new LocalDate[] {reception, mandatement, paiement};
+  }
+
+  /**
+   * Dates métier d'une facture portées par le payload.
+   *
+   * @param emission date d'émission
+   * @param mandatement date de mandatement
+   * @param paiement date de paiement
+   */
+  public record DatesMetier(LocalDate emission, LocalDate mandatement, LocalDate paiement) {
+
+    /**
+     * @return aucune date métier connue
+     */
+    public static DatesMetier aucune() {
+      return new DatesMetier(null, null, null);
+    }
   }
 
   /**

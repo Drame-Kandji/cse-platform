@@ -313,6 +313,7 @@ public final class ApiMapper {
                   null,
                   c.getStatut(),
                   null,
+                  null,
                   cv.nombreMateriels())));
     }
     for (MaterielVue mv : v.materiels()) {
@@ -329,6 +330,7 @@ public final class ApiMapper {
                   m.getCategorie(),
                   m.getEtat(),
                   null,
+                  m.getChantierActuelId(),
                   mv.chantierActuelNom(),
                   null)));
     }

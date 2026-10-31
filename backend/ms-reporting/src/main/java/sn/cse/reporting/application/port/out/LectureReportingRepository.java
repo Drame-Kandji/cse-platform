@@ -2,6 +2,7 @@ package sn.cse.reporting.application.port.out;
 
 import java.util.List;
 import sn.cse.reporting.domain.model.DonneesReporting;
+import sn.cse.reporting.domain.model.HistoriqueParc;
 import sn.cse.reporting.domain.model.Perimetre;
 import sn.cse.reporting.domain.model.Periode;
 import sn.cse.reporting.domain.model.vue.ParcInstantane;
@@ -24,4 +25,10 @@ public interface LectureReportingRepository {
    * @return instantanés du parc de la période, plus le dernier instantané antérieur à son début
    */
   List<ParcInstantane> instantanes(Periode periode);
+
+  /**
+   * @return tous les matériels, affectations et maintenances (tous chantiers, toutes dates) :
+   *     reconstitution des instantanés antérieurs au premier instantané enregistré
+   */
+  HistoriqueParc historiqueParc();
 }

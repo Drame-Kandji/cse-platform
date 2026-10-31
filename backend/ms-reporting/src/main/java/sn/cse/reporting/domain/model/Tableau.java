@@ -43,8 +43,10 @@ public record Tableau(
    * @param affectes affectés
    * @param enMaintenance en maintenance
    * @param reformes réformés
-   * @param tauxDisponibilite disponibles / (total − réformés)
-   * @param tauxUtilisation jours affectés / jours disponibles sur la période
+   * @param operationnels matériels opérationnels (total − en maintenance − réformés : disponibles
+   *     ou affectés)
+   * @param tauxDisponibilite disponibilité opérationnelle = opérationnels / (total − réformés)
+   * @param tauxUtilisation jours affectés / jours opérationnels sur la période
    * @param maintenancesEnCours interventions en cours
    * @param pannesOuvertes pannes non résolues
    * @param alertesMaintenance alertes de maintenance préventive non traitées
@@ -56,6 +58,7 @@ public record Tableau(
       long affectes,
       long enMaintenance,
       long reformes,
+      long operationnels,
       BigDecimal tauxDisponibilite,
       BigDecimal tauxUtilisation,
       long maintenancesEnCours,
@@ -71,6 +74,7 @@ public record Tableau(
    * @param disponibles disponibles
    * @param affectes affectés
    * @param enMaintenance en maintenance
+   * @param operationnels opérationnels (total − en maintenance − réformés)
    * @param tauxUtilisation taux d'utilisation sur la période
    */
   public record ParcCategorie(
@@ -79,6 +83,7 @@ public record Tableau(
       long disponibles,
       long affectes,
       long enMaintenance,
+      long operationnels,
       BigDecimal tauxUtilisation) {}
 
   /**

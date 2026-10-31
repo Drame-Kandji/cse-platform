@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import sn.cse.achats.application.port.out.AchatsEventPublisher;
 import sn.cse.achats.application.port.out.AppelOffreRepository;
 import sn.cse.achats.application.port.out.BesoinAAcheterRepository;
@@ -155,6 +157,13 @@ public final class FauxPorts {
       }
 
       @Override
+      public Map<UUID, UUID> idsParAppelOffre(Collection<UUID> appelOffreIds) {
+        return contrats.values().stream()
+            .filter(c -> appelOffreIds.contains(c.getAppelOffreId()))
+            .collect(Collectors.toMap(ContratAchat::getAppelOffreId, ContratAchat::getId));
+      }
+
+      @Override
       public PageResponse<ContratAchat> rechercher(Filtre filtre, PageQuery q) {
         return page(
             contrats.values().stream()
@@ -163,6 +172,10 @@ public final class FauxPorts {
                     c ->
                         filtre.fournisseurId() == null
                             || c.getFournisseurId().equals(filtre.fournisseurId()))
+                .filter(
+                    c ->
+                        filtre.appelOffreId() == null
+                            || c.getAppelOffreId().equals(filtre.appelOffreId()))
                 .toList(),
             q);
       }

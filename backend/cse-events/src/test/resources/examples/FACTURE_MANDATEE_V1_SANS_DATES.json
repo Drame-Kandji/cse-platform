@@ -1,0 +1,20 @@
+{
+  "eventId": "4d2e3f5a-6b7c-4d8e-9f0a-1b2c3d4e5f60",
+  "type": "FACTURE_MANDATEE",
+  "version": 1,
+  "occurredAt": "2026-10-30T10:00:00Z",
+  "source": "ms-achats",
+  "aggregateType": "Facture",
+  "aggregateId": "e0000000-0000-0000-0000-000000000001",
+  "correlationId": null,
+  "actor": null,
+  "payload": {
+    "factureId": "e0000000-0000-0000-0000-000000000001",
+    "numero": "FAC-SES-2026-014",
+    "contratId": "a0000000-0000-0000-0000-000000000001",
+    "fournisseurId": "f0000000-0000-0000-0000-000000000001",
+    "montantTtc": 289100000,
+    "statut": "MANDATEE",
+    "dateEcheance": "2026-10-05"
+  }
+}

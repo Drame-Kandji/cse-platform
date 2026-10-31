@@ -14,6 +14,7 @@ import sn.cse.common.exception.InvalidRequestException;
 import sn.cse.reporting.domain.model.CategorieMateriel;
 import sn.cse.reporting.domain.model.DonneesReporting;
 import sn.cse.reporting.domain.model.Granularite;
+import sn.cse.reporting.domain.model.HistoriqueParc;
 import sn.cse.reporting.domain.model.Indicateur;
 import sn.cse.reporting.domain.model.ParametresReporting;
 import sn.cse.reporting.domain.model.Perimetre;
@@ -33,7 +34,8 @@ class CalculateurSeriesTest {
   private final DonneesReporting donnees = JeuDeDonnees.donnees();
 
   private List<Point> serie(Indicateur i, Granularite g, Periode p, List<ParcInstantane> photos) {
-    return series.calculer(i, g, p, Perimetre.tous(), donnees, photos, AUJOURDHUI);
+    return series.calculer(
+        i, g, p, Perimetre.tous(), donnees, photos, HistoriqueParc.vide(), AUJOURDHUI);
   }
 
   private static Point point(String periode, String valeur) {
@@ -73,16 +75,17 @@ class CalculateurSeriesTest {
     List<ParcInstantane> photos =
         List.of(
             new ParcInstantane(
-                LocalDate.of(2026, 9, 15), CategorieMateriel.OUTILLAGE, null, 4, 2, 2, 0, 0),
+                LocalDate.of(2026, 9, 15), CategorieMateriel.OUTILLAGE, null, 5, 2, 2, 1, 0),
             new ParcInstantane(
                 LocalDate.of(2026, 10, 20), CategorieMateriel.OUTILLAGE, null, 3, 1, 1, 0, 1),
             new ParcInstantane(
-                LocalDate.of(2026, 10, 20), CategorieMateriel.MATERIEL_ROULANT, C1, 1, 0, 1, 0, 0));
+                LocalDate.of(2026, 10, 20), CategorieMateriel.MATERIEL_ROULANT, C1, 2, 0, 1, 1, 0));
     List<Point> mois = serie(Indicateur.TAUX_DISPONIBILITE, Granularite.MOIS, SEPT_OCT, photos);
     assertThat(mois).extracting(Point::periode).containsExactly("2026-09", "2026-10");
-    assertThat(mois.get(0).valeur()).isEqualByComparingTo("50.0");
-    // 1 disponible / (4 − 1 réformé)
-    assertThat(mois.get(1).valeur()).isEqualByComparingTo("33.3");
+    // Disponibilité opérationnelle : (5 − 1 en maintenance) / 5
+    assertThat(mois.get(0).valeur()).isEqualByComparingTo("80.0");
+    // (5 − 1 en maintenance − 1 réformé) / (5 − 1 réformé)
+    assertThat(mois.get(1).valeur()).isEqualByComparingTo("75.0");
 
     List<Point> jours =
         serie(
@@ -100,10 +103,51 @@ class CalculateurSeriesTest {
             Perimetre.chantiers(Set.of(C1)),
             donnees,
             photos,
+            HistoriqueParc.vide(),
             AUJOURDHUI);
-    // Septembre : aucun instantané du chantier ; octobre : 0 disponible sur 1.
+    // Septembre : aucun instantané du chantier ; octobre : 1 affecté + 1 en maintenance → 1 / 2.
     assertThat(chef).hasSize(1);
-    assertThat(chef.get(0).valeur()).isEqualByComparingTo("0.0");
+    assertThat(chef.get(0).valeur()).isEqualByComparingTo("50.0");
+  }
+
+  @Test
+  void should_reconstituer_disponibilite_avant_premier_instantane() {
+    HistoriqueParc historique =
+        new HistoriqueParc(donnees.materiels(), donnees.affectations(), donnees.maintenances());
+    List<ParcInstantane> photos =
+        List.of(
+            new ParcInstantane(
+                LocalDate.of(2026, 10, 20), CategorieMateriel.OUTILLAGE, null, 4, 1, 1, 1, 1));
+
+    List<Point> mois =
+        series.calculer(
+            Indicateur.TAUX_DISPONIBILITE,
+            Granularite.MOIS,
+            SEPT_OCT,
+            Perimetre.tous(),
+            donnees,
+            photos,
+            historique,
+            AUJOURDHUI);
+
+    // 30/09 reconstitué : seul M2 est connu (affecté à C2) → 100 % ; octobre : instantané
+    // enregistré.
+    assertThat(mois).extracting(Point::periode).containsExactly("2026-09", "2026-10");
+    assertThat(mois.get(0).valeur()).isEqualByComparingTo("100.0");
+    assertThat(mois.get(1).valeur()).isEqualByComparingTo("66.7");
+
+    List<Point> sansInstantane =
+        series.calculer(
+            Indicateur.TAUX_DISPONIBILITE,
+            Granularite.JOUR,
+            new Periode(LocalDate.of(2026, 10, 6), LocalDate.of(2026, 10, 6)),
+            Perimetre.chantiers(Set.of(C1)),
+            donnees,
+            List.of(),
+            historique,
+            AUJOURDHUI);
+    // 06/10 : M3 affecté à C1 (M2 en maintenance hors chantier n'est pas dans le périmètre).
+    assertThat(sansInstantane).containsExactly(point("2026-10-06", "100.0"));
   }
 
   @Test

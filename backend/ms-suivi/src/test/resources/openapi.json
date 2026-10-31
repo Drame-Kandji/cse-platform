@@ -3936,6 +3936,11 @@
             "enum" : [ "EN_COURS", "TERMINE" ],
             "example" : "EN_COURS"
           },
+          "chantierId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "c0000000-0000-0000-0000-000000000001"
+          },
           "chantierNom" : {
             "type" : "string",
             "example" : "Extension autoroute Dakar–AIBD"

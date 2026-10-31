@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 import sn.cse.reporting.application.port.out.LectureReportingRepository;
 import sn.cse.reporting.domain.model.DonneesReporting;
+import sn.cse.reporting.domain.model.HistoriqueParc;
 import sn.cse.reporting.domain.model.Perimetre;
 import sn.cse.reporting.domain.model.Periode;
 import sn.cse.reporting.domain.model.vue.ParcInstantane;
@@ -100,6 +101,14 @@ public class LectureReportingJdbcAdapter implements LectureReportingRepository {
             + " ORDER BY jour",
         new Parametres().date("du", periode.du()).date("au", periode.au()),
         VuesSql.INSTANTANE);
+  }
+
+  @Override
+  public HistoriqueParc historiqueParc() {
+    return new HistoriqueParc(
+        tous("materiels", VuesSql.MATERIEL),
+        tous("affectations", VuesSql.AFFECTATION),
+        tous("maintenances", VuesSql.MAINTENANCE));
   }
 
   private <T> List<T> tous(String table, RowMapper<T> mapper) {

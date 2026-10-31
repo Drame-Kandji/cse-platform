@@ -3,6 +3,7 @@ package sn.cse.achats.api.mapper;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.stereotype.Component;
 import sn.cse.achats.api.dto.AppelOffreDto;
 import sn.cse.achats.api.dto.AppelOffrePortailDto;
@@ -54,9 +55,10 @@ public class AchatsApiMapper {
 
   /**
    * @param a appel d'offres
+   * @param contratId contrat généré depuis l'appel d'offres (null s'il n'existe pas)
    * @return le DTO
    */
-  public AppelOffreDto appelOffre(AppelOffre a) {
+  public AppelOffreDto appelOffre(AppelOffre a, UUID contratId) {
     return new AppelOffreDto(
         a.getId(),
         a.getReference(),
@@ -82,6 +84,7 @@ public class AchatsApiMapper {
         a.getOffreRetenueId(),
         a.getMontantAttribue(),
         a.getAttribution().map(at -> attribution(a, at)).orElse(null),
+        contratId,
         a.getCreePar().nom(),
         a.getVersion());
   }

@@ -749,14 +749,20 @@
             "description" : "Réformés",
             "example" : 5
           },
+          "operationnels" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Opérationnels = total − en maintenance − réformés (disponibles ou affectés)",
+            "example" : 105
+          },
           "tauxDisponibilite" : {
             "type" : "number",
-            "description" : "Disponibles / (total − réformés), en %",
-            "example" : 39.1
+            "description" : "Disponibilité opérationnelle = (total − en maintenance − réformés) / (total − réformés), en %",
+            "example" : 91.3
           },
           "tauxUtilisation" : {
             "type" : "number",
-            "description" : "Jours affectés / jours disponibles sur la période, en %",
+            "description" : "Jours affectés / jours opérationnels sur la période, en %",
             "example" : 62.4
           },
           "maintenancesEnCours" : {
@@ -819,6 +825,12 @@
             "format" : "int64",
             "description" : "En maintenance",
             "example" : 3
+          },
+          "operationnels" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Opérationnels (total − en maintenance − réformés)",
+            "example" : 37
           },
           "tauxUtilisation" : {
             "type" : "number",

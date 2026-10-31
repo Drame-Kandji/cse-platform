@@ -72,6 +72,7 @@ public class ContratController {
   /**
    * @param statut statut
    * @param fournisseurId titulaire
+   * @param appelOffreId appel d'offres d'origine
    * @param q recherche
    * @param page page
    * @param size taille
@@ -83,20 +84,23 @@ public class ContratController {
   @Operation(
       summary = "Lister les contrats",
       description =
-          "Tri autorisé : numero, dateSignature, dateLivraisonPrevue, statut, createdAt (défaut"
+          "Filtres facultatifs : statut, titulaire, appel d'offres d'origine, texte. Tri autorisé :"
+              + " numero, dateSignature, dateLivraisonPrevue, statut, createdAt (défaut"
               + " numero,desc).")
   @ApiResponse(responseCode = "200", description = "Page de contrats")
   public PageResponse<ContratDto> lister(
       @Parameter(example = "SIGNE") @RequestParam(required = false) StatutContrat statut,
       @Parameter(example = "f0000000-0000-0000-0000-000000000001") @RequestParam(required = false)
           UUID fournisseurId,
+      @Parameter(example = "d0000000-0000-0000-0000-000000000001") @RequestParam(required = false)
+          UUID appelOffreId,
       @Parameter(example = "CTR-2026") @RequestParam(required = false) String q,
       @Parameter(example = "0") @RequestParam(required = false) Integer page,
       @Parameter(example = "20") @RequestParam(required = false) Integer size,
       @Parameter(example = "numero,desc") @RequestParam(required = false) String sort) {
     return consultation
         .rechercher(
-            new ContratRepository.Filtre(statut, fournisseurId, q),
+            new ContratRepository.Filtre(statut, fournisseurId, appelOffreId, q),
             pages.query(page, size, sort, ContratRepository.TRIABLES, "numero,desc"))
         .map(mapper::contrat);
   }

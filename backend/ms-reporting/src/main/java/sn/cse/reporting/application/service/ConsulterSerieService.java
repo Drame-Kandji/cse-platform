@@ -11,11 +11,13 @@ import sn.cse.reporting.application.command.DemandeSerie;
 import sn.cse.reporting.application.port.in.ConsulterSerieUseCase;
 import sn.cse.reporting.application.port.out.LectureReportingRepository;
 import sn.cse.reporting.domain.model.Granularite;
+import sn.cse.reporting.domain.model.HistoriqueParc;
 import sn.cse.reporting.domain.model.Indicateur;
 import sn.cse.reporting.domain.model.ParametresReporting;
 import sn.cse.reporting.domain.model.Perimetre;
 import sn.cse.reporting.domain.model.Periode;
 import sn.cse.reporting.domain.model.Point;
+import sn.cse.reporting.domain.model.vue.ParcInstantane;
 import sn.cse.reporting.domain.service.CalculateurSeries;
 import sn.cse.reporting.domain.service.PolitiqueAcces;
 
@@ -56,8 +58,10 @@ public class ConsulterSerieService implements ConsulterSerieUseCase {
             aujourdhui,
             parametres.periodeDefautJours(),
             parametres.periodeMaxJours());
-    List<sn.cse.reporting.domain.model.vue.ParcInstantane> instantanes =
-        indicateur == Indicateur.TAUX_DISPONIBILITE ? lecture.instantanes(periode) : List.of();
+    boolean disponibilite = indicateur == Indicateur.TAUX_DISPONIBILITE;
+    List<ParcInstantane> instantanes = disponibilite ? lecture.instantanes(periode) : List.of();
+    // Jours antérieurs au premier instantané enregistré : reconstitués depuis l'historique.
+    HistoriqueParc historique = disponibilite ? lecture.historiqueParc() : HistoriqueParc.vide();
     return calculateur.calculer(
         indicateur,
         granularite,
@@ -65,6 +69,7 @@ public class ConsulterSerieService implements ConsulterSerieUseCase {
         perimetre,
         lecture.charger(periode, perimetre),
         instantanes,
+        historique,
         aujourdhui);
   }
 

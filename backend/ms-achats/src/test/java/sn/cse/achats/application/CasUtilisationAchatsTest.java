@@ -171,7 +171,8 @@ class CasUtilisationAchatsTest {
             aos, contrats, ports.references(), ports.publisher(), parametres, horloge);
     attribution =
         new AttributionMarcheService(aos, generation, ports.publisher(), parametres, horloge);
-    consultation = new ConsultationAppelsOffresService(aos, ports.besoinRepository(), moteur);
+    consultation =
+        new ConsultationAppelsOffresService(aos, ports.besoinRepository(), contrats, moteur);
     procesVerbaux = new ProcesVerbalService(aos, generateurPdf, moteur, horloge);
     execution =
         new ExecutionContratService(contrats, factures, ports.publisher(), parametres, horloge);
@@ -507,6 +508,28 @@ class CasUtilisationAchatsTest {
     }
 
     @Test
+    void should_exposer_contrat_genere_et_filtrer_par_appel_offre_R03() {
+      ContratAchat contrat = contratGenere();
+      UUID autreAo = UUID.randomUUID();
+
+      assertThat(consultation.contratsGeneres(List.of(contrat.getAppelOffreId(), autreAo)))
+          .containsExactly(Map.entry(contrat.getAppelOffreId(), contrat.getId()));
+      assertThat(
+              consultationContrats
+                  .rechercher(
+                      new ContratRepository.Filtre(null, null, contrat.getAppelOffreId(), null),
+                      PAGE)
+                  .content())
+          .extracting(ContratAchat::getId)
+          .containsExactly(contrat.getId());
+      assertThat(
+              consultationContrats
+                  .rechercher(new ContratRepository.Filtre(null, null, autreAo, null), PAGE)
+                  .content())
+          .isEmpty();
+    }
+
+    @Test
     void should_attendre_approbation_dg_au_dela_du_seuil_R11() {
       AppelOffre ao = aoCloture("298000000", "312000000");
       attribution.proposer(
@@ -732,7 +755,7 @@ class CasUtilisationAchatsTest {
           .hasSize(1);
       assertThat(
               consultationContrats
-                  .rechercher(new ContratRepository.Filtre(null, F1.id(), null), PAGE)
+                  .rechercher(new ContratRepository.Filtre(null, F1.id(), null, null), PAGE)
                   .content())
           .hasSize(1);
     }

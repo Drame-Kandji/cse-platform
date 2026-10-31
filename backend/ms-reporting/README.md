@@ -52,7 +52,7 @@ Persistance en **JDBC** (`NamedParameterJdbcTemplate`) et non JPA : les vues son
 de vie d'entité, l'upsert `INSERT … ON CONFLICT DO UPDATE` exprime directement leur sémantique. Le schéma
 est validé par la migration Flyway et le test d'intégration (pas de `ddl-auto` sans Hibernate).
 
-### Dates retenues (payloads sans date métier)
+### Dates retenues (date métier du payload, sinon date de l'événement)
 
 | Fait | Date |
 |---|---|
@@ -60,18 +60,23 @@ est validé par la migration Flyway et le test d'intégration (pas de `ddl-auto`
 | Décision d'un besoin | 1er instant parmi `VALIDE`, `REJETE`, `AFFECTE_DIRECT`, `EN_ACHAT` |
 | Publication d'un AO | jour du 1er événement de l'AO, borné par `dateLimite` |
 | Engagement d'un contrat | `dateSignature` (l'engagement est demandé à la signature, R06), à défaut jour de `ENGAGEMENT_VALIDE` ; déduit aussi de tout statut ≥ `ENGAGEMENT_VALIDE` |
-| Mandatement / paiement | jour de `FACTURE_MANDATEE` / `FACTURE_PAYEE` |
+| Mandatement / paiement | `FacturePayload.dateMandatement` / `datePaiement` ; à défaut (événements antérieurs à ces champs) jour de `FACTURE_MANDATEE` / `FACTURE_PAYEE` |
+| Réception d'une facture | jour du 1er événement, ramené à `dateEmission` si celle-ci est antérieure |
 | Coût de maintenance | `dateFin`, à défaut `dateDebut`, puis `datePlanifiee` (maintenances clôturées avec coût) |
 | Panne résolue | 1re clôture de maintenance du même matériel postérieure au signalement (le payload n'a pas de statut) |
+| Signalement d'une panne, réforme d'un matériel | jour de l'événement (`PannePayload` / `MaterielPayload` sans date métier) |
 
 ## Formules (domaine : `CalculateurTableau`, `CalculateurUtilisation`, `CalculateurSeries`)
 
 Période P = `[du, au]` (défaut : 90 derniers jours, jour courant inclus) ; « écoulée » = P ∩ ]−∞, aujourd'hui].
 Montants FCFA entiers ; taux en % à une décimale ; un taux de dénominateur nul vaut 0 dans `/kpis`.
 
-- **Parc** (état courant du périmètre) : `tauxDisponibilite = disponibles / (total − réformés)`.
-- **Taux d'utilisation** = Σ jours affectés / Σ jours disponibles, jour par jour et matériel par matériel sur
-  la période écoulée : jours disponibles = jours écoulés − jours d'immobilisation en maintenance (début → fin,
+- **Parc** (état courant du périmètre) : `operationnels = total − enMaintenance − réformés` (disponibles ou
+  affectés ; aussi par catégorie) ; **disponibilité opérationnelle**
+  `tauxDisponibilite = (total − enMaintenance − réformés) / (total − réformés)` — un matériel affecté reste
+  disponible pour l'exploitation (un chef dont les 12 engins sont affectés et aucun en panne voit 100 %).
+- **Taux d'utilisation** = Σ jours affectés / Σ jours opérationnels, jour par jour et matériel par matériel sur
+  la période écoulée : jours opérationnels = jours écoulés − jours d'immobilisation en maintenance (début → fin,
   ou aujourd'hui si en cours, quel que soit le chantier de l'intervention) ; jours affectés = jours couverts par
   une affectation (transit compris) non immobilisés. Dénominateur : sans périmètre, matériels non réformés ;
   périmètre de chantiers (chef, `chantierId`, ligne chantier) : matériels affectés à ces chantiers sur P.
@@ -114,11 +119,18 @@ MONTANT_ENGAGE, COUT_MAINTENANCE → finances ou chantiers ; BESOINS_SOUMIS → 
 DELAI_APPROVISIONNEMENT → achats), sinon 403 `INDICATEUR_NON_AUTORISE`. Libellés `2026-07-14`, `2026-W29`
 (semaine ISO, année ISO), `2026-07`. Cumuls : un point par tranche (0 possible) ; taux / moyennes : pas de point
 pour une tranche sans donnée. `TAUX_DISPONIBILITE` lit `parc_instantanes` (dernier instantané ≤ fin de tranche,
-reporté). Plus de `max-points-serie` points → 400 `SERIE_TROP_LONGUE`.
+reporté) avec la même formule opérationnelle ; **avant le premier instantané enregistré**, l'instantané du jour
+est **reconstitué à la demande** depuis l'historique des vues (`ReconstitutionParc`, calcul pur sans écriture,
+donc idempotent) : pour chaque matériel, non compté avant son premier fait connu (début de sa 1re affectation ou
+maintenance, à défaut jour de son dernier événement d'état), réformé à partir du jour de l'événement de réforme,
+sinon en maintenance si une immobilisation couvre le jour, sinon affecté si une affectation le couvre (chantier de
+l'affectation, à défaut de la maintenance), sinon disponible. Plus de `max-points-serie` points → 400
+`SERIE_TROP_LONGUE`.
 
 Exports : PDF (OpenPDF, A4 paysage : page de titre CSE avec profil, période et date de génération, puis une
 page par section, pied de page numéroté) et Excel (Apache POI : une feuille par section, en-têtes stylés,
 formats `# ##0 "FCFA"`, `0.0 "%"`). Montants et taux formatés à la française (`12 500 000 FCFA`, `85,3 %`).
+Section parc : « Opérationnels » et « Disponibilité opérationnelle » (aussi par catégorie : « Opérationnels »).
 
 ## Configuration (`cse.reporting.*`)
 
@@ -146,5 +158,8 @@ OpenAPI `src/test/resources/openapi.json`, régénération : `-Dopenapi.regenere
   volumineuses) : adapté au volume de la CSE ; au-delà, pré-agréger par jour.
 - L'instantané du parc est recalculé à partir de tous les matériels à chaque événement d'état.
 - Le taux d'utilisation exclut les matériels réformés à la date du calcul (pas d'historique de réforme).
-- `TAUX_DISPONIBILITE` n'a d'historique qu'à partir de la mise en service (aucun instantané antérieur) ;
-  les données de démonstration, publiées au démarrage, n'alimentent donc cette série que pour le jour courant.
+- `TAUX_DISPONIBILITE` antérieur à la mise en service est reconstitué : un matériel réformé est compté
+  réformé à partir du jour de l'**événement** de réforme (pas de date métier), et un matériel sans aucune
+  affectation ni maintenance n'apparaît qu'à partir de son dernier événement d'état (pas de date d'acquisition).
+- Factures publiées avant l'ajout des dates métier au `FacturePayload` : mandatement / paiement datés du jour
+  de l'événement (rejouer un seed ms-achats récent pour des dates exactes).

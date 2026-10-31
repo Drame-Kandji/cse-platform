@@ -386,8 +386,9 @@ class ProjectionEtTableauTest {
   }
 
   private static FacturePayload facture(UUID id, String statut) {
+    // Ancien format : sans dates métier (repli sur le jour de l'événement).
     return new FacturePayload(
-        id, "FA-1", K, F, valueOf(1_200_000), statut, LocalDate.of(2026, 11, 30));
+        id, "FA-1", K, F, valueOf(1_200_000), statut, null, LocalDate.of(2026, 11, 30), null, null);
   }
 
   @Test
@@ -454,6 +455,28 @@ class ProjectionEtTableauTest {
     assertThat(dg.finances().montantEngage()).isEqualByComparingTo("3000000");
     assertThat(dg.finances().montantMandate()).isEqualByComparingTo("1200000");
     assertThat(dg.finances().montantPaye()).isEqualByComparingTo("1200000");
+
+    // Facture historique publiée aujourd'hui mais payée en juin : hors des 90 derniers jours.
+    UUID ancienne = UUID.randomUUID();
+    achats.projeter(
+        evt(
+            EventTypes.FACTURE_PAYEE,
+            new FacturePayload(
+                ancienne,
+                "FA-0",
+                K,
+                F,
+                valueOf(5_000_000),
+                "PAYEE",
+                LocalDate.of(2026, 5, 2),
+                LocalDate.of(2026, 6, 2),
+                LocalDate.of(2026, 5, 20),
+                LocalDate.of(2026, 6, 1)),
+            t("2026-10-29T09:00:00Z")));
+    assertThat(vues.factures.get(ancienne).datePaiement()).isEqualTo(LocalDate.of(2026, 6, 1));
+    Tableau apres = tableau("DG");
+    assertThat(apres.finances().montantPaye()).isEqualByComparingTo("1200000");
+    assertThat(apres.finances().montantMandate()).isEqualByComparingTo("1200000");
     // 01/10 → 21/10
     assertThat(dg.achats().delaiMoyenApprovisionnementJours()).isEqualByComparingTo("20.0");
     assertThat(dg.achats().tauxLivraisonALHeure()).isEqualByComparingTo("100.0");

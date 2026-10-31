@@ -49,6 +49,7 @@ import sn.cse.achats.application.port.in.EvaluerOffresUseCase;
 import sn.cse.achats.application.port.in.GenererProcesVerbalUseCase;
 import sn.cse.achats.application.port.in.PublierAppelOffreUseCase;
 import sn.cse.achats.application.port.out.AppelOffreRepository;
+import sn.cse.achats.domain.model.AppelOffre;
 import sn.cse.achats.domain.model.CritereEvaluation;
 import sn.cse.achats.domain.model.CriterePondere;
 import sn.cse.achats.domain.model.StatutAO;
@@ -134,11 +135,14 @@ public class AppelOffreController {
       @Parameter(example = "0") @RequestParam(required = false) Integer page,
       @Parameter(example = "20") @RequestParam(required = false) Integer size,
       @Parameter(example = "datePublication,desc") @RequestParam(required = false) String sort) {
-    return consultation
-        .rechercher(
+    PageResponse<AppelOffre> resultat =
+        consultation.rechercher(
             new AppelOffreRepository.Filtre(statut, type, q),
-            pages.query(page, size, sort, AppelOffreRepository.TRIABLES, "datePublication,desc"))
-        .map(mapper::appelOffre);
+            pages.query(page, size, sort, AppelOffreRepository.TRIABLES, "datePublication,desc"));
+    // Une seule requête pour retrouver les contrats générés de la page.
+    Map<UUID, UUID> contrats =
+        consultation.contratsGeneres(resultat.content().stream().map(AppelOffre::getId).toList());
+    return resultat.map(a -> mapper.appelOffre(a, contrats.get(a.getId())));
   }
 
   /**
@@ -150,7 +154,7 @@ public class AppelOffreController {
   @Operation(summary = "Consulter un appel d'offres")
   @ApiResponse(responseCode = "200", description = "Appel d'offres")
   public AppelOffreDto detail(@PathVariable UUID id) {
-    return mapper.appelOffre(consultation.detail(id));
+    return dto(consultation.detail(id));
   }
 
   /**
@@ -170,7 +174,7 @@ public class AppelOffreController {
   public AppelOffreDto publier(@Valid @RequestBody CreerAppelOffreRequest requete) {
     List<CriterePondere> criteres =
         requete.criteres().stream().map(c -> new CriterePondere(c.code(), c.poids())).toList();
-    return mapper.appelOffre(
+    return dto(
         publication.publier(
             new CreerAppelOffreCommand(
                 requete.besoinId(),
@@ -248,7 +252,7 @@ public class AppelOffreController {
               + " limite par un traitement planifié.")
   @ApiResponse(responseCode = "200", description = "Appel d'offres clôturé")
   public AppelOffreDto cloturer(@PathVariable UUID id) {
-    return mapper.appelOffre(cloture.cloturer(id));
+    return dto(cloture.cloturer(id));
   }
 
   /**
@@ -309,7 +313,7 @@ public class AppelOffreController {
   @ApiResponse(responseCode = "200", description = "Proposition créée")
   public AppelOffreDto attribuer(
       @PathVariable UUID id, @Valid @RequestBody AttribuerRequest requete) {
-    return mapper.appelOffre(
+    return dto(
         attribution.proposer(
             new ProposerAttributionCommand(
                 id, requete.offreId(), requete.justification(), utilisateurs.require())));
@@ -330,7 +334,7 @@ public class AppelOffreController {
   @ApiResponse(responseCode = "200", description = "Décision enregistrée")
   public AppelOffreDto coValider(
       @PathVariable UUID id, @Valid @RequestBody DecisionRequest requete) {
-    return mapper.appelOffre(
+    return dto(
         attribution.coValider(
             new DecisionCommand(
                 id, requete.approuve(), requete.commentaire(), utilisateurs.require())));
@@ -351,7 +355,7 @@ public class AppelOffreController {
   @ApiResponse(responseCode = "200", description = "Décision enregistrée")
   public AppelOffreDto approuver(
       @PathVariable UUID id, @Valid @RequestBody DecisionRequest requete) {
-    return mapper.appelOffre(
+    return dto(
         attribution.approuver(
             new DecisionCommand(
                 id, requete.approuve(), requete.commentaire(), utilisateurs.require())));
@@ -391,5 +395,9 @@ public class AppelOffreController {
     if (note != null) {
       notes.put(critere, note);
     }
+  }
+
+  private AppelOffreDto dto(AppelOffre a) {
+    return mapper.appelOffre(a, consultation.contratsGeneres(List.of(a.getId())).get(a.getId()));
   }
 }

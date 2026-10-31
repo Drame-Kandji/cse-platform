@@ -1,7 +1,9 @@
 package sn.cse.achats.application.port.out;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -26,9 +28,10 @@ public interface ContratRepository {
    *
    * @param statut statut (facultatif)
    * @param fournisseurId titulaire (facultatif)
+   * @param appelOffreId appel d'offres d'origine (facultatif)
    * @param q texte libre sur le numéro ou l'objet (facultatif)
    */
-  record Filtre(StatutContrat statut, UUID fournisseurId, String q) {}
+  record Filtre(StatutContrat statut, UUID fournisseurId, UUID appelOffreId, String q) {}
 
   /**
    * @param contrat agrégat à enregistrer
@@ -47,6 +50,12 @@ public interface ContratRepository {
    * @return le contrat issu de cet appel d'offres, s'il existe
    */
   Optional<ContratAchat> parAppelOffre(UUID appelOffreId);
+
+  /**
+   * @param appelOffreIds appels d'offres
+   * @return identifiant du contrat généré, indexé par appel d'offres (absents si aucun contrat)
+   */
+  Map<UUID, UUID> idsParAppelOffre(Collection<UUID> appelOffreIds);
 
   /**
    * @param filtre critères

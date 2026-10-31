@@ -354,6 +354,7 @@ class ApiSecuriteTest {
         .andExpect(jsonPath("$.features[0].properties.kind").value("CHANTIER"))
         .andExpect(jsonPath("$.features[0].geometry.coordinates[0]").value(-17.4677))
         .andExpect(jsonPath("$.features[1].properties.kind").value("MATERIEL"))
-        .andExpect(jsonPath("$.features[1].properties.etat").value("DISPONIBLE"));
+        .andExpect(jsonPath("$.features[1].properties.etat").value("DISPONIBLE"))
+        .andExpect(jsonPath("$.features[1].properties.chantierId").doesNotExist());
   }
 }

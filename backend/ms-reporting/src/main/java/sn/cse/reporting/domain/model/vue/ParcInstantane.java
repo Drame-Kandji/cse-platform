@@ -39,6 +39,22 @@ public record ParcInstantane(
   }
 
   /**
+   * @return matériels opérationnels (total − en maintenance − réformés)
+   */
+  public long operationnels() {
+    return total - enMaintenance - reformes;
+  }
+
+  /**
+   * État d'un matériel à un jour donné.
+   *
+   * @param categorie catégorie
+   * @param chantierId chantier ce jour-là ({@code null} : hors chantier)
+   * @param etat état ce jour-là
+   */
+  public record EtatDuJour(CategorieMateriel categorie, UUID chantierId, EtatMateriel etat) {}
+
+  /**
    * Photographie l'état courant des matériels (ceux dont la catégorie ou l'état sont encore
    * inconnus sont ignorés).
    *
@@ -48,12 +64,23 @@ public record ParcInstantane(
    */
   public static List<ParcInstantane> photographier(
       LocalDate jour, Collection<MaterielVue> materiels) {
+    return agreger(
+        jour,
+        materiels.stream()
+            .filter(m -> m.categorie() != null && m.etat() != null)
+            .map(m -> new EtatDuJour(m.categorie(), m.chantierId(), m.etat()))
+            .toList());
+  }
+
+  /**
+   * @param jour jour photographié
+   * @param etats état de chaque matériel ce jour-là
+   * @return une ligne par couple (catégorie, chantier)
+   */
+  public static List<ParcInstantane> agreger(LocalDate jour, Collection<EtatDuJour> etats) {
     record Cle(CategorieMateriel categorie, UUID chantierId) {}
     Map<Cle, long[]> compteurs = new LinkedHashMap<>();
-    for (MaterielVue m : materiels) {
-      if (m.categorie() == null || m.etat() == null) {
-        continue;
-      }
+    for (EtatDuJour m : etats) {
       long[] c =
           compteurs.computeIfAbsent(new Cle(m.categorie(), m.chantierId()), k -> new long[5]);
       c[0]++;

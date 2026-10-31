@@ -89,7 +89,12 @@ class SuiviIntegrationTest extends IntegrationTestSupport {
         .andExpect(jsonPath("$.length()").value(14));
     mvc.perform(get("/api/materiels/carte").with(rm()))
         .andExpect(jsonPath("$.type").value("FeatureCollection"))
-        .andExpect(jsonPath("$.features[0].geometry.type").value("Point"));
+        .andExpect(jsonPath("$.features[0].geometry.type").value("Point"))
+        .andExpect(
+            jsonPath(
+                    "$.features[?(@.properties.kind=='MATERIEL' && @.properties.etat=='AFFECTE')]"
+                        + ".properties.chantierId")
+                .isNotEmpty());
 
     assertThat(
             compter(

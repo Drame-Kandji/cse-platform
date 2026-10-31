@@ -102,7 +102,10 @@ public class OutboxAchatsEventPublisher implements AchatsEventPublisher {
             f.getFournisseurId(),
             f.getMontantTtc(),
             f.getStatut().name(),
-            f.getDateEcheance());
+            f.getDateEmission(),
+            f.getDateEcheance(),
+            f.getDateMandatement(),
+            f.getDatePaiement());
     outbox.publier(
         Topics.ACHATS,
         type,

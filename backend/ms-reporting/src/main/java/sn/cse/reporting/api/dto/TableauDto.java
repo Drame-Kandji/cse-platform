@@ -81,10 +81,19 @@ public record TableauDto(
       @Schema(description = "Affectés", example = "60") long affectes,
       @Schema(description = "En maintenance", example = "10") long enMaintenance,
       @Schema(description = "Réformés", example = "5") long reformes,
-      @Schema(description = "Disponibles / (total − réformés), en %", example = "39.1")
+      @Schema(
+              description =
+                  "Opérationnels = total − en maintenance − réformés (disponibles ou affectés)",
+              example = "105")
+          long operationnels,
+      @Schema(
+              description =
+                  "Disponibilité opérationnelle = (total − en maintenance − réformés) / (total −"
+                      + " réformés), en %",
+              example = "91.3")
           BigDecimal tauxDisponibilite,
       @Schema(
-              description = "Jours affectés / jours disponibles sur la période, en %",
+              description = "Jours affectés / jours opérationnels sur la période, en %",
               example = "62.4")
           BigDecimal tauxUtilisation,
       @Schema(description = "Maintenances en cours", example = "4") long maintenancesEnCours,
@@ -101,6 +110,7 @@ public record TableauDto(
           p.affectes(),
           p.enMaintenance(),
           p.reformes(),
+          p.operationnels(),
           p.tauxDisponibilite(),
           p.tauxUtilisation(),
           p.maintenancesEnCours(),
@@ -115,6 +125,7 @@ public record TableauDto(
                           c.disponibles(),
                           c.affectes(),
                           c.enMaintenance(),
+                          c.operationnels(),
                           c.tauxUtilisation()))
               .toList());
     }
@@ -137,6 +148,8 @@ public record TableauDto(
       @Schema(description = "Disponibles", example = "12") long disponibles,
       @Schema(description = "Affectés", example = "25") long affectes,
       @Schema(description = "En maintenance", example = "3") long enMaintenance,
+      @Schema(description = "Opérationnels (total − en maintenance − réformés)", example = "37")
+          long operationnels,
       @Schema(description = "Taux d'utilisation, en %", example = "71.0")
           BigDecimal tauxUtilisation) {}
 

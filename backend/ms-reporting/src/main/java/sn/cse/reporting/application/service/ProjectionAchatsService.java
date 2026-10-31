@@ -131,7 +131,12 @@ public class ProjectionAchatsService implements ProjeterAchatsUseCase {
 
   private void facture(FacturePayload p, Instant quand) {
     StatutFacture statut = ValeursEnum.lire(StatutFacture.class, p.statut());
-    LocalDate[] dates = FactureVue.datesDeduites(statut, quand);
+    // Dates métier du payload ; repli sur le jour de l'événement pour les anciens événements.
+    LocalDate[] dates =
+        FactureVue.datesDeduites(
+            statut,
+            new FactureVue.DatesMetier(p.dateEmission(), p.dateMandatement(), p.datePaiement()),
+            quand);
     FactureVue recu =
         new FactureVue(
             p.factureId(),

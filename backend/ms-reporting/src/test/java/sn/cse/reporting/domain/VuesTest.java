@@ -29,6 +29,7 @@ import sn.cse.reporting.domain.model.vue.BesoinVue;
 import sn.cse.reporting.domain.model.vue.ChantierVue;
 import sn.cse.reporting.domain.model.vue.ContratVue;
 import sn.cse.reporting.domain.model.vue.FactureVue;
+import sn.cse.reporting.domain.model.vue.FactureVue.DatesMetier;
 import sn.cse.reporting.domain.model.vue.FournisseurVue;
 import sn.cse.reporting.domain.model.vue.Horodatage;
 import sn.cse.reporting.domain.model.vue.LitigeVue;
@@ -483,9 +484,9 @@ class VuesTest {
 
   @Test
   void should_dater_reception_mandatement_et_paiement_de_facture() {
-    LocalDate[] recue = FactureVue.datesDeduites(StatutFacture.RECUE, T1);
+    LocalDate[] recue = FactureVue.datesDeduites(StatutFacture.RECUE, DatesMetier.aucune(), T1);
     assertThat(recue[1]).isNull();
-    LocalDate[] payee = FactureVue.datesDeduites(StatutFacture.PAYEE, T2);
+    LocalDate[] payee = FactureVue.datesDeduites(StatutFacture.PAYEE, DatesMetier.aucune(), T2);
     assertThat(payee[1]).isEqualTo(LocalDate.of(2026, 10, 2));
     FactureVue f1 =
         new FactureVue(
@@ -519,6 +520,27 @@ class VuesTest {
     assertThat(fusion.mandateeDans(octobre)).isTrue();
     assertThat(fusion.payeeDans(octobre)).isTrue();
     assertThat(f2.fusionnerAvec(f1).statut()).isEqualTo(StatutFacture.PAYEE);
+  }
+
+  @Test
+  void should_dater_facture_par_dates_metier_when_payload_les_porte() {
+    LocalDate[] payee =
+        FactureVue.datesDeduites(
+            StatutFacture.PAYEE,
+            new DatesMetier(
+                LocalDate.of(2026, 5, 2), LocalDate.of(2026, 5, 20), LocalDate.of(2026, 6, 1)),
+            T2);
+
+    // Réception ramenée à l'émission, mandatement et paiement à leurs dates métier.
+    assertThat(payee)
+        .containsExactly(
+            LocalDate.of(2026, 5, 2), LocalDate.of(2026, 5, 20), LocalDate.of(2026, 6, 1));
+    LocalDate[] mandatee =
+        FactureVue.datesDeduites(
+            StatutFacture.MANDATEE, new DatesMetier(null, LocalDate.of(2026, 9, 1), null), T2);
+    assertThat(mandatee[0]).isEqualTo(LocalDate.of(2026, 10, 2));
+    assertThat(mandatee[1]).isEqualTo(LocalDate.of(2026, 9, 1));
+    assertThat(mandatee[2]).isNull();
   }
 
   @Test

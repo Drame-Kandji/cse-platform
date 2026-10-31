@@ -81,8 +81,9 @@ class CalculateurTableauTest {
     assertThat(p.affectes()).isEqualTo(1);
     assertThat(p.enMaintenance()).isEqualTo(1);
     assertThat(p.reformes()).isEqualTo(1);
-    // 1 disponible / (4 − 1 réformé)
-    assertThat(p.tauxDisponibilite()).isEqualByComparingTo(d("33.3"));
+    // Disponibilité opérationnelle : (4 − 1 en maintenance − 1 réformé) / (4 − 1 réformé)
+    assertThat(p.operationnels()).isEqualTo(2);
+    assertThat(p.tauxDisponibilite()).isEqualByComparingTo(d("66.7"));
     // M1 20/30, M2 5/28 (2 j de maintenance), M3 20/20 (10 j immobilisé) → 45 / 78
     assertThat(p.tauxUtilisation()).isEqualByComparingTo(d("57.7"));
     assertThat(p.maintenancesEnCours()).isEqualTo(1);
@@ -97,12 +98,15 @@ class CalculateurTableauTest {
     // M1 20/30 + M2 5/28 → 25 / 58
     assertThat(roulant.tauxUtilisation()).isEqualByComparingTo(d("43.1"));
     assertThat(roulant.total()).isEqualTo(2);
+    assertThat(roulant.operationnels()).isEqualTo(2);
     Tableau.ParcCategorie outillage =
         p.parCategorie().stream()
             .filter(c -> c.categorie() == CategorieMateriel.OUTILLAGE)
             .findFirst()
             .orElseThrow();
     assertThat(outillage.tauxUtilisation()).isEqualByComparingTo(d("100.0"));
+    // M3 en maintenance, M4 réformé
+    assertThat(outillage.operationnels()).isZero();
   }
 
   @Test
@@ -189,7 +193,8 @@ class CalculateurTableauTest {
     Tableau t = tableau(ProfilTableau.CHEF_CHANTIER, Perimetre.chantiers(Set.of(C1)));
 
     assertThat(t.parc().total()).isEqualTo(2);
-    assertThat(t.parc().tauxDisponibilite()).isEqualByComparingTo(d("0.0"));
+    // M1 affecté (opérationnel), M3 en maintenance → 1 / 2
+    assertThat(t.parc().tauxDisponibilite()).isEqualByComparingTo(d("50.0"));
     assertThat(t.parc().tauxUtilisation()).isEqualByComparingTo(d("80.0"));
     assertThat(t.parc().pannesOuvertes()).isEqualTo(1);
     assertThat(t.besoins().total()).isEqualTo(2);

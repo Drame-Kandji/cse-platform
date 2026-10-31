@@ -37,6 +37,7 @@ import sn.cse.reporting.application.service.ConsulterSerieService;
 import sn.cse.reporting.application.service.ConsulterTableauService;
 import sn.cse.reporting.application.service.ExporterTableauService;
 import sn.cse.reporting.domain.JeuDeDonnees;
+import sn.cse.reporting.domain.model.HistoriqueParc;
 import sn.cse.reporting.domain.model.ParametresReporting;
 import sn.cse.reporting.infrastructure.export.ExcelExporter;
 import sn.cse.reporting.infrastructure.export.PdfExporter;
@@ -82,6 +83,7 @@ class ReportingControllerTest {
   void donnees() {
     when(lecture.charger(any(), any())).thenReturn(JeuDeDonnees.donnees());
     when(lecture.instantanes(any())).thenReturn(List.of());
+    when(lecture.historiqueParc()).thenReturn(HistoriqueParc.vide());
   }
 
   @Test
@@ -161,7 +163,8 @@ class ReportingControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.profil").value("DG"))
         .andExpect(jsonPath("$.finances.montantEngage").value(5000000))
-        .andExpect(jsonPath("$.parc.tauxDisponibilite").value(33.3));
+        .andExpect(jsonPath("$.parc.operationnels").value(2))
+        .andExpect(jsonPath("$.parc.tauxDisponibilite").value(66.7));
   }
 
   @Test

@@ -121,7 +121,8 @@ record ContenuRapport(List<Bloc> blocs) {
             l("Affectés", Valeur.nombre(p.affectes())),
             l("En maintenance", Valeur.nombre(p.enMaintenance())),
             l("Réformés", Valeur.nombre(p.reformes())),
-            l("Taux de disponibilité", Valeur.de(Nature.TAUX, p.tauxDisponibilite())),
+            l("Opérationnels", Valeur.nombre(p.operationnels())),
+            l("Disponibilité opérationnelle", Valeur.de(Nature.TAUX, p.tauxDisponibilite())),
             l("Taux d'utilisation", Valeur.de(Nature.TAUX, p.tauxUtilisation())),
             l("Maintenances en cours", Valeur.nombre(p.maintenancesEnCours())),
             l("Pannes ouvertes", Valeur.nombre(p.pannesOuvertes())),
@@ -130,7 +131,13 @@ record ContenuRapport(List<Bloc> blocs) {
         new Table(
             "Par catégorie",
             List.of(
-                "Catégorie", "Total", "Disponibles", "Affectés", "En maintenance", "Utilisation"),
+                "Catégorie",
+                "Total",
+                "Disponibles",
+                "Affectés",
+                "En maintenance",
+                "Opérationnels",
+                "Utilisation"),
             p.parCategorie().stream()
                 .map(
                     c ->
@@ -140,6 +147,7 @@ record ContenuRapport(List<Bloc> blocs) {
                             Valeur.nombre(c.disponibles()),
                             Valeur.nombre(c.affectes()),
                             Valeur.nombre(c.enMaintenance()),
+                            Valeur.nombre(c.operationnels()),
                             Valeur.de(Nature.TAUX, c.tauxUtilisation())))
                 .toList());
     return new Bloc(Section.PARC, lignes, List.of(categories));

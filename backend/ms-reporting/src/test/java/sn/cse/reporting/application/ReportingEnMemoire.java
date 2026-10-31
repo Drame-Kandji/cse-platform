@@ -12,6 +12,7 @@ import java.util.UUID;
 import sn.cse.reporting.application.port.out.LectureReportingRepository;
 import sn.cse.reporting.application.port.out.ProjectionRepository;
 import sn.cse.reporting.domain.model.DonneesReporting;
+import sn.cse.reporting.domain.model.HistoriqueParc;
 import sn.cse.reporting.domain.model.Perimetre;
 import sn.cse.reporting.domain.model.Periode;
 import sn.cse.reporting.domain.model.vue.AffectationVue;
@@ -208,5 +209,13 @@ class ReportingEnMemoire implements ProjectionRepository, LectureReportingReposi
   @Override
   public List<ParcInstantane> instantanes(Periode periode) {
     return instantanes.values().stream().flatMap(List::stream).toList();
+  }
+
+  @Override
+  public HistoriqueParc historiqueParc() {
+    return new HistoriqueParc(
+        new ArrayList<>(materiels.values()),
+        new ArrayList<>(affectations.values()),
+        new ArrayList<>(maintenances.values()));
   }
 }

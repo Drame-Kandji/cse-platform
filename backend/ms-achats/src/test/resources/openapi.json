@@ -2262,7 +2262,7 @@
     },
     "/api/contrats" : {
       "get" : {
-        "description" : "Tri autorisé : numero, dateSignature, dateLivraisonPrevue, statut, createdAt (défaut numero,desc).",
+        "description" : "Filtres facultatifs : statut, titulaire, appel d'offres d'origine, texte. Tri autorisé : numero, dateSignature, dateLivraisonPrevue, statut, createdAt (défaut numero,desc).",
         "operationId" : "lister_1",
         "parameters" : [ {
           "example" : "SIGNE",
@@ -2277,6 +2277,15 @@
           "example" : "f0000000-0000-0000-0000-000000000001",
           "in" : "query",
           "name" : "fournisseurId",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "example" : "d0000000-0000-0000-0000-000000000001",
+          "in" : "query",
+          "name" : "appelOffreId",
           "required" : false,
           "schema" : {
             "type" : "string",
@@ -6120,6 +6129,12 @@
           "chantierNom" : {
             "type" : "string",
             "example" : "Extension autoroute Dakar–AIBD"
+          },
+          "contratId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Contrat généré une fois l'appel d'offres ATTRIBUE (absent sinon)",
+            "example" : "a0000000-0000-0000-0000-000000000001"
           },
           "creeParNom" : {
             "type" : "string",

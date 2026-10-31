@@ -47,7 +47,7 @@ Les numéros d'ordre de travail `OT-AAAA-NNNN` proviennent d'une séquence Postg
 | GET | `/api/materiels/{id}` (fiche + 20 dernières affectations/maintenances/pannes/mouvements) | internes |
 | POST / PUT | `/api/materiels`, `/api/materiels/{id}` | RM |
 | GET | `/api/materiels/disponibilite` (`categorie, designation, quantite, du, au`) | internes |
-| GET | `/api/materiels/carte` (`categorie, etat`) → GeoJSON `FeatureCollection` | internes |
+| GET | `/api/materiels/carte` (`categorie, etat`) → GeoJSON `FeatureCollection` (matériel : `chantierId`, `chantierNom` du chantier courant) | internes |
 | POST | `/api/materiels/{id}/affecter` | RM |
 | POST | `/api/materiels/{id}/confirmer-reception` | CHEF (son chantier), RM |
 | POST | `/api/materiels/{id}/liberer` | RM |

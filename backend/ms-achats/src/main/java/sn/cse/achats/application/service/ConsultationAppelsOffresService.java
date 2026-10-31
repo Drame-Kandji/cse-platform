@@ -1,6 +1,8 @@
 package sn.cse.achats.application.service;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,6 +10,7 @@ import sn.cse.achats.application.port.in.ConsulterAppelsOffresUseCase;
 import sn.cse.achats.application.port.in.OffreVue;
 import sn.cse.achats.application.port.out.AppelOffreRepository;
 import sn.cse.achats.application.port.out.BesoinAAcheterRepository;
+import sn.cse.achats.application.port.out.ContratRepository;
 import sn.cse.achats.domain.model.AppelOffre;
 import sn.cse.achats.domain.model.BesoinAAcheter;
 import sn.cse.achats.domain.service.MoteurEvaluation;
@@ -21,19 +24,23 @@ public class ConsultationAppelsOffresService implements ConsulterAppelsOffresUse
 
   private final AppelOffreRepository appelsOffres;
   private final BesoinAAcheterRepository besoins;
+  private final ContratRepository contrats;
   private final MoteurEvaluation moteur;
 
   /**
    * @param appelsOffres dépôt des appels d'offres
    * @param besoins projection des besoins
+   * @param contrats dépôt des contrats (contrat généré par appel d'offres)
    * @param moteur moteur d'évaluation
    */
   public ConsultationAppelsOffresService(
       AppelOffreRepository appelsOffres,
       BesoinAAcheterRepository besoins,
+      ContratRepository contrats,
       MoteurEvaluation moteur) {
     this.appelsOffres = appelsOffres;
     this.besoins = besoins;
+    this.contrats = contrats;
     this.moteur = moteur;
   }
 
@@ -45,6 +52,11 @@ public class ConsultationAppelsOffresService implements ConsulterAppelsOffresUse
   @Override
   public AppelOffre detail(UUID id) {
     return Chargements.appelOffre(appelsOffres, id);
+  }
+
+  @Override
+  public Map<UUID, UUID> contratsGeneres(Collection<UUID> appelOffreIds) {
+    return contrats.idsParAppelOffre(appelOffreIds);
   }
 
   @Override
