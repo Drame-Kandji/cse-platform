@@ -420,3 +420,8 @@ chiffrés** (passerelle → services, services → PostgreSQL/Kafka/Redis/Keyclo
 5. Pas de rotation de clé AES outillée ; montants en clair dans Kafka et dans les vues de reporting.
 6. Limiteurs de débit de l'assistant et registre SSE en mémoire (mono-instance).
 7. Endpoints Actuator `metrics`/`prometheus` à isoler du réseau public en production.
+8. **Ordre validation / autorisation** : `@PreAuthorize` s'applique après la liaison et la validation du
+   corps (`@Valid @RequestBody`). Un utilisateur sans le rôle requis qui envoie un corps invalide reçoit donc
+   un 400 listant les champs au lieu d'un 403 ; avec un corps valide il reçoit bien 403 et l'opération n'est
+   jamais exécutée. Fuite d'information limitée (noms de champs déjà publiés dans l'OpenAPI). Correction
+   envisagée : règles d'autorisation par URL dans `CseSecurityAutoConfiguration` pour les routes d'écriture.
