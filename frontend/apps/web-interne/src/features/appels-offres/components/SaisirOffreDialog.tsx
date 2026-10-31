@@ -76,7 +76,7 @@ export function SaisirOffreDialog({ ao, open, onOpenChange }: Props) {
     <Dialog open={open} onOpenChange={fermer}>
       <DialogContent
         title="Saisir une offre reçue"
-        description={`Offre transmise hors portail${ouvert ? '' : ' par un fournisseur invité'}. Elle restera anonymisée jusqu'à la clôture.`}
+        description="Anonymisée jusqu'à la clôture."
       >
         <form noValidate onSubmit={(event) => void submit(event)} className="grid gap-4">
           <FormField
@@ -84,11 +84,7 @@ export function SaisirOffreDialog({ ao, open, onOpenChange }: Props) {
             name="fournisseurId"
             label="Fournisseur"
             required
-            hint={
-              ouvert
-                ? 'Fournisseurs actifs de la spécialité ; les invités sont signalés.'
-                : 'Demande de prix : fournisseurs invités uniquement.'
-            }
+            hint={ouvert ? undefined : 'Invités uniquement (demande de prix)'}
           >
             {({ field, control }) => (
               <Select

@@ -1,4 +1,4 @@
-import { BarChart3, Lock, Star } from 'lucide-react'
+import { BarChart3, Lock } from 'lucide-react'
 import { describeStatus } from '@/shared/domain/labels'
 import { cn } from '@/shared/lib/cn'
 import { EMPTY_VALUE, formatMoney, formatNumber } from '@/shared/lib/format'
@@ -45,7 +45,7 @@ function TableauClassement({ comparatif, ao }: { comparatif: Comparatif; ao: App
             return (
               <tr
                 key={offre.id}
-                className={cn('border-b border-border last:border-0', recommandee && 'bg-success/10')}
+                className={cn('border-b border-border last:border-0', recommandee && 'bg-primary/[0.05]')}
                 aria-label={recommandee ? `${nomOffre(offre, ao.statut)}, offre recommandée` : undefined}
               >
                 <td className="h-12 px-3 font-semibold tabular-nums">{offre.rang ?? index + 1}</td>
@@ -53,12 +53,9 @@ function TableauClassement({ comparatif, ao }: { comparatif: Comparatif; ao: App
                   <span className="flex flex-wrap items-center gap-2 font-medium">
                     {nomOffre(offre, ao.statut)}
                     {recommandee && (
-                      <Badge tone="success">
-                        <Star aria-hidden />
-                        Recommandée
-                      </Badge>
+                      <Badge tone="primary">Recommandée</Badge>
                     )}
-                    {offre.retenue && <Badge tone="primary">Retenue</Badge>}
+                    {offre.retenue && <Badge tone="neutral">Retenue</Badge>}
                   </span>
                 </td>
                 <td className="px-3 text-right tabular-nums">{formatMoney(offre.montantPropose)}</td>
@@ -96,7 +93,6 @@ export function ComparatifTab({ ao }: { ao: AppelOffre }) {
       <EmptyState
         icon={<Lock aria-hidden />}
         title="Comparatif disponible après la clôture"
-        description="Le comparatif nominatif des offres est établi une fois l'appel d'offres clôturé."
       />
     )
   }
@@ -110,29 +106,21 @@ export function ComparatifTab({ ao }: { ao: AppelOffre }) {
   return (
     <div className="grid gap-4">
       {recommandee && (
-        <div className="flex items-start gap-3 rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-sm text-success-emphasis">
-          <Star className="mt-0.5 size-4 shrink-0" aria-hidden />
-          <p>
-            Offre recommandée : <strong>{nomOffre(recommandee, ao.statut)}</strong> — score pondéré{' '}
-            {formatNumber(recommandee.scoreGlobal, { decimals: 1 })}/100 pour{' '}
-            {formatMoney(recommandee.montantPropose)}.
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          Recommandée :{' '}
+          <strong className="font-medium text-foreground">{nomOffre(recommandee, ao.statut)}</strong> ·{' '}
+          {formatNumber(recommandee.scoreGlobal, { decimals: 1 })}/100 ·{' '}
+          {formatMoney(recommandee.montantPropose)}
+        </p>
       )}
       <Card>
-        <CardHeader
-          title="Classement pondéré"
-          description="Note par critère sur 100 et points apportés au score."
-        />
+        <CardHeader title="Classement pondéré" />
         <CardContent className="px-0 pb-0">
           <TableauClassement comparatif={comparatif} ao={ao} />
         </CardContent>
       </Card>
       <Card>
-        <CardHeader
-          title="Notes par critère"
-          description="Comparaison visuelle des offres, critère par critère (sur 100)."
-        />
+        <CardHeader title="Notes par critère" />
         <CardContent>
           <ComparatifChart comparatif={comparatif} statut={ao.statut} />
         </CardContent>

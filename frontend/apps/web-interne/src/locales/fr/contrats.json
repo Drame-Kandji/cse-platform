@@ -1,13 +1,12 @@
 {
   "list": {
     "title": "Contrats & commandes",
-    "description": "Suivi des contrats issus des attributions : signature, engagement budgétaire, livraison et clôture.",
     "tableLabel": "Liste des contrats",
     "search": "Numéro, objet, fournisseur…",
     "statut": "Statut",
     "fournisseur": "Tous les fournisseurs",
     "emptyTitle": "Aucun contrat",
-    "emptyDescription": "Les contrats sont générés automatiquement lorsqu'une attribution d'appel d'offres est entièrement approuvée."
+    "emptyDescription": "Générés à l'approbation d'une attribution."
   },
   "columns": {
     "numero": "Numéro",
@@ -22,7 +21,7 @@
     "back": "Retour aux contrats",
     "lifecycle": "Cycle de vie du contrat",
     "summary": "Synthèse",
-    "readOnly": "Consultation seule : les actions sur le contrat sont réservées au Responsable des Achats.",
+    "readOnly": "Consultation seule",
     "late": "Livraison en retard",
     "penalties": "Pénalités de retard",
     "penaltiesHint": "Calculées selon le taux contractuel de {{taux}} % par jour de retard."
@@ -42,8 +41,7 @@
   },
   "engagement": {
     "title": "Engagement budgétaire",
-    "description": "Validé par la Direction Administrative et Financière avant toute livraison (R06).",
-    "none": "L'engagement sera créé à la signature du contrat.",
+    "none": "Créé à la signature du contrat.",
     "demande": "Demandé le",
     "decision": "Décision le",
     "par": "Par",
@@ -71,21 +69,21 @@
     "atteint": "Atteint le {{date}}",
     "marquer": "Marquer atteint",
     "marquerTitle": "Marquer le jalon « {{libelle}} » comme atteint ?",
-    "marquerDescription": "La date du jour sera enregistrée comme date réelle."
+    "marquerDescription": "Date réelle : aujourd'hui."
   },
   "actions": {
     "signer": "Signer le contrat",
     "signerTitle": "Signer le contrat {{numero}} ?",
-    "signerDescription": "Les clauses ne seront plus modifiables. Un engagement de {{montant}} sera soumis à la validation du DAF.",
+    "signerDescription": "Un engagement de {{montant}} sera soumis au DAF.",
     "demarrer": "Démarrer la livraison",
     "demarrerTitle": "Démarrer la livraison ?",
-    "demarrerDescription": "Le fournisseur sera notifié et le suivi des jalons commencera.",
-    "demarrerBloque": "Engagement DAF requis (R06) : la livraison ne peut démarrer qu'après validation de l'engagement budgétaire.",
+    "demarrerDescription": "Le fournisseur sera notifié.",
+    "demarrerBloque": "Engagement DAF requis (R06)",
     "confirmer": "Confirmer la livraison",
-    "confirmerDescription": "Enregistrez la date de réception effective et le bon de livraison.",
+    "confirmerDescription": "Date de réception et bon de livraison.",
     "observations": "Observations",
     "cloturer": "Clôturer le contrat",
     "cloturerTitle": "Clôturer le contrat {{numero}} ?",
-    "cloturerDescription": "Le contrat passera à l'état Clôturé. Cette action est définitive."
+    "cloturerDescription": "Action définitive."
   }
 }

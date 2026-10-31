@@ -1,4 +1,4 @@
-import { Pencil, ShieldAlert } from 'lucide-react'
+import { Pencil } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useSearchParams } from 'react-router-dom'
@@ -7,7 +7,6 @@ import { isApiError } from '@/shared/api'
 import { Can, useHasRole } from '@/shared/auth'
 import { formatDate } from '@/shared/lib/format'
 import { Button } from '@/shared/ui/button'
-import { Card } from '@/shared/ui/card'
 import { DialogTrigger } from '@/shared/ui/dialog'
 import { EmptyState } from '@/shared/ui/empty-state'
 import { ErrorState } from '@/shared/ui/error-state'
@@ -58,13 +57,13 @@ export function Component() {
     <>
       <PageHeader
         title={f.raisonSociale}
-        subtitle={`NINEA ${f.ninea}${f.ville ? ` · ${f.ville}` : ''} · ${String(f.nombreEvaluations)} évaluation(s)`}
-        meta={
+        subtitle={
           <>
-            <StatusBadge kind="statutFournisseur" value={f.statut} />
-            <ScoreBar score={f.scorePerformance} className="w-40" />
+            {f.ville ? `${f.ville} · ` : ''}Score <ScoreBar score={f.scorePerformance} /> / 100 ·{' '}
+            {String(f.nombreEvaluations)} évaluation(s)
           </>
         }
+        meta={<StatusBadge kind="statutFournisseur" value={f.statut} />}
         actions={
           <>
             <StatutActions fournisseur={f} />
@@ -86,15 +85,12 @@ export function Component() {
         }
       />
       {demande && f.statut !== 'BLACKLISTE' && (
-        <Card role="status" className="mb-4 flex gap-3 border-warning/40 bg-warning/5 p-4">
-          <ShieldAlert className="mt-0.5 size-5 shrink-0 text-warning-emphasis" aria-hidden />
-          <div className="grid gap-0.5 text-sm">
-            <p className="font-medium">{t('detail.blacklistPending')}</p>
-            <p className="text-muted-foreground">
-              Demandée par {demande.demandeurNom} le {formatDate(demande.date)} : {demande.motif}
-            </p>
-          </div>
-        </Card>
+        <div role="status" className="mb-4 grid gap-0.5 text-sm">
+          <p className="font-medium text-danger-emphasis">{t('detail.blacklistPending')}</p>
+          <p className="text-muted-foreground">
+            {demande.demandeurNom} · {formatDate(demande.date)} · {demande.motif}
+          </p>
+        </div>
       )}
       {f.motifStatut && (f.statut === 'SUSPENDU' || f.statut === 'BLACKLISTE') && (
         <p className="mb-4 text-sm text-muted-foreground">

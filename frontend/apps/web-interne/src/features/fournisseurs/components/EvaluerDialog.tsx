@@ -85,7 +85,7 @@ export function EvaluerDialog({ fournisseurId }: { fournisseurId: string }) {
           <FormField control={form.control} name="commentaire" label={t('evaluations.commentaire')} optional>
             {({ field, control }) => <Textarea {...control} {...field} value={field.value ?? ''} rows={3} />}
           </FormField>
-          <p className="rounded-lg bg-surface-sunken px-3 py-2 text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Note indicative :{' '}
             <span className="font-semibold tabular-nums text-foreground">
               {formatNumber(apercu(values), { decimals: 1 })} / 100

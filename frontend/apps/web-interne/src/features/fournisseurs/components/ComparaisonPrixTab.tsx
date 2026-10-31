@@ -1,8 +1,6 @@
-import { TrendingDown } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { optionsOf, labelOf, type CategorieMateriel } from '@/shared/domain/labels'
-import { cn } from '@/shared/lib/cn'
 import { formatMoney } from '@/shared/lib/format'
 import { Badge } from '@/shared/ui/badge'
 import { Card, CardContent, CardHeader } from '@/shared/ui/card'
@@ -31,7 +29,7 @@ function ArticleCard({ article }: { article: ComparaisonPrix }) {
           .join(' · ')}
       />
       <CardContent className="grid gap-4">
-        <dl className="grid grid-cols-3 gap-2 rounded-lg bg-surface-sunken p-3 text-center">
+        <dl className="grid grid-cols-3 gap-2">
           {stats.map((stat) => (
             <div key={stat.label}>
               <dt className="text-xs text-muted-foreground">{stat.label}</dt>
@@ -39,27 +37,25 @@ function ArticleCard({ article }: { article: ComparaisonPrix }) {
             </div>
           ))}
         </dl>
-        <ul className="grid gap-2">
+        <ul className="divide-y divide-border">
           {offres.map((offre, index) => (
             <li
               key={offre.fournisseurId}
-              className={cn(
-                'grid gap-2 rounded-lg border p-3 sm:grid-cols-[1fr_auto_auto] sm:items-center sm:gap-4',
-                index === 0 ? 'border-success/40 bg-success/5' : 'border-border',
-              )}
+              className="grid gap-1 py-2.5 sm:grid-cols-[1fr_auto_auto] sm:items-center sm:gap-4"
             >
               <div className="flex min-w-0 flex-wrap items-center gap-2">
                 <span className="truncate text-sm font-medium">{offre.raisonSociale}</span>
                 {index === 0 && (
-                  <Badge tone="success" size="sm">
-                    <TrendingDown aria-hidden />
+                  <Badge tone="primary" size="sm">
                     {t('comparaison.meilleurPrix')}
                   </Badge>
                 )}
               </div>
-              <ScoreBar score={offre.scorePerformance} className="sm:w-36" />
+              <span className="text-xs text-muted-foreground">
+                Score <ScoreBar score={offre.scorePerformance} />
+              </span>
               <div className="text-sm sm:text-right">
-                <p className="font-semibold tabular-nums">{formatMoney(offre.prixUnitaire)}</p>
+                <p className="font-medium tabular-nums">{formatMoney(offre.prixUnitaire)}</p>
                 <p className="text-xs text-muted-foreground">
                   {t('comparaison.delai', { count: offre.delaiLivraisonJours })}
                 </p>
@@ -109,7 +105,7 @@ export function ComparaisonPrixTab() {
       ) : query.isError ? (
         <ErrorState error={query.error} onRetry={() => void query.refetch()} />
       ) : query.data.length === 0 ? (
-        <EmptyState title={t('comparaison.empty')} description={t('comparaison.emptyDescription')} />
+        <EmptyState title={t('comparaison.empty')} />
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           {query.data.map((article) => (

@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { access } from '@/app/access'
 import { Can, useHasRole } from '@/shared/auth'
+import { labelOf } from '@/shared/domain/labels'
 import { ErrorState } from '@/shared/ui/error-state'
 import { PageHeader } from '@/shared/ui/page-header'
 import { Skeleton } from '@/shared/ui/skeleton'
@@ -40,9 +41,11 @@ export function Component() {
   if (query.isError) return <ErrorState error={query.error} onRetry={() => void query.refetch()} />
   const ao = query.data
 
-  // Le comparatif renvoie 409 AO_NON_CLOTURE tant que l'AO est PUBLIE : onglet masque.
+  // Evaluation et comparatif (409 AO_NON_CLOTURE) n'ont de sens qu'apres la cloture : onglets masques.
   const disponibles: Onglet[] = voitOffres
-    ? ONGLETS.filter((value) => value !== 'comparatif' || ao.statut !== 'PUBLIE')
+    ? ONGLETS.filter(
+        (value) => (value !== 'comparatif' && value !== 'evaluation') || ao.statut !== 'PUBLIE',
+      )
     : ['attribution']
   const demande = params.get('onglet') as Onglet | null
   const onglet: Onglet =
@@ -51,11 +54,11 @@ export function Component() {
   return (
     <>
       <PageHeader
-        title={`${ao.reference} — ${ao.objet}`}
+        title={ao.objet}
+        subtitle={`${ao.reference} · ${labelOf('typeAppelOffre', ao.type)}`}
         meta={
           <>
             <StatusBadge kind="statutAO" value={ao.statut} />
-            <StatusBadge kind="typeAppelOffre" value={ao.type} dot={false} />
             {ao.statut === 'PUBLIE' && <Countdown dateLimite={ao.dateLimite} className="text-sm" />}
           </>
         }
@@ -94,13 +97,15 @@ export function Component() {
               <TabsContent value="offres">
                 <OffresTab ao={ao} />
               </TabsContent>
-              <TabsContent value="evaluation">
-                <EvaluationTab ao={ao} />
-              </TabsContent>
               {ao.statut !== 'PUBLIE' && (
-                <TabsContent value="comparatif">
-                  <ComparatifTab ao={ao} />
-                </TabsContent>
+                <>
+                  <TabsContent value="evaluation">
+                    <EvaluationTab ao={ao} />
+                  </TabsContent>
+                  <TabsContent value="comparatif">
+                    <ComparatifTab ao={ao} />
+                  </TabsContent>
+                </>
               )}
               <TabsContent value="pv">
                 <ProcesVerbauxTab ao={ao} />

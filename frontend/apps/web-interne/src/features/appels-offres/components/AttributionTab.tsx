@@ -1,4 +1,4 @@
-import { Award, CheckCircle2, FileSignature, Hourglass, Lock } from 'lucide-react'
+import { CheckCircle2, FileSignature, Hourglass, Lock } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { access } from '@/app/access'
 import { paths, to } from '@/app/routes'
@@ -15,11 +15,7 @@ import { ProposerAttributionForm } from './ProposerAttributionForm'
 function Resume({ ao, attribution }: { ao: AppelOffre; attribution: Attribution }) {
   return (
     <Card>
-      <CardHeader
-        icon={<Award aria-hidden />}
-        title="Proposition d'attribution"
-        description={`Proposée par ${attribution.proposeeParNom} le ${formatDateTime(attribution.dateProposition)}`}
-      />
+      <CardHeader title="Proposition d'attribution" />
       <CardContent className="grid gap-4">
         <dl className="grid gap-4 sm:grid-cols-3">
           <div>
@@ -35,8 +31,10 @@ function Resume({ ao, attribution }: { ao: AppelOffre; attribution: Attribution 
             <dd className="text-sm font-semibold tabular-nums">{formatMoney(attribution.montant)}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Statut de l&apos;appel d&apos;offres</dt>
-            <dd className="text-sm">{ao.statut === 'ATTRIBUE' ? 'Attribué' : 'En cours de validation'}</dd>
+            <dt className="text-xs text-muted-foreground">Proposée par</dt>
+            <dd className="text-sm">
+              {attribution.proposeeParNom} · {formatDateTime(attribution.dateProposition)}
+            </dd>
           </div>
         </dl>
         <div>
@@ -58,7 +56,6 @@ export function AttributionTab({ ao }: { ao: AppelOffre }) {
       <EmptyState
         icon={<Lock aria-hidden />}
         title="Attribution possible après la clôture"
-        description="Clôturez l'appel d'offres et évaluez les offres avant de proposer une attribution."
       />
     )
   }
@@ -70,17 +67,16 @@ export function AttributionTab({ ao }: { ao: AppelOffre }) {
       <EmptyState
         icon={<Hourglass aria-hidden />}
         title="Aucune attribution proposée"
-        description="Le Responsable Achats n'a pas encore proposé d'attribution (ou la précédente a été refusée)."
       />
     )
   }
   return (
     <div className="grid gap-4">
       {ao.statut === 'ATTRIBUE' && (
-        <div className="flex flex-col gap-3 rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-sm text-success-emphasis sm:flex-row sm:items-center">
-          <CheckCircle2 className="size-5 shrink-0" aria-hidden />
-          <p className="flex-1">
-            Attribution approuvée : le marché est attribué et le contrat a été généré en brouillon (R03).
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <p className="flex flex-1 items-center gap-2 text-sm text-muted-foreground">
+            <CheckCircle2 className="size-4 shrink-0 text-primary" aria-hidden />
+            Attribution approuvée · contrat généré en brouillon (R03)
           </p>
           {voitContrats && (
             <Button asChild size="sm" variant="secondary">

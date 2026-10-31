@@ -59,8 +59,7 @@ export function ComparatifChart({ comparatif, statut }: { comparatif: Comparatif
       </ChartContainer>
       {comparatif.offres.length > MAX_OFFRES_GRAPHIQUE && (
         <p className="text-xs text-muted-foreground">
-          Le graphique présente les {MAX_OFFRES_GRAPHIQUE} premières offres du classement ; le tableau les
-          liste toutes.
+          {MAX_OFFRES_GRAPHIQUE} premières offres du classement
         </p>
       )}
     </div>

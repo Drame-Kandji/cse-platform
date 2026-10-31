@@ -42,8 +42,8 @@ export function DecisionDialog({ approuve, titre, onClose, onSubmit, pending }: 
         title={approuve ? `Approuver — ${titre}` : `Refuser — ${titre}`}
         description={
           approuve
-            ? "Votre approbation sera tracée. Une fois toutes les validations obtenues, l'appel d'offres est attribué et le contrat généré."
-            : "Un refus supprime la proposition d'attribution : le Responsable Achats devra en proposer une nouvelle."
+            ? 'Décision tracée.'
+            : "Le refus annule la proposition d'attribution."
         }
       >
         <Field label="Commentaire" required={approuve === false} optional={approuve === true} error={erreur}>

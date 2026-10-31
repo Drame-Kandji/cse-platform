@@ -14,10 +14,7 @@ import type { WizardForm } from './StepsBesoin'
 export function StepDateLimite({ form }: { form: WizardForm }) {
   return (
     <div className="grid gap-4">
-      <p className="text-sm text-muted-foreground">
-        Passé cette échéance, aucune offre n&apos;est plus acceptée (R02) et l&apos;appel d&apos;offres est
-        clôturé automatiquement, ce qui lève l&apos;anonymat des offres.
-      </p>
+      <p className="text-sm text-muted-foreground">Aucune offre acceptée après cette échéance (R02).</p>
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField control={form.control} name="dateLimite" label="Date limite" required>
           {({ field, control }) => (

@@ -1,13 +1,11 @@
 import { Link } from 'react-router-dom'
 import { to } from '@/app/routes'
+import { scoreSousSeuil } from '@/shared/domain/score'
 import { cn } from '@/shared/lib/cn'
 import { formatNumber } from '@/shared/lib/format'
 import { Card, CardContent, CardHeader } from '@/shared/ui/card'
 import { EmptyState } from '@/shared/ui/empty-state'
 import type { SectionFournisseurs } from '../types'
-
-/** Sous ce score, le fournisseur est signale en rouge (alerte). */
-const SEUIL_ALERTE = 50
 
 /** Classement des meilleurs fournisseurs : rang, nom, score (rouge seulement sous le seuil). */
 export function TopFournisseurs({ fournisseurs }: { fournisseurs: SectionFournisseurs }) {
@@ -42,7 +40,7 @@ export function TopFournisseurs({ fournisseurs }: { fournisseurs: SectionFournis
                 <span
                   className={cn(
                     'font-semibold tabular-nums',
-                    fournisseur.scorePerformance < SEUIL_ALERTE && 'text-danger-emphasis',
+                    scoreSousSeuil(fournisseur.scorePerformance) && 'text-danger-emphasis',
                   )}
                 >
                   {formatNumber(fournisseur.scorePerformance, { decimals: 1 })}

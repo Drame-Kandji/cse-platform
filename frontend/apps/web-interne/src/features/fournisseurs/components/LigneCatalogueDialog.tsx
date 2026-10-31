@@ -67,7 +67,7 @@ export function LigneCatalogueDialog({
       </DialogTrigger>
       <DialogContent
         title="Article du catalogue"
-        description="Une référence existante est mise à jour et son ancien prix historisé."
+        description="Ancien prix historisé."
       >
         <form
           noValidate

@@ -44,7 +44,7 @@ function Contenu({ ao, offre, onClose }: { ao: AppelOffre; offre: Offre; onClose
   return (
     <DialogContent
       title={`Évaluer l'offre ${nomOffre(offre, ao.statut)}`}
-      description="Notes de 0 à 100. Le prix et le délai sont notés automatiquement."
+      description="Notes sur 100 (prix et délai calculés)."
     >
       <form noValidate onSubmit={(event) => void submit(event)} className="grid gap-4">
         <div className="grid gap-4 sm:grid-cols-2">

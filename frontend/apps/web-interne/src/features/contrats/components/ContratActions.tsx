@@ -1,4 +1,4 @@
-import { Archive, Info, PackageCheck, PenLine, Truck } from 'lucide-react'
+import { Archive, PackageCheck, PenLine, Truck } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { formatMoney } from '@/shared/lib/format'
@@ -28,8 +28,8 @@ export function ContratActions({ contrat }: { contrat: Contrat }) {
   const showDemarrer = statut === 'SIGNE' || statut === 'ENGAGEMENT_VALIDE'
 
   return (
-    <div className="grid gap-3">
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="grid gap-1.5">
+      <div className="flex flex-wrap items-center gap-2 sm:justify-end">
         {statut === 'BROUILLON' && (
           /* Apres un refus DAF, le contrat revient en BROUILLON et peut etre signe a nouveau. */
           <ConfirmDialog
@@ -80,11 +80,7 @@ export function ContratActions({ contrat }: { contrat: Contrat }) {
         )}
       </div>
       {showDemarrer && !demarrable && (
-        <p
-          id="contrat-demarrer-aide"
-          className="flex max-w-xl items-start gap-2 rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning-emphasis"
-        >
-          <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
+        <p id="contrat-demarrer-aide" className="text-xs text-muted-foreground sm:text-right">
           {t('actions.demarrerBloque')}
         </p>
       )}

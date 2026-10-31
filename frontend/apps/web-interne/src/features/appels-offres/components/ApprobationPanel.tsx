@@ -1,4 +1,4 @@
-import { Check, Info, X } from 'lucide-react'
+import { Check, X } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { access } from '@/app/access'
 import { useHasRole } from '@/shared/auth'
@@ -18,22 +18,18 @@ interface EtapeProps {
 
 function EtapeApprobation({ titre, responsable, approbation, actions }: EtapeProps) {
   return (
-    <li className="grid gap-2 rounded-lg border border-border p-4 sm:grid-cols-[1fr_auto] sm:items-start">
+    <li className="grid gap-2 rounded-xl border border-border bg-surface p-4 sm:grid-cols-[1fr_auto] sm:items-start">
       <div className="grid gap-1">
         <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
           {titre}
           <StatusBadge kind="statutApprobation" value={approbation.statut} />
         </p>
-        <p className="text-xs text-muted-foreground">{responsable}</p>
-        {approbation.parNom && (
-          <p className="text-sm text-muted-foreground">
-            {approbation.statut === 'REFUSEE' ? 'Refusée' : 'Décidée'} par {approbation.parNom}
-            {approbation.date && ` le ${formatDateTime(approbation.date)}`}
-          </p>
-        )}
-        {approbation.commentaire && (
-          <p className="text-sm italic text-foreground">« {approbation.commentaire} »</p>
-        )}
+        <p className="text-xs text-muted-foreground">
+          {responsable}
+          {approbation.parNom && ` · ${approbation.parNom}`}
+          {approbation.date && ` · ${formatDateTime(approbation.date)}`}
+        </p>
+        {approbation.commentaire && <p className="text-sm text-foreground">{approbation.commentaire}</p>}
       </div>
       {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
     </li>
@@ -54,7 +50,7 @@ function Actions({ label, onDecide }: { label: string; onDecide: (approuve: bool
       </Button>
       <Button
         size="sm"
-        variant="secondary"
+        variant="ghost"
         leftIcon={<X />}
         onClick={() => {
           onDecide(false)
@@ -78,12 +74,12 @@ export function ApprobationPanel({ ao, attribution }: { ao: AppelOffre; attribut
 
   return (
     <div className="grid gap-3">
-      <div className="flex items-start gap-3 rounded-lg border border-info/30 bg-info/10 px-4 py-3 text-sm text-info-emphasis">
-        <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
-        <p>
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-base font-semibold">Circuit d&apos;approbation</h3>
+        <p className="text-right text-xs text-muted-foreground">
           {dg
-            ? `Montant de ${formatMoney(attribution.montant)} supérieur au seuil de délégation : l'attribution doit être co-validée par le Responsable Matériel puis approuvée par la Direction Générale (R11).`
-            : `Montant de ${formatMoney(attribution.montant)} dans le seuil de délégation : seule la co-validation du Responsable Matériel est requise, sans approbation de la Direction Générale (R11).`}
+            ? `${formatMoney(attribution.montant)} : supérieur au seuil de délégation (R11)`
+            : `${formatMoney(attribution.montant)} : dans le seuil, sans approbation de la Direction Générale (R11)`}
         </p>
       </div>
       <ol className="grid gap-3" aria-label="Circuit d'approbation">
@@ -105,7 +101,7 @@ export function ApprobationPanel({ ao, attribution }: { ao: AppelOffre; attribut
         {dg ? (
           <EtapeApprobation
             titre="Approbation de la Direction Générale"
-            responsable="Direction Générale — requise au-delà du seuil de délégation"
+            responsable="Direction Générale"
             approbation={dg}
             actions={
               estDg && dg.statut === 'EN_ATTENTE' ? (
@@ -119,8 +115,8 @@ export function ApprobationPanel({ ao, attribution }: { ao: AppelOffre; attribut
             }
           />
         ) : (
-          <li className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
-            Approbation de la Direction Générale : non requise pour ce montant.
+          <li className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+            Approbation de la Direction Générale : non requise
           </li>
         )}
       </ol>

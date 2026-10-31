@@ -1,8 +1,8 @@
-import { FileText, Pencil } from 'lucide-react'
+import { Pencil } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { EMPTY_VALUE, formatNumber } from '@/shared/lib/format'
-import { Button, Card, CardContent, CardHeader } from '@/shared/ui'
+import { Button, Card, CardContent } from '@/shared/ui'
 import type { Contrat } from '../api/types'
 import { ClausesDialog } from './ClausesDialog'
 
@@ -28,26 +28,8 @@ export function ClausesCard({ contrat, editable }: { contrat: Contrat; editable:
   ]
   return (
     <Card>
-      <CardHeader
-        icon={<FileText aria-hidden />}
-        title={t('clauses.title')}
-        action={
-          editable ? (
-            <Button
-              variant="secondary"
-              size="sm"
-              leftIcon={<Pencil />}
-              onClick={() => {
-                setOpen(true)
-              }}
-            >
-              {t('clauses.edit')}
-            </Button>
-          ) : null
-        }
-      />
-      <CardContent>
-        <dl className="grid gap-3 text-sm">
+      <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-start">
+        <dl className="grid flex-1 gap-4 text-sm sm:grid-cols-2">
           {rows.map((row) => (
             <div key={row.label} className="grid content-start gap-0.5">
               <dt className="text-xs text-muted-foreground">{row.label}</dt>
@@ -55,6 +37,18 @@ export function ClausesCard({ contrat, editable }: { contrat: Contrat; editable:
             </div>
           ))}
         </dl>
+        {editable && (
+          <Button
+            variant="secondary"
+            size="sm"
+            leftIcon={<Pencil />}
+            onClick={() => {
+              setOpen(true)
+            }}
+          >
+            {t('clauses.edit')}
+          </Button>
+        )}
       </CardContent>
       {editable && <ClausesDialog contrat={contrat} open={open} onOpenChange={setOpen} />}
     </Card>

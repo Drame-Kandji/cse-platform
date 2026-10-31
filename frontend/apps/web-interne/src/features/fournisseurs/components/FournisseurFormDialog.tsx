@@ -109,7 +109,7 @@ export function FournisseurFormDialog({ fournisseur, trigger, open, onOpenChange
       <DialogContent
         size="lg"
         title={fournisseur ? 'Modifier le fournisseur' : 'Nouveau fournisseur'}
-        description="Un fournisseur créé par le Responsable Achats est directement actif."
+        description="Créé directement actif."
       >
         <form
           noValidate

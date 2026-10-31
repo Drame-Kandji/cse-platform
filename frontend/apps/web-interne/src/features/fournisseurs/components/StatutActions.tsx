@@ -29,7 +29,7 @@ export function StatutActions({ fournisseur }: { fournisseur: FournisseurDetail 
       {isRa && statut === 'EN_ATTENTE_VALIDATION' && (
         <ConfirmDialog
           title="Valider l'inscription ?"
-          description={`${raisonSociale} deviendra actif et pourra être invité aux appels d'offres.`}
+          description={raisonSociale}
           confirmLabel={t('statut.valider')}
           onConfirm={() => action.mutateAsync({ type: 'valider' }).then(() => undefined)}
           trigger={<Button leftIcon={<CheckCircle2 />}>{t('statut.valider')}</Button>}
@@ -38,7 +38,7 @@ export function StatutActions({ fournisseur }: { fournisseur: FournisseurDetail 
       {isRa && statut === 'ACTIF' && (
         <MotifDialog
           title="Suspendre le fournisseur ?"
-          description="Un fournisseur suspendu ne peut plus être invité aux appels d'offres (R14)."
+          description="Plus invitable aux appels d'offres (R14)."
           confirmLabel={t('statut.suspendre')}
           tone="danger"
           onConfirm={(motif) => action.mutateAsync({ type: 'suspendre', motif })}
@@ -52,7 +52,7 @@ export function StatutActions({ fournisseur }: { fournisseur: FournisseurDetail 
       {isRa && statut === 'SUSPENDU' && (
         <ConfirmDialog
           title="Réactiver le fournisseur ?"
-          description={`${raisonSociale} pourra de nouveau être invité aux appels d'offres.`}
+          description={raisonSociale}
           confirmLabel={t('statut.reactiver')}
           onConfirm={() => action.mutateAsync({ type: 'reactiver' }).then(() => undefined)}
           trigger={
@@ -63,11 +63,11 @@ export function StatutActions({ fournisseur }: { fournisseur: FournisseurDetail 
         />
       )}
       {isRa && statut === 'ACTIF' && !enCours && (
-        <span className="flex items-center gap-2">
-          <Button variant="danger" leftIcon={<ShieldAlert />} disabled aria-describedby="blacklist-hint">
+        <span title="Suspendre d'abord le fournisseur">
+          <Button variant="ghost" disabled aria-describedby="blacklist-hint">
             {t('statut.demanderBlacklistage')}
           </Button>
-          <span id="blacklist-hint" className="max-w-56 text-xs text-muted-foreground">
+          <span id="blacklist-hint" className="sr-only">
             Suspendre d'abord le fournisseur pour demander son blacklistage.
           </span>
         </span>
@@ -75,7 +75,7 @@ export function StatutActions({ fournisseur }: { fournisseur: FournisseurDetail 
       {isRa && statut === 'SUSPENDU' && !enCours && (
         <MotifDialog
           title="Demander le blacklistage ?"
-          description="La demande sera soumise à la Direction Générale, seule habilitée à blacklister (R09)."
+          description="Soumise à la Direction Générale (R09)."
           confirmLabel={t('statut.demanderBlacklistage')}
           tone="danger"
           onConfirm={(motif) => action.mutateAsync({ type: 'demanderBlacklistage', motif })}
@@ -108,7 +108,7 @@ export function StatutActions({ fournisseur }: { fournisseur: FournisseurDetail 
           />
           <MotifDialog
             title="Approuver le blacklistage ?"
-            description={`${raisonSociale} sera définitivement exclu des consultations. Action irréversible.`}
+            description="Exclusion définitive des consultations."
             label="Commentaire"
             required={false}
             tone="danger"

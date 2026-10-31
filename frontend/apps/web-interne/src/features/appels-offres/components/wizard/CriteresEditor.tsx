@@ -25,10 +25,7 @@ export function CriteresEditor({ form }: { form: WizardForm }) {
 
   return (
     <div className="grid gap-4">
-      <p className="text-sm text-muted-foreground">
-        Pondérez chaque critère de 0 à 100. Un poids nul exclut le critère. Le prix et le délai sont notés
-        automatiquement à partir des offres ; les autres critères sont notés par la commission.
-      </p>
+      <p className="text-sm text-muted-foreground">Poids en % (total 100) · 0 = critère exclu</p>
       <ul className="grid gap-3">
         {criteres.map((critere, index) => {
           const descriptor = describeStatus('critereEvaluation', critere.code)
@@ -39,12 +36,9 @@ export function CriteresEditor({ form }: { form: WizardForm }) {
               className="grid gap-2 rounded-lg border border-border p-3 sm:grid-cols-[12rem_1fr_5.5rem] sm:items-center"
             >
               <div>
-                <label htmlFor={id} className="text-sm font-medium">
+                <label htmlFor={id} className="text-sm font-medium" title={descriptor.description}>
                   {descriptor.label}
                 </label>
-                {descriptor.description && (
-                  <p className="text-xs text-muted-foreground">{descriptor.description}</p>
-                )}
               </div>
               <input
                 type="range"

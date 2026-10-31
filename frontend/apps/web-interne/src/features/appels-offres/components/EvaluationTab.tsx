@@ -25,7 +25,6 @@ export function EvaluationTab({ ao }: { ao: AppelOffre }) {
       <EmptyState
         icon={<Lock aria-hidden />}
         title="Évaluation disponible après la clôture"
-        description="Les offres ne peuvent être évaluées qu'une fois l'appel d'offres clôturé et l'anonymat levé."
       />
     )
   }
@@ -72,7 +71,7 @@ export function EvaluationTab({ ao }: { ao: AppelOffre }) {
       cell: ({ row }) => (
         <Button
           size="sm"
-          variant="secondary"
+          variant="ghost"
           leftIcon={<PenLine />}
           onClick={() => {
             setCible(row.original)
@@ -87,10 +86,9 @@ export function EvaluationTab({ ao }: { ao: AppelOffre }) {
 
   return (
     <div className="grid gap-3">
-      <p className="text-sm text-muted-foreground">
-        Notes sur 100. Le prix et le délai (en gris) sont calculés automatiquement à partir des offres ; la
-        qualité technique, la garantie, le SAV et les références sont notés par la commission.
-        {ao.statut === 'ATTRIBUE' && ' Appel d’offres attribué : évaluation figée.'}
+      <p className="text-xs text-muted-foreground">
+        Notes sur 100 · prix et délai calculés
+        {ao.statut === 'ATTRIBUE' && ' · évaluation figée'}
       </p>
       <DataTable
         label="Évaluation des offres"
@@ -101,6 +99,7 @@ export function EvaluationTab({ ao }: { ao: AppelOffre }) {
         error={query.error}
         onRetry={() => void query.refetch()}
         enableColumnVisibility={false}
+        maxVisibleColumns={columns.length}
         emptyState={<EmptyState icon={<ClipboardList aria-hidden />} title="Aucune offre à évaluer" />}
       />
       <EvaluerOffreDialog

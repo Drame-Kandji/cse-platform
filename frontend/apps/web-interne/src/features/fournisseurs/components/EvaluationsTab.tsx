@@ -58,11 +58,7 @@ export function EvaluationsTab({
           ) : query.isError ? (
             <ErrorState error={query.error} onRetry={() => void query.refetch()} size="compact" />
           ) : evaluations.length === 0 ? (
-            <EmptyState
-              size="compact"
-              title={t('evaluations.empty')}
-              description={t('evaluations.emptyDescription')}
-            />
+            <EmptyState size="compact" title={t('evaluations.empty')} />
           ) : (
             <ChartContainer label={t('evaluations.chartLabel')} height={220}>
               <LineChart data={serie} margin={chartMargin}>
@@ -90,9 +86,9 @@ export function EvaluationsTab({
         <Card>
           <CardHeader title={t('evaluations.title')} />
           <CardContent>
-            <ul className="grid gap-3">
+            <ul className="divide-y divide-border">
               {[...evaluations].reverse().map((e) => (
-                <li key={e.id} className="grid gap-2 rounded-lg border border-border p-3">
+                <li key={e.id} className="grid gap-2 py-3 first:pt-0 last:pb-0">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-sm font-medium">
                       {e.evaluateurNom}
@@ -100,7 +96,10 @@ export function EvaluationsTab({
                         {formatDate(e.date)}
                       </span>
                     </p>
-                    <ScoreBar score={e.noteGlobale} className="w-40" />
+                    <span className="text-sm">
+                      <ScoreBar score={e.noteGlobale} />
+                      <span className="text-muted-foreground"> / 100</span>
+                    </span>
                   </div>
                   <dl className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                     {CRITERES_EVALUATION.map(({ name, label }) => (

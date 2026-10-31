@@ -95,7 +95,7 @@ function PanneForm({
         <Button variant="secondary" onClick={onDone} disabled={signaler.isPending}>
           Annuler
         </Button>
-        <Button type="submit" variant="danger" loading={signaler.isPending}>
+        <Button type="submit" loading={signaler.isPending}>
           Signaler la panne
         </Button>
       </DialogFooter>

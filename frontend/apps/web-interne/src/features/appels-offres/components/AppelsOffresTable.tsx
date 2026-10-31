@@ -6,10 +6,13 @@ import { formatDateTime, formatMoney, formatNumber } from '@/shared/lib/format'
 import { DataTable, useTableState, type ColumnDef } from '@/shared/ui/data-table'
 import { EmptyState } from '@/shared/ui/empty-state'
 import { FilterBar, FilterChip } from '@/shared/ui/filter-bar'
+import { Select } from '@/shared/ui/select'
 import { StatusBadge } from '@/shared/ui/status-badge'
 import type { AppelOffre } from '../api/types'
 import { useAppelsOffres } from '../hooks/useAppelsOffres'
 import { Countdown } from './Countdown'
+
+const TOUS = '__tous__'
 
 const columns: ColumnDef<AppelOffre>[] = [
   {
@@ -27,17 +30,13 @@ const columns: ColumnDef<AppelOffre>[] = [
     cell: ({ row }) => (
       <div className="min-w-0">
         <p className="line-clamp-2 font-medium">{row.original.objet}</p>
-        {row.original.chantierNom && (
-          <p className="line-clamp-1 text-xs text-muted-foreground">{row.original.chantierNom}</p>
-        )}
+        <p className="line-clamp-1 text-xs text-muted-foreground">
+          {[row.original.chantierNom, `${formatNumber(row.original.nombreOffres)} offre(s)`]
+            .filter(Boolean)
+            .join(' · ')}
+        </p>
       </div>
     ),
-  },
-  {
-    accessorKey: 'type',
-    header: 'Type',
-    meta: { hideOnMobile: true, nowrap: true, hideBelow: 'xl' },
-    cell: ({ row }) => <StatusBadge kind="typeAppelOffre" value={row.original.type} dot={false} />,
   },
   {
     accessorKey: 'statut',
@@ -58,14 +57,8 @@ const columns: ColumnDef<AppelOffre>[] = [
     ),
   },
   {
-    accessorKey: 'nombreOffres',
-    header: 'Offres',
-    meta: { align: 'right' },
-    cell: ({ row }) => formatNumber(row.original.nombreOffres),
-  },
-  {
     id: 'montant',
-    header: 'Budget / attribué',
+    header: 'Montant',
     meta: { align: 'right', label: 'Budget ou montant attribué' },
     cell: ({ row }) => formatMoney(row.original.montantAttribue ?? row.original.budgetEstime),
   },
@@ -120,6 +113,19 @@ export function AppelsOffresTable() {
           }}
           searchPlaceholder="Référence, objet…"
           canReset={filtresActifs}
+          moreCount={type ? 1 : 0}
+          moreFilters={
+            <Select
+              aria-label="Type"
+              placeholder="Type : tous"
+              options={[{ value: TOUS, label: 'Type : tous' }, ...optionsOf('typeAppelOffre')]}
+              value={type ?? TOUS}
+              onValueChange={(value) => {
+                setType(value === TOUS ? undefined : value)
+                resetPage()
+              }}
+            />
+          }
           onReset={() => {
             setStatut(undefined)
             setType(undefined)
@@ -133,15 +139,6 @@ export function AppelsOffresTable() {
             value={statut ? [statut] : []}
             onChange={(value) => {
               setStatut(value.at(-1))
-              resetPage()
-            }}
-          />
-          <FilterChip
-            label="Type"
-            options={optionsOf('typeAppelOffre')}
-            value={type ? [type] : []}
-            onChange={(value) => {
-              setType(value.at(-1))
               resetPage()
             }}
           />

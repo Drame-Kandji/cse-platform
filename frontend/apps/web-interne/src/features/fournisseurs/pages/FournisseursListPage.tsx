@@ -11,7 +11,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { ClassementTab } from '../components/ClassementTab'
 import { ComparaisonPrixTab } from '../components/ComparaisonPrixTab'
 import { FournisseurFormDialog } from '../components/FournisseurFormDialog'
-import { FournisseursStats } from '../components/FournisseursStats'
 import { FournisseursTable } from '../components/FournisseursTable'
 
 const TABS = ['liste', 'classement', 'comparaison'] as const
@@ -42,7 +41,6 @@ export function Component() {
           </Can>
         }
       />
-      <FournisseursStats />
       <Tabs
         value={tab}
         onValueChange={(value) => {

@@ -32,6 +32,13 @@ export function useBesoinsAAcheter(params: PageParams, enabled = true) {
   })
 }
 
+/** Besoins orientes vers l'achat encore sans appel d'offres (50 plus recents ; l'API n'a pas de filtre). */
+export function useBesoinsALancer(enabled = true) {
+  const query = useBesoinsAAcheter({ page: 0, size: 50 }, enabled)
+  const besoins = (query.data?.content ?? []).filter((b) => !b.appelOffreId)
+  return { query, besoins }
+}
+
 /** Fournisseurs ACTIFS invitables pour une specialite (R14). */
 export function useFournisseursInvitables(specialite: CategorieMateriel | undefined) {
   return useQuery({

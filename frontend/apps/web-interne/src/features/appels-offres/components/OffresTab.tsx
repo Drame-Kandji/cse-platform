@@ -23,7 +23,7 @@ function colonnes(ao: AppelOffre): ColumnDef<Offre>[] {
       cell: ({ row }) => (
         <span className="flex items-center gap-2 font-medium">
           {nomOffre(row.original, ao.statut)}
-          {row.original.retenue && <Badge tone="success">Retenue</Badge>}
+          {row.original.retenue && <Badge tone="primary">Retenue</Badge>}
         </span>
       ),
     },
@@ -76,11 +76,10 @@ export function OffresTab({ ao }: { ao: AppelOffre }) {
   return (
     <div className="grid gap-4">
       {ao.statut === 'PUBLIE' && (
-        <div className="flex flex-col gap-3 rounded-xl border border-info/30 bg-info/10 px-4 py-3 sm:flex-row sm:items-center">
-          <EyeOff className="size-5 shrink-0 text-info-emphasis" aria-hidden />
-          <p className="flex-1 text-sm text-info-emphasis">
-            Les offres sont anonymisées jusqu&apos;à la clôture (R10) : seuls les codes anonymes sont
-            visibles.
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <p className="flex flex-1 items-center gap-2 text-sm text-muted-foreground">
+            <EyeOff className="size-4 shrink-0" aria-hidden />
+            Offres anonymisées jusqu&apos;à la clôture (R10)
           </p>
           <Can roles={access.achatsGestion}>
             <div className="grid gap-1 sm:justify-items-end">
@@ -117,11 +116,6 @@ export function OffresTab({ ao }: { ao: AppelOffre }) {
           <EmptyState
             icon={<Inbox aria-hidden />}
             title="Aucune offre reçue"
-            description={
-              ao.statut === 'PUBLIE'
-                ? 'Les offres déposées sur le portail ou saisies par le RA apparaîtront ici.'
-                : "Aucune offre n'a été déposée avant la date limite."
-            }
           />
         }
       />

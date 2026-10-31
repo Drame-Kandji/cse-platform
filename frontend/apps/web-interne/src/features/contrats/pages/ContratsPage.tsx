@@ -1,4 +1,4 @@
-import { AlertTriangle, FileSignature } from 'lucide-react'
+import { FileSignature } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -48,14 +48,9 @@ export function Component() {
         cell: ({ row }) => (
           <div className="grid min-w-0 max-w-sm">
             <span className="line-clamp-2 font-medium">{row.original.objet}</span>
-            <span className="line-clamp-1 text-xs text-muted-foreground">{row.original.designation}</span>
+            <span className="line-clamp-1 text-xs text-muted-foreground">{row.original.fournisseurNom}</span>
           </div>
         ),
-      },
-      {
-        accessorKey: 'fournisseurNom',
-        header: t('columns.fournisseur'),
-        meta: { minWidth: 160 },
       },
       {
         accessorKey: 'montant',
@@ -76,13 +71,10 @@ export function Component() {
         enableSorting: true,
         meta: { hideOnMobile: true, nowrap: true },
         cell: ({ row }) => (
-          <span className="inline-flex items-center gap-1.5 tabular-nums">
+          <span className="grid tabular-nums">
             {formatDate(row.original.dateLivraisonPrevue)}
             {livraisonEnRetard(row.original) && (
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-danger-emphasis">
-                <AlertTriangle className="size-3.5" aria-hidden />
-                {t('detail.late')}
-              </span>
+              <span className="text-xs text-danger-emphasis">{t('detail.late')}</span>
             )}
           </span>
         ),
@@ -134,6 +126,19 @@ export function Component() {
             }}
             searchPlaceholder={t('list.search')}
             canReset={canReset}
+            moreCount={fournisseurId ? 1 : 0}
+            moreFilters={
+              <Combobox
+                placeholder={t('list.fournisseur')}
+                options={fournisseurOptions}
+                loading={fournisseurs.isPending}
+                value={fournisseurId}
+                onValueChange={(value) => {
+                  setFournisseurId(value)
+                  resetPage()
+                }}
+              />
+            }
             onReset={() => {
               setStatut(null)
               setFournisseurId(null)
@@ -147,17 +152,6 @@ export function Component() {
               value={statut ? [statut] : []}
               onChange={(value) => {
                 setStatut(value.at(-1) ?? null)
-                resetPage()
-              }}
-            />
-            <Combobox
-              className="sm:w-60"
-              placeholder={t('list.fournisseur')}
-              options={fournisseurOptions}
-              loading={fournisseurs.isPending}
-              value={fournisseurId}
-              onValueChange={(value) => {
-                setFournisseurId(value)
                 resetPage()
               }}
             />

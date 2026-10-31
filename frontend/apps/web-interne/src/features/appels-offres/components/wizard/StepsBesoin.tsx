@@ -27,8 +27,8 @@ export function StepObjet({ form, besoinReference }: { form: WizardForm; besoinR
   return (
     <div className="grid gap-4">
       {besoinReference && (
-        <p className="rounded-lg border border-border bg-surface-sunken px-3 py-2 text-sm text-muted-foreground">
-          Lancé à partir du besoin <span className="font-mono text-foreground">{besoinReference}</span>
+        <p className="text-sm text-muted-foreground">
+          Besoin <span className="text-foreground">{besoinReference}</span>
         </p>
       )}
       <FormField control={form.control} name="objet" label="Objet" required>
@@ -82,7 +82,7 @@ export function StepSpecifications({ form }: { form: WizardForm }) {
         name="budgetEstime"
         label="Budget estimé (FCFA)"
         optional
-        hint="Sert de repère pour l'évaluation ; non communiqué aux fournisseurs."
+        hint="Non communiqué aux fournisseurs"
         className="sm:col-span-2"
       >
         {({ field, control }) => (

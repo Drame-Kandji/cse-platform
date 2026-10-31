@@ -119,7 +119,7 @@ function WizardContent({ besoin, onCreated }: Pick<WizardProps, 'besoin' | 'onCr
   return (
     <SheetContent
       title="Lancer un appel d'offres"
-      description={`Étape ${etape + 1} sur ${ETAPES.length} — ${ETAPES[etape]?.label ?? ''}`}
+      description={`Étape ${etape + 1} sur ${ETAPES.length} · ${ETAPES[etape]?.label ?? ''}`}
       size="xl"
       footer={
         <>

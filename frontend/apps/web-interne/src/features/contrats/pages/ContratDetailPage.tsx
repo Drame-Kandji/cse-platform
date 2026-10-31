@@ -8,17 +8,19 @@ import { useHasRole } from '@/shared/auth'
 import { formatMoney } from '@/shared/lib/format'
 import {
   Button,
-  Card,
-  CardContent,
   EmptyState,
   ErrorState,
   PageHeader,
   StatusBadge,
-  Stepper,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
 } from '@/shared/ui'
 import { ClausesCard } from '../components/ClausesCard'
 import { ContratActions } from '../components/ContratActions'
-import { CONTRAT_STEPS, contratStepIndex } from '../components/contrat-domain'
+import { contratStepIndex } from '../components/contrat-domain'
+import { ContratLifecycle } from '../components/ContratLifecycle'
 import { ContratSummary } from '../components/ContratSummary'
 import { ContratDetailSkeleton } from '../components/ContratDetailSkeleton'
 import { EngagementCard } from '../components/EngagementCard'
@@ -56,40 +58,45 @@ export function Component() {
         breadcrumb={back}
         title={contrat.numero}
         subtitle={contrat.objet}
-        meta={
-          <>
-            <StatusBadge kind="statutContrat" value={contrat.statut} />
-            <span className="text-sm font-semibold tabular-nums text-foreground">
-              {formatMoney(contrat.montant)}
-            </span>
-          </>
+        meta={<StatusBadge kind="statutContrat" value={contrat.statut} />}
+        actions={
+          gestionnaire ? (
+            <ContratActions contrat={contrat} />
+          ) : (
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Eye className="size-4 shrink-0" aria-hidden />
+              {t('detail.readOnly')}
+            </p>
+          )
         }
       />
       <div className="grid gap-6">
-        <Card>
-          <CardContent className="grid gap-5">
-            <h2 className="sr-only">{t('detail.lifecycle')}</h2>
-            <Stepper steps={CONTRAT_STEPS} current={contratStepIndex(contrat.statut)} />
-            {gestionnaire ? (
-              <ContratActions contrat={contrat} />
-            ) : (
-              <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Eye className="size-4 shrink-0" aria-hidden />
-                {t('detail.readOnly')}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="grid content-start gap-6 lg:col-span-2">
-            <ContratSummary contrat={contrat} />
-            <JalonsCard contrat={contrat} canMark={gestionnaire && contrat.statut === 'EN_LIVRAISON'} />
-          </div>
-          <div className="grid content-start gap-6">
-            <EngagementCard engagement={contrat.engagement} statutContrat={contrat.statut} />
-            <ClausesCard contrat={contrat} editable={gestionnaire && contrat.statut === 'BROUILLON'} />
-          </div>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <ContratLifecycle current={contratStepIndex(contrat.statut)} label={t('detail.lifecycle')} />
+          <p className="text-lg font-semibold tabular-nums">{formatMoney(contrat.montant)}</p>
         </div>
+        <ContratSummary contrat={contrat} />
+        <Tabs defaultValue="clauses">
+          <TabsList aria-label="Sections du contrat">
+            <TabsTrigger value="clauses">{t('clauses.title')}</TabsTrigger>
+            <TabsTrigger value="jalons">
+              {t('jalons.title')}
+              {contrat.jalons.length > 0 && (
+                <span className="ml-1.5 tabular-nums text-muted-foreground">{contrat.jalons.length}</span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="engagement">{t('engagement.title')}</TabsTrigger>
+          </TabsList>
+          <TabsContent value="clauses">
+            <ClausesCard contrat={contrat} editable={gestionnaire && contrat.statut === 'BROUILLON'} />
+          </TabsContent>
+          <TabsContent value="jalons">
+            <JalonsCard contrat={contrat} canMark={gestionnaire && contrat.statut === 'EN_LIVRAISON'} />
+          </TabsContent>
+          <TabsContent value="engagement">
+            <EngagementCard engagement={contrat.engagement} statutContrat={contrat.statut} />
+          </TabsContent>
+        </Tabs>
       </div>
     </>
   )

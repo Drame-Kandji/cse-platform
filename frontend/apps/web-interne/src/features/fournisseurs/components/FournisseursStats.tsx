@@ -1,46 +1,33 @@
-import { AlertTriangle, BadgeCheck, Gauge, UserPlus } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
-import { formatNumber } from '@/shared/lib/format'
-import { StatCard } from '@/shared/ui/stat-card'
+import type { StatutFournisseur } from '@/shared/domain/labels'
+import { CountTabs, type CountTabItem } from '@/shared/ui/count-tabs'
 import { useStatistiquesFournisseurs } from '../hooks/useFournisseursQueries'
 
-/** Indicateurs cles des fournisseurs (masques silencieusement en cas d'erreur). */
-export function FournisseursStats() {
-  const { t } = useTranslation('fournisseurs')
+interface Props {
+  value: StatutFournisseur | undefined
+  onChange: (statut: StatutFournisseur | undefined) => void
+}
+
+/** Compteurs par statut au-dessus de la liste (filtre segmente ; masques en cas d'erreur). */
+export function FournisseursStats({ value, onChange }: Props) {
   const query = useStatistiquesFournisseurs()
   if (query.isError) return null
-  const stats = query.data
+  const s = query.data
+  const items: CountTabItem<StatutFournisseur>[] = [
+    { value: null, label: 'Tous', count: s?.total },
+    { value: 'ACTIF', label: 'Actifs', count: s?.actifs },
+    { value: 'EN_ATTENTE_VALIDATION', label: 'À valider', count: s?.enAttente },
+    { value: 'SUSPENDU', label: 'Suspendus', count: s?.suspendus },
+    { value: 'BLACKLISTE', label: 'Blacklistés', count: s?.blacklistes },
+  ]
   return (
-    <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <StatCard
-        label={t('stats.actifs')}
-        value={formatNumber(stats?.actifs)}
-        hint={stats ? `sur ${formatNumber(stats.total)}` : undefined}
-        icon={<BadgeCheck aria-hidden />}
-        iconTone="success"
-        loading={query.isPending}
-      />
-      <StatCard
-        label={t('stats.enAttente')}
-        value={formatNumber(stats?.enAttente)}
-        icon={<UserPlus aria-hidden />}
-        iconTone="warning"
-        loading={query.isPending}
-      />
-      <StatCard
-        label={t('stats.scoreMoyen')}
-        value={`${formatNumber(stats?.scoreMoyen, { decimals: 1 })} / 100`}
-        icon={<Gauge aria-hidden />}
-        loading={query.isPending}
-      />
-      <StatCard
-        label={t('stats.litiges')}
-        value={formatNumber(stats?.litigesOuverts)}
-        hint={stats ? t('stats.documentsExpires', { count: stats.documentsExpires }) : undefined}
-        icon={<AlertTriangle aria-hidden />}
-        iconTone="danger"
-        loading={query.isPending}
-      />
-    </div>
+    <CountTabs
+      label="Statut"
+      items={items}
+      value={value ?? null}
+      loading={query.isPending}
+      onChange={(next) => {
+        onChange(next ?? undefined)
+      }}
+    />
   )
 }

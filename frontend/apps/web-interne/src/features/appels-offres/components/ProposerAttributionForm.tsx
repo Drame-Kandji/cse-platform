@@ -49,10 +49,7 @@ export function ProposerAttributionForm({ ao }: { ao: AppelOffre }) {
 
   return (
     <Card>
-      <CardHeader
-        title="Proposer l'attribution"
-        description="Choisissez l'offre retenue et motivez la décision. Elle sera soumise au circuit d'approbation (R11)."
-      />
+      <CardHeader title="Proposer l'attribution" />
       <form noValidate onSubmit={(event) => void submit(event)}>
         <CardContent className="grid gap-4">
           <FormField control={form.control} name="offreId" label="Offre retenue" required>
@@ -71,7 +68,6 @@ export function ProposerAttributionForm({ ao }: { ao: AppelOffre }) {
             name="justification"
             label="Justification"
             required
-            hint="Expliquez le choix, notamment s'il ne s'agit pas de l'offre recommandée."
           >
             {({ field, control }) => <Textarea {...control} {...field} rows={4} />}
           </FormField>

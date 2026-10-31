@@ -63,21 +63,14 @@ export function FournisseursPicker({ form }: { form: WizardForm }) {
   return (
     <div className="grid gap-3">
       <p className="text-sm text-muted-foreground">
-        Seuls les fournisseurs <strong className="text-foreground">actifs</strong> spécialisés en «&nbsp;
-        {labelOf('categorieMateriel', categorie)}&nbsp;» peuvent être invités ; les fournisseurs suspendus ou
-        blacklistés sont exclus (R14).
-      </p>
-      <p className="text-sm text-muted-foreground">
-        {type === 'DEMANDE_PRIX'
-          ? 'Demande de prix : seuls les fournisseurs invités pourront répondre ; au moins un invité est requis.'
-          : "Appel d'offres : les invitations sont facultatives, tout fournisseur actif de la spécialité peut répondre."}
+        Fournisseurs actifs · {labelOf('categorieMateriel', categorie)} (R14) ·{' '}
+        {type === 'DEMANDE_PRIX' ? 'au moins un invité requis' : 'invitations facultatives'}
       </p>
       {fournisseurs.length === 0 ? (
         <EmptyState
           size="compact"
           icon={<Users aria-hidden />}
           title="Aucun fournisseur actif pour cette catégorie"
-          description="Modifiez la catégorie ou faites valider de nouveaux fournisseurs."
         />
       ) : (
         <ul className="grid gap-2" aria-label="Fournisseurs invitables">
