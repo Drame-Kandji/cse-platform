@@ -1,0 +1,11 @@
+# Contexte de construction des images frontend : sources et manifestes uniquement.
+**/node_modules
+**/dist
+**/coverage
+**/playwright-report
+**/test-results
+**/.env
+**/.env.*
+!**/.env.example
+**/*.log
+.pnpm-store

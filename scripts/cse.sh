@@ -6,6 +6,8 @@
 #   scripts/cse.sh status     état des microservices (sonde /actuator/health)
 #   scripts/cse.sh front      lance l'application web interne (Vite, port 5173)
 #   scripts/cse.sh down       arrête microservices + infrastructure
+#   scripts/cse.sh reset      DÉVELOPPEMENT : efface les données métier (schémas + topics Kafka) puis redémarre ;
+#                             les DevDataSeeder recréent un jeu de démonstration cohérent (comptes Keycloak conservés)
 set -euo pipefail
 
 RACINE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -62,6 +64,22 @@ status() {
   done
 }
 
+reset() {
+  [[ "${2:-}" == "--yes" ]] || { read -r -p "Effacer TOUTES les données métier de développement ? (oui/non) " r; [[ "$r" == oui ]] || exit 1; }
+  stop
+  local s
+  for entree in "${SERVICES[@]}"; do
+    s="${entree%%:*}"; s="${s#ms-}"; [[ "$s" == gateway ]] && continue
+    docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" cse-postgres-1 psql -q -h localhost -U "${POSTGRES_USER:-postgres}" -d cse \
+      -c "DROP SCHEMA IF EXISTS $s CASCADE; CREATE SCHEMA $s AUTHORIZATION ms_$s; REVOKE ALL ON SCHEMA $s FROM PUBLIC;"
+  done
+  docker exec cse-kafka-1 bash -c 'for t in $(kafka-topics.sh --bootstrap-server localhost:29092 --list | grep "^cse\."); do kafka-topics.sh --bootstrap-server localhost:29092 --delete --topic "$t"; done'
+  docker exec cse-kafka-1 bash -c 'for g in $(kafka-consumer-groups.sh --bootstrap-server localhost:29092 --list); do kafka-consumer-groups.sh --bootstrap-server localhost:29092 --delete --group "$g" >/dev/null 2>&1; done' || true
+  echo "Données effacées. Redémarrage (les services recréent schémas, topics et données de démonstration)..."
+  sleep 5
+  start
+}
+
 front() { cd "$RACINE/frontend" && pnpm --filter @cse/web-interne dev; }
 
 case "${1:-}" in
@@ -71,5 +89,6 @@ case "${1:-}" in
   status) status ;;
   front) front ;;
   down) stop; "${COMPOSE[@]}" stop ;;
-  *) sed -n '2,9p' "$0"; exit 1 ;;
+  reset) reset "$@" ;;
+  *) sed -n '2,11p' "$0"; exit 1 ;;
 esac

@@ -1,0 +1,6 @@
+# Contexte de construction des images backend : le build Maven se fait dans l'image.
+**/target
+**/logs
+**/*.log
+**/.env
+.idea

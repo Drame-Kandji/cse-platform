@@ -1,6 +1,7 @@
 # Plateforme CSE — orchestration Docker Compose.
 #   Infrastructure seule (développement local) : docker compose -f infra/docker-compose.yml up -d
 #   Plateforme complète                        : docker compose -f infra/docker-compose.yml --profile apps up -d --build
+#   Sauvegardes seules                         : docker compose -f infra/docker-compose.yml --profile backup up -d backup
 # Variables : copier .env.example vers .env à la racine du dépôt (jamais commité).
 name: cse
 
@@ -114,6 +115,9 @@ services:
     environment:
       <<: *service-env
       REDIS_HOST: redis
+      GATEWAY_RATE_LIMIT_REPLENISH: ${GATEWAY_RATE_LIMIT_REPLENISH:-20}
+      GATEWAY_RATE_LIMIT_BURST: ${GATEWAY_RATE_LIMIT_BURST:-40}
+      GATEWAY_CORS_ORIGINS: ${GATEWAY_CORS_ORIGINS:-http://localhost:5173,https://localhost:8443}
       MS_AUTH_URL: http://ms-auth:8081
       MS_BESOINS_URL: http://ms-besoins:8082
       MS_ACHATS_URL: http://ms-achats:8083
@@ -191,12 +195,56 @@ services:
       <<: *service-env
       DB_PASSWORD: ${DB_PASSWORD_AUDIT:-${CSE_DB_PASSWORD}}
 
+  # Frontal HTTPS (Nginx non-root) : SPA + relais /api/ vers la passerelle. Certificats : make certs.
+  # Ports conteneur 8080/8443 (non privilégiés) publiés sur 8000 (HTTP → 301) et 8443 (HTTPS) de l'hôte.
   web-interne:
     profiles: ["apps"]
-    build: { context: ../frontend, dockerfile: apps/web-interne/Dockerfile }
-    ports: ["8443:443", "8081:80"]
+    build:
+      context: ../frontend
+      dockerfile: apps/web-interne/Dockerfile
+      additional_contexts:
+        nginx: ./nginx
+      args:
+        VITE_API_BASE_URL: /api
+        VITE_KEYCLOAK_URL: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8180}
+        VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-cse}
+        VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID:-cse-web-interne}
+    image: cse/web-interne:${CSE_IMAGE_TAG:-dev}
+    restart: unless-stopped
+    environment:
+      PUBLIC_HTTPS_PORT: ${WEB_HTTPS_PORT:-8443}
+      GATEWAY_UPSTREAM: ms-gateway:8080
+      KEYCLOAK_PUBLIC_URL: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8180}
+    volumes:
+      - ./certs:/etc/nginx/certs:ro
+    ports: ["${WEB_HTTPS_PORT:-8443}:8443", "${WEB_HTTP_PORT:-8000}:8080"]
     networks: [interne]
     depends_on: [ms-gateway]
+
+  # Sauvegardes PostgreSQL quotidiennes (bases cse + keycloak, rétention configurable, 90 jours par défaut).
+  # Avec la plateforme : profil apps ; seul : docker compose --profile backup up -d backup
+  # Sauvegarde immédiate : scripts/backup-now.sh ; restauration : scripts/restore.sh <dump>
+  backup:
+    image: postgres:15-alpine
+    profiles: ["apps", "backup"]
+    restart: unless-stopped
+    command: ["/bin/sh", "/opt/cse/backup.sh", "daemon"]
+    environment:
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGUSER: ${POSTGRES_USER:-postgres}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant dans .env}
+      BACKUP_DIR: /backups
+      BACKUP_BASES: ${BACKUP_BASES:-cse keycloak}
+      BACKUP_RETENTION_JOURS: ${BACKUP_RETENTION_JOURS:-90}
+      BACKUP_HEURE: ${BACKUP_HEURE:-02:00}
+      TZ: UTC
+    volumes:
+      - ./backup/backup.sh:/opt/cse/backup.sh:ro
+      - backups:/backups
+    networks: [interne]
+    depends_on:
+      postgres: { condition: service_healthy }
 
 networks:
   interne: {}
@@ -204,3 +252,6 @@ networks:
 volumes:
   postgres_data_v2: {}
   kafka_data: {}
+  # Sauvegardes : en production, monter un stockage distinct du serveur PostgreSQL (NAS, disque dédié)
+  # et répliquer hors site (voir docs/OPERATIONS.md).
+  backups: {}

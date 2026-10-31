@@ -20,3 +20,5 @@ coverage/
 playwright-report/
 test-results/
 .env.bak*
+# PKI de développement (scripts/gen-certs.sh)
+infra/certs/

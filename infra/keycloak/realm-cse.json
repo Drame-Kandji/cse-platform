@@ -58,11 +58,13 @@
       "implicitFlowEnabled": false,
       "redirectUris": [
         "http://localhost:5173/*",
-        "https://localhost/*"
+        "https://localhost/*",
+        "https://localhost:8443/*"
       ],
       "webOrigins": [
         "http://localhost:5173",
-        "https://localhost"
+        "https://localhost",
+        "https://localhost:8443"
       ],
       "attributes": {
         "pkce.code.challenge.method": "S256",
