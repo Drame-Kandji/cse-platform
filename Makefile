@@ -1,38 +1,52 @@
-.PHONY: build test verify up down logs seed e2e docs clean
+# Plateforme CSE — commandes usuelles. `make verify` est la porte de qualité (backend + frontend).
+.PHONY: help build test verify up infra start stop status down front front-verify logs clean
 
-build:
-	@echo "Building all modules..."
-	mvn -f backend/pom.xml clean install -DskipTests
+MVN := mvn -f backend/pom.xml
+PNPM := pnpm --dir frontend
 
-test:
-	@echo "Running tests..."
-	mvn -f backend/pom.xml test
+help:
+	@grep -E '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk -F':.*?## ' '{printf "  %-14s %s\n", $$1, $$2}'
 
-verify:
-	@echo "Running full verification..."
-	mvn -f backend/pom.xml spotless:check checkstyle:check enforcer:enforce test jacoco:check 2>&1 | tail -40
-	@echo "---"
-	@cd frontend && pnpm lint 2>&1 | tail -20 || true
-	@cd frontend && pnpm test --run 2>&1 | tail -20 || true
+build: ## Compile et package tous les microservices (tests inclus)
+	$(MVN) -q install
 
-up:
-	docker compose -f infra/docker-compose.yml up -d
+test: ## Tests backend (unitaires, intégration Testcontainers, ArchUnit, snapshots OpenAPI)
+	$(MVN) test
 
-down:
-	docker compose -f infra/docker-compose.yml down
+verify: ## Porte de qualité complète : format, tests, couverture JaCoCo, puis frontend
+	$(MVN) verify
+	$(MAKE) front-verify
 
-logs:
-	docker compose -f infra/docker-compose.yml logs -f
+front-verify: ## Typecheck, lint, tests et build du frontend
+	$(PNPM) --filter @cse/web-interne typecheck
+	$(PNPM) --filter @cse/web-interne lint
+	$(PNPM) --filter @cse/web-interne test
+	$(PNPM) --filter @cse/web-interne build
 
-seed:
-	@echo "Seeding dev data..."
+infra: ## Démarre l'infrastructure Docker (PostgreSQL, Kafka, Keycloak, Redis, MailHog)
+	scripts/cse.sh infra
 
-e2e:
-	@echo "Running E2E tests..."
+start: ## Démarre les microservices sur l'hôte (profil dev)
+	scripts/cse.sh start
 
-docs:
-	@echo "Generating docs..."
+stop: ## Arrête les microservices
+	scripts/cse.sh stop
 
-clean:
-	mvn -f backend/pom.xml clean
-	rm -rf frontend/node_modules .pnpm-store
+status: ## État des microservices
+	scripts/cse.sh status
+
+front: ## Lance l'application web interne sur http://localhost:5173
+	scripts/cse.sh front
+
+up: ## Plateforme complète conteneurisée (images construites)
+	docker compose --env-file .env -f infra/docker-compose.yml --profile apps up -d --build
+
+down: ## Arrête tout
+	scripts/cse.sh down
+
+logs: ## Journaux de l'infrastructure Docker
+	docker compose --env-file .env -f infra/docker-compose.yml logs -f
+
+clean: ## Nettoie les artefacts de build
+	$(MVN) -q clean
+	rm -rf frontend/apps/web-interne/dist
