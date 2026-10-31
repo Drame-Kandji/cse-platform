@@ -11,7 +11,7 @@ export function DetailSkeleton() {
         <Skeleton className="h-8 w-72" />
         <Skeleton className="h-4 w-96 max-w-full" />
       </div>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
         {Array.from({ length: 5 }, (_, index) => (
           <Skeleton key={index} className="h-32 rounded-xl" />
         ))}

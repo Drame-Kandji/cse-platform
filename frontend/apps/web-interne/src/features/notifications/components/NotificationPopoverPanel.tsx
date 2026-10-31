@@ -28,15 +28,18 @@ export function NotificationPopoverPanel({ unreadCount, onClose }: NotificationP
   return (
     <div className="flex max-h-[min(32rem,calc(100dvh-6rem))] flex-col">
       <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-2.5">
-        <p className="text-sm font-semibold">
+        <p className="grid min-w-0 text-sm font-semibold sm:block">
           Notifications
           {unreadCount > 0 && (
-            <span className="ml-2 text-xs font-normal text-muted-foreground">{unreadCount} non lue(s)</span>
+            <span className="whitespace-nowrap text-xs font-normal text-muted-foreground sm:ml-2">
+              {unreadCount} non lue(s)
+            </span>
           )}
         </p>
         <Button
           variant="ghost"
           size="sm"
+          className="shrink-0"
           leftIcon={<CheckCheck />}
           disabled={unreadCount === 0}
           loading={toutLire.isPending}

@@ -32,6 +32,7 @@ const tableauRm: Tableau = {
     affectes: 50,
     enMaintenance: 8,
     reformes: 2,
+    operationnels: 110,
     tauxDisponibilite: 50.8,
     tauxUtilisation: 71.2,
     maintenancesEnCours: 4,
@@ -116,7 +117,8 @@ describe('DashboardPage', () => {
     const seen = { kpis: [] as URLSearchParams[], series: [] as string[] }
     installHandlers(seen, tableauRm)
     const { container } = renderWithProviders(<DashboardPage />, { user: testUser(['RESPONSABLE_MATERIEL']) })
-    expect(await screen.findByText('Taux de disponibilité')).toBeInTheDocument()
+    expect(await screen.findByText('Disponibilité opérationnelle')).toBeInTheDocument()
+    expect(screen.getByText('110 opérationnels sur 118')).toBeInTheDocument()
     expect(container.querySelector('[data-section="parc"]')).not.toBeNull()
     expect(container.querySelector('[data-section="besoins"]')).not.toBeNull()
     expect(container.querySelector('[data-section="chantiers"]')).not.toBeNull()
@@ -139,7 +141,7 @@ describe('DashboardPage', () => {
     const seen = { kpis: [] as URLSearchParams[], series: [] as string[] }
     installHandlers(seen, tableauRm)
     renderWithProviders(<DashboardPage />, { user: testUser(['RESPONSABLE_MATERIEL']), route: '/?vue=DG' })
-    await screen.findByText('Taux de disponibilité')
+    await screen.findByText('Disponibilité opérationnelle')
     expect(seen.kpis[0]?.get('profil')).toBe('RESPONSABLE_MATERIEL')
   })
 

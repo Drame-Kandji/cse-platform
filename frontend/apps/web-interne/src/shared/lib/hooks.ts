@@ -18,8 +18,13 @@ export function useMediaQuery(query: string): boolean {
   )
 }
 
-/** Points de rupture alignes sur Tailwind (md = 768px, lg = 1024px). */
-export const BREAKPOINTS = { md: '(min-width: 768px)', lg: '(min-width: 1024px)' } as const
+/** Points de rupture alignes sur Tailwind (md = 768px, lg = 1024px, xl = 1280px, 2xl = 1536px). */
+export const BREAKPOINTS = {
+  md: '(min-width: 768px)',
+  lg: '(min-width: 1024px)',
+  xl: '(min-width: 1280px)',
+  '2xl': '(min-width: 1536px)',
+} as const
 
 /**
  * Retarde la propagation d'une valeur (recherche texte, filtres).

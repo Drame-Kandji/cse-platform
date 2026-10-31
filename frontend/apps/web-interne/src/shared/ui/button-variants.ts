@@ -23,6 +23,10 @@ export const buttonVariants = cva(
         'icon-sm': 'size-8',
       },
     },
+    compoundVariants: [
+      // Mobile : cibles tactiles de 44 px pour les boutons d'action pleins (hors ghost / lien).
+      { variant: ['primary', 'secondary', 'danger', 'accent'], size: 'md', class: 'max-sm:h-11' },
+    ],
     defaultVariants: { variant: 'primary', size: 'md' },
   },
 )

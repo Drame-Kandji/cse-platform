@@ -6,7 +6,14 @@ import { Can } from '@/shared/auth'
 import { formatDate, formatNumber } from '@/shared/lib/format'
 import { Card, CardContent, CardHeader } from '@/shared/ui/card'
 import { ChartContainer, ChartTooltipContent } from '@/shared/ui/chart'
-import { axisProps, chartColor, cursorProps, gridProps } from '@/shared/ui/chart-theme'
+import {
+  axisProps,
+  chartColor,
+  chartMargin,
+  cursorProps,
+  gridProps,
+  yAxisWidth,
+} from '@/shared/ui/chart-theme'
 import { EmptyState } from '@/shared/ui/empty-state'
 import { ErrorState } from '@/shared/ui/error-state'
 import { Skeleton } from '@/shared/ui/skeleton'
@@ -58,10 +65,10 @@ export function EvaluationsTab({
             />
           ) : (
             <ChartContainer label={t('evaluations.chartLabel')} height={220}>
-              <LineChart data={serie} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <LineChart data={serie} margin={chartMargin}>
                 <CartesianGrid {...gridProps} />
                 <XAxis dataKey="date" {...axisProps} />
-                <YAxis {...axisProps} domain={[0, 100]} width={36} />
+                <YAxis {...axisProps} domain={[0, 100]} width={yAxisWidth(['100'])} />
                 <Tooltip
                   cursor={cursorProps}
                   content={<ChartTooltipContent valueFormatter={(v) => `${formatNumber(v)} / 100`} />}

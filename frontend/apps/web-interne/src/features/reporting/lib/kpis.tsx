@@ -12,7 +12,7 @@ import {
 import type { ReactNode } from 'react'
 import type { Tone } from '@/shared/domain/labels'
 import { formatMoney, formatNumber } from '@/shared/lib/format'
-import type { Indicateur, Tableau } from '../types'
+import type { Indicateur, SectionParc, Tableau } from '../types'
 import { formatTaux } from './format'
 
 /** Indicateur cle pret a afficher. */
@@ -29,6 +29,17 @@ export interface Kpi {
 }
 
 /** Indicateurs cles du tableau, dans l'ordre de lecture, selon les sections presentes. */
+/**
+ * Sous-libelle de la disponibilite operationnelle : "39 opérationnels sur 41" (parc hors reformes) ;
+ * repli sur les materiels disponibles si l'API ne fournit pas encore `operationnels`.
+ */
+export function disponibiliteHint(parc: SectionParc): string {
+  const parcActif = formatNumber(parc.total - parc.reformes)
+  return typeof parc.operationnels === 'number'
+    ? `${formatNumber(parc.operationnels)} opérationnels sur ${parcActif}`
+    : `${formatNumber(parc.disponibles)} disponibles sur ${parcActif}`
+}
+
 export function buildKpis(tableau: Tableau): Kpi[] {
   const kpis: Kpi[] = []
   const { parc, besoins, achats, fournisseurs, finances } = tableau
@@ -68,9 +79,9 @@ export function buildKpis(tableau: Tableau): Kpi[] {
     kpis.push(
       {
         id: 'disponibilite',
-        label: 'Taux de disponibilité',
+        label: 'Disponibilité opérationnelle',
         value: formatTaux(parc.tauxDisponibilite),
-        hint: `${formatNumber(parc.disponibles)} disponibles sur ${formatNumber(parc.total - parc.reformes)}`,
+        hint: disponibiliteHint(parc),
         icon: <Gauge />,
         tone: 'success',
         serie: 'TAUX_DISPONIBILITE',

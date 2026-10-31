@@ -10,7 +10,7 @@ import {
   type SortingState,
   type VisibilityState,
 } from '@tanstack/react-table'
-import { useState, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DEFAULT_PAGE_SIZE, type PageResponse } from '@/shared/api/types'
 import { cn } from '@/shared/lib/cn'
@@ -18,7 +18,7 @@ import { BREAKPOINTS, useMediaQuery } from '@/shared/lib/hooks'
 import { EmptyState } from '../empty-state'
 import { ErrorState } from '../error-state'
 import { ProgressBar, Skeleton } from '../skeleton'
-import { alignClasses } from './column-meta'
+import { alignClasses, columnBoxProps } from './column-meta'
 import { DataTableColumnToggle } from './DataTableColumnToggle'
 import { DataTableMobileList } from './DataTableMobileList'
 import { DataTablePagination } from './DataTablePagination'
@@ -87,8 +87,23 @@ export function DataTable<T>(props: DataTableProps<T>) {
     pageSize: DEFAULT_PAGE_SIZE,
   })
   const [localSorting, setLocalSorting] = useState<SortingState>([])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-    props.initialColumnVisibility ?? {},
+  const isXl = useMediaQuery(BREAKPOINTS.xl)
+  const is2xl = useMediaQuery(BREAKPOINTS['2xl'])
+  // Colonnes secondaires (meta.hideBelow) masquees par defaut sur les ecrans etroits ;
+  // les choix explicites de l'utilisateur (menu Colonnes) priment.
+  const responsiveVisibility = useMemo(() => {
+    const hidden: VisibilityState = {}
+    for (const column of columns) {
+      const id = column.id ?? ('accessorKey' in column ? String(column.accessorKey) : undefined)
+      const below = column.meta?.hideBelow
+      if (id && below && !(below === 'xl' ? isXl : is2xl)) hidden[id] = false
+    }
+    return hidden
+  }, [columns, isXl, is2xl])
+  const [userVisibility, setUserVisibility] = useState<VisibilityState>(props.initialColumnVisibility ?? {})
+  const columnVisibility = useMemo(
+    () => ({ ...responsiveVisibility, ...userVisibility }),
+    [responsiveVisibility, userVisibility],
   )
   const pagination = props.pagination ?? localPagination
   const sorting = props.sorting ?? localSorting
@@ -102,7 +117,9 @@ export function DataTable<T>(props: DataTableProps<T>) {
     defaultColumn: { enableSorting: false },
     onPaginationChange: props.onPaginationChange ?? setLocalPagination,
     onSortingChange: props.onSortingChange ?? setLocalSorting,
-    onColumnVisibilityChange: setColumnVisibility,
+    onColumnVisibilityChange: (updater) => {
+      setUserVisibility(typeof updater === 'function' ? updater(columnVisibility) : updater)
+    },
     manualPagination: server,
     manualSorting: server,
     pageCount: server ? data.totalPages : undefined,
@@ -119,7 +136,14 @@ export function DataTable<T>(props: DataTableProps<T>) {
   const visibleColumns = table.getVisibleLeafColumns()
 
   return (
-    <div className={cn('overflow-hidden rounded-xl border border-border bg-surface shadow-card', className)}>
+    // contain: inline-size : la largeur minimale du tableau (colonnes nowrap / minWidth) ne remonte pas
+    // aux grilles parentes ; le tableau defile horizontalement dans sa carte au lieu d'elargir la page.
+    <div
+      className={cn(
+        'overflow-hidden rounded-xl border border-border bg-surface shadow-card [contain:inline-size]',
+        className,
+      )}
+    >
       {(toolbar ?? props.enableColumnVisibility !== false) && (
         <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-3">
           <div className="min-w-0 flex-1">{toolbar}</div>
@@ -145,6 +169,7 @@ export function DataTable<T>(props: DataTableProps<T>) {
                 <tr key={group.id} className="border-b border-border">
                   {group.headers.map((header) => {
                     const meta = header.column.columnDef.meta
+                    const box = columnBoxProps(meta)
                     const sorted = header.column.getIsSorted()
                     return (
                       <th
@@ -153,6 +178,7 @@ export function DataTable<T>(props: DataTableProps<T>) {
                         aria-sort={
                           sorted === 'asc' ? 'ascending' : sorted === 'desc' ? 'descending' : undefined
                         }
+                        style={box.style}
                         className={cn(
                           'h-10 whitespace-nowrap px-4 text-xs font-medium text-muted-foreground',
                           alignClasses[meta?.align ?? 'left'],
@@ -209,11 +235,14 @@ export function DataTable<T>(props: DataTableProps<T>) {
                     >
                       {row.getVisibleCells().map((cell) => {
                         const meta = cell.column.columnDef.meta
+                        const box = columnBoxProps(meta)
                         return (
                           <td
                             key={cell.id}
+                            style={box.style}
                             className={cn(
                               'h-12 px-4 py-2',
+                              box.className,
                               alignClasses[meta?.align ?? 'left'],
                               meta?.align === 'right' && 'tabular-nums',
                               meta?.cellClassName,

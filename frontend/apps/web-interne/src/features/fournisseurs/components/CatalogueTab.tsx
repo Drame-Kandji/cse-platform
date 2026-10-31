@@ -7,7 +7,14 @@ import { labelOf, type CategorieMateriel } from '@/shared/domain/labels'
 import { formatDate, formatMoney } from '@/shared/lib/format'
 import { Card, CardContent, CardHeader } from '@/shared/ui/card'
 import { ChartContainer, ChartTooltipContent } from '@/shared/ui/chart'
-import { axisProps, chartColor, cursorProps, gridProps } from '@/shared/ui/chart-theme'
+import {
+  axisProps,
+  chartColor,
+  chartMargin,
+  cursorProps,
+  gridProps,
+  yAxisWidthFor,
+} from '@/shared/ui/chart-theme'
 import { DataTable, type ColumnDef } from '@/shared/ui/data-table'
 import { EmptyState } from '@/shared/ui/empty-state'
 import { ErrorState } from '@/shared/ui/error-state'
@@ -31,10 +38,17 @@ function HistoriquePrix({ fournisseurId, ligne }: { fournisseurId: string; ligne
   if (serie.length === 0) return <EmptyState size="compact" title={t('catalogue.historiqueHint')} />
   return (
     <ChartContainer label={`${t('catalogue.historiqueLabel')} : ${ligne.designation}`} height={220}>
-      <LineChart data={serie} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+      <LineChart data={serie} margin={chartMargin}>
         <CartesianGrid {...gridProps} />
         <XAxis dataKey="date" {...axisProps} />
-        <YAxis {...axisProps} width={88} tickFormatter={compact} />
+        <YAxis
+          {...axisProps}
+          width={yAxisWidthFor(
+            serie.map((p) => p.prix),
+            compact,
+          )}
+          tickFormatter={compact}
+        />
         <Tooltip
           cursor={cursorProps}
           content={<ChartTooltipContent valueFormatter={(v) => formatMoney(v)} />}
@@ -63,12 +77,18 @@ export function CatalogueTab({
       accessorKey: 'reference',
       header: 'Référence',
       enableSorting: true,
-      meta: { cellClassName: 'font-mono' },
+      meta: { cellClassName: 'font-mono', nowrap: true },
     },
-    { accessorKey: 'designation', header: 'Désignation', enableSorting: true, meta: { mobilePrimary: true } },
+    {
+      accessorKey: 'designation',
+      header: 'Désignation',
+      enableSorting: true,
+      meta: { mobilePrimary: true, minWidth: 220 },
+    },
     {
       accessorKey: 'categorie',
       header: 'Catégorie',
+      meta: { nowrap: true },
       cell: ({ row }) => labelOf('categorieMateriel', row.original.categorie),
     },
     {
@@ -84,7 +104,12 @@ export function CatalogueTab({
       meta: { align: 'right' },
       cell: ({ row }) => `${String(row.original.delaiLivraisonJours)} j`,
     },
-    { accessorKey: 'dateMaj', header: 'Mise à jour', cell: ({ row }) => formatDate(row.original.dateMaj) },
+    {
+      accessorKey: 'dateMaj',
+      header: 'Mise à jour',
+      meta: { nowrap: true },
+      cell: ({ row }) => formatDate(row.original.dateMaj),
+    },
   ]
 
   return (

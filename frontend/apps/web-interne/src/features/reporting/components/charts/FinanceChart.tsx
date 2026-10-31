@@ -2,7 +2,14 @@ import { Bar, BarChart, CartesianGrid, Cell, LabelList, Tooltip, XAxis, YAxis } 
 import { formatMoney } from '@/shared/lib/format'
 import { Card, CardContent, CardHeader } from '@/shared/ui/card'
 import { ChartContainer, ChartTooltipContent } from '@/shared/ui/chart'
-import { axisProps, chartColor, cursorProps, gridProps } from '@/shared/ui/chart-theme'
+import {
+  axisProps,
+  chartColor,
+  chartMargin,
+  cursorProps,
+  gridProps,
+  yAxisWidthFor,
+} from '@/shared/ui/chart-theme'
 import { compactMoney, formatTaux } from '../../lib/format'
 import type { SectionFinances } from '../../types'
 
@@ -22,10 +29,17 @@ export function FinanceChart({ finances }: { finances: SectionFinances }) {
       />
       <CardContent className="flex-1">
         <ChartContainer height={260} label="Budget total, montants engagé, mandaté et payé en francs CFA">
-          <BarChart data={data} margin={{ top: 20, right: 8, left: 0, bottom: 0 }} barCategoryGap="30%">
+          <BarChart data={data} margin={{ ...chartMargin, top: 20 }} barCategoryGap="30%">
             <CartesianGrid {...gridProps} />
             <XAxis dataKey="etape" {...axisProps} />
-            <YAxis {...axisProps} width={80} tickFormatter={compactMoney} />
+            <YAxis
+              {...axisProps}
+              width={yAxisWidthFor(
+                data.map((d) => d.montant),
+                compactMoney,
+              )}
+              tickFormatter={compactMoney}
+            />
             <Tooltip
               cursor={cursorProps}
               content={<ChartTooltipContent valueFormatter={(value) => formatMoney(value)} />}

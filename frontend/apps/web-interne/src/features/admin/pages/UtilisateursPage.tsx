@@ -48,7 +48,7 @@ function columns(actions: RowActions): ColumnDef<Utilisateur>[] {
       id: 'nom',
       header: 'Utilisateur',
       enableHiding: false,
-      meta: { mobilePrimary: true },
+      meta: { mobilePrimary: true, minWidth: 220 },
       cell: ({ row }) => {
         const user = row.original
         return (
@@ -67,6 +67,7 @@ function columns(actions: RowActions): ColumnDef<Utilisateur>[] {
     {
       accessorKey: 'role',
       header: 'Rôle',
+      meta: { nowrap: true },
       cell: ({ row }) => {
         const role = describeStatus('role', row.original.role)
         return (
@@ -79,6 +80,7 @@ function columns(actions: RowActions): ColumnDef<Utilisateur>[] {
     {
       accessorKey: 'actif',
       header: 'Statut',
+      meta: { nowrap: true },
       cell: ({ row }) => (
         <Badge tone={row.original.actif ? 'success' : 'neutral'} dot size="sm">
           {row.original.actif ? 'Actif' : 'Désactivé'}
@@ -88,7 +90,7 @@ function columns(actions: RowActions): ColumnDef<Utilisateur>[] {
     {
       accessorKey: 'otpConfigure',
       header: 'OTP',
-      meta: { hideOnMobile: true },
+      meta: { hideOnMobile: true, nowrap: true, hideBelow: 'xl' },
       cell: ({ row }) =>
         row.original.otpConfigure ? (
           <Badge tone="info" size="sm">
@@ -103,14 +105,14 @@ function columns(actions: RowActions): ColumnDef<Utilisateur>[] {
     {
       accessorKey: 'createdAt',
       header: 'Créé le',
-      meta: { hideOnMobile: true },
+      meta: { hideOnMobile: true, nowrap: true },
       cell: ({ row }) => formatDate(row.original.createdAt),
     },
     {
       id: 'actions',
       header: () => <span className="sr-only">Actions</span>,
       enableHiding: false,
-      meta: { align: 'right' },
+      meta: { align: 'right', nowrap: true },
       cell: ({ row }) => {
         const user = row.original
         return (

@@ -2,7 +2,16 @@ import * as TabsPrimitive from '@radix-ui/react-tabs'
 import { forwardRef, type ComponentPropsWithoutRef, type ElementRef } from 'react'
 import { cn } from '@/shared/lib/cn'
 
-export const Tabs = TabsPrimitive.Root
+/**
+ * Racine des onglets. `min-w-0` : dans une grille ou un flex, la largeur des onglets (non
+ * retournables) ne doit pas elargir la page ; la barre defile horizontalement a la place.
+ */
+export const Tabs = forwardRef<
+  ElementRef<typeof TabsPrimitive.Root>,
+  ComponentPropsWithoutRef<typeof TabsPrimitive.Root>
+>(function Tabs({ className, ...props }, ref) {
+  return <TabsPrimitive.Root ref={ref} className={cn('min-w-0', className)} {...props} />
+})
 
 /** Barre d'onglets soulignee, defilable horizontalement sur mobile. */
 export const TabsList = forwardRef<

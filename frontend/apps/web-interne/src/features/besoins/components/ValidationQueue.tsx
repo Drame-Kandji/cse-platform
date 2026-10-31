@@ -84,13 +84,13 @@ export function ValidationQueue() {
                 )}
               </div>
               <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-                <Button asChild variant="ghost" size="sm">
+                <Button asChild variant="ghost" className="max-sm:h-11">
                   <Link to={to.besoinDetail(besoin.id)}>
                     {t('validation.voir')}
                     <ArrowRight aria-hidden />
                   </Link>
                 </Button>
-                <BesoinActions besoin={besoin} size="sm" />
+                <BesoinActions besoin={besoin} />
               </div>
             </Card>
           </li>

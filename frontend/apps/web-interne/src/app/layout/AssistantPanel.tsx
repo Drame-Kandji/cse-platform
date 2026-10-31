@@ -18,7 +18,7 @@ export function AssistantLauncher() {
       onClick={() => {
         setAssistantOpen(true)
       }}
-      className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] right-4 z-30 h-12 rounded-full px-4 shadow-overlay sm:right-6 sm:h-11"
+      className="cse-assistant-fab fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] right-4 z-30 h-12 rounded-full px-4 shadow-overlay sm:right-6 sm:h-11"
       leftIcon={<Sparkles />}
       aria-label={t('assistant.open')}
       aria-haspopup="dialog"

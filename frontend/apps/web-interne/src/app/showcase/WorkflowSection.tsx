@@ -25,14 +25,14 @@ const EVENTS: TimelineItem[] = [
     title: 'Commentaire',
     description: 'Aucun compacteur disponible sur la période demandée.',
     date: hoursAgo(20),
-    actor: 'Fatou Sarr · Resp. Matériel',
+    actor: 'Ibrahima Fall · Resp. Matériel',
     icon: <MessageSquare />,
   },
   {
     id: '2',
     title: 'Besoin validé',
     date: hoursAgo(22),
-    actor: 'Fatou Sarr · Resp. Matériel',
+    actor: 'Ibrahima Fall · Resp. Matériel',
     tone: 'success',
   },
   {
@@ -40,7 +40,7 @@ const EVENTS: TimelineItem[] = [
     title: 'Besoin créé',
     description: '2 compacteurs vibrants — priorité urgente.',
     date: hoursAgo(50),
-    actor: 'Moussa Ndiaye · Chef de chantier',
+    actor: 'Mamadou Diop · Chef de chantier',
     tone: 'warning',
   },
 ]

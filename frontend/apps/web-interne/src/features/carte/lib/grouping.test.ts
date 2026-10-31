@@ -57,6 +57,17 @@ describe('grouperParPosition', () => {
     expect(thies?.materiels).toHaveLength(0)
   })
 
+  it('rattache par chantierId en priorite (chantiers homonymes, nom absent)', () => {
+    const groupes = grouperParPosition([
+      feature(DAKAR.lat, DAKAR.lng, { kind: 'CHANTIER', id: 'c1', libelle: 'Chantier A' }),
+      feature(THIES.lat, THIES.lng, { kind: 'CHANTIER', id: 'c2', libelle: 'Chantier A' }),
+      feature(THIES.lat + 0.002, THIES.lng, { id: 'm1', chantierId: 'c2', chantierNom: 'Chantier A' }),
+      feature(DAKAR.lat + 0.002, DAKAR.lng, { id: 'm2', chantierId: 'c1' }),
+    ])
+    expect(groupes.find((g) => g.chantier?.id === 'c1')?.materiels.map((m) => m.id)).toEqual(['m2'])
+    expect(groupes.find((g) => g.chantier?.id === 'c2')?.materiels.map((m) => m.id)).toEqual(['m1'])
+  })
+
   it('isole les materiels hors chantier et place les chantiers en premier', () => {
     const groupes = grouperParPosition([
       feature(14.69, -17.44, { id: 'depot-1', libelle: 'Compresseur', etat: 'DISPONIBLE' }),

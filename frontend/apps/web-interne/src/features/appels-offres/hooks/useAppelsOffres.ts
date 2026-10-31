@@ -51,9 +51,9 @@ export function useOffres(id: string, enabled = true) {
 }
 
 /** Contrat genere pour un AO attribue (null si introuvable). */
-export function useContratLie(ao: Pick<AppelOffre, 'id' | 'objet'>, enabled: boolean) {
+export function useContratLie(ao: Pick<AppelOffre, 'id' | 'objet' | 'contratId'>, enabled: boolean) {
   return useQuery({
-    queryKey: appelOffreKeys.custom('contrat', ao.id),
+    queryKey: appelOffreKeys.custom('contrat', ao.id, ao.contratId ?? null),
     queryFn: ({ signal }) => appelsOffresApi.contratLie(ao, signal),
     enabled,
   })

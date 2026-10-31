@@ -35,6 +35,9 @@ export interface SectionParc {
   readonly affectes: number
   readonly enMaintenance: number
   readonly reformes: number
+  /** Materiels operationnels (ni en maintenance ni reformes) ; absent des anciennes versions de l'API. */
+  readonly operationnels?: number | null
+  /** Disponibilite operationnelle : (total - enMaintenance - reformes) / (total - reformes). */
   readonly tauxDisponibilite: Pourcentage
   readonly tauxUtilisation: Pourcentage
   readonly maintenancesEnCours: number

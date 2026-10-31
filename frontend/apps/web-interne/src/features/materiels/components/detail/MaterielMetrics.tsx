@@ -21,14 +21,14 @@ function prochaineHint(date: string | null | undefined, due: boolean): string | 
 export function MaterielMetrics({ materiel }: { materiel: MaterielDetail }) {
   const ratio = maintenanceRatio(materiel)
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
       <StatCard
         label="Heures de fonctionnement"
         value={`${formatNumber(materiel.heuresFonctionnement)} h`}
         icon={<Timer />}
         hint="Compteur total"
       />
-      <Card className="flex flex-col gap-3 p-5 sm:col-span-2 xl:col-span-1">
+      <Card className="flex flex-col gap-3 p-5 sm:col-span-2 lg:col-span-1">
         <div className="flex items-start justify-between gap-3">
           <p className="text-sm font-medium text-muted-foreground">Depuis la maintenance</p>
           <span className="grid size-8 place-items-center rounded-lg bg-warning/10 text-warning-emphasis [&_svg]:size-4">

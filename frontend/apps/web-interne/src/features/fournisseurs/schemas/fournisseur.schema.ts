@@ -35,7 +35,10 @@ export const fournisseurSchema = z
     iban: z
       .string()
       .trim()
-      .refine((value) => value === '' || /^[A-Za-z]{2}[0-9]{2}[A-Za-z0-9 ]{11,40}$/.test(value), 'IBAN invalide')
+      .refine(
+        (value) => value === '' || /^[A-Za-z]{2}[0-9]{2}[A-Za-z0-9 ]{11,40}$/.test(value),
+        'IBAN invalide',
+      )
       .transform((value) => (value === '' ? undefined : value))
       .optional(),
   })
@@ -57,7 +60,11 @@ export type DocumentForm = z.infer<typeof documentSchema>
 
 /** Ouverture d'un litige. */
 export const litigeSchema = z.object({
-  objet: z.string().trim().min(3, 'Objet obligatoire (au moins 3 caractères)').max(255, '255 caractères maximum'),
+  objet: z
+    .string()
+    .trim()
+    .min(3, 'Objet obligatoire (au moins 3 caractères)')
+    .max(255, '255 caractères maximum'),
   description: z
     .string()
     .trim()

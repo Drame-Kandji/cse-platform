@@ -36,6 +36,7 @@ export function Component() {
       {
         accessorKey: 'numero',
         header: t('columns.numero'),
+        meta: { nowrap: true },
         enableSorting: true,
         enableHiding: false,
         cell: ({ row }) => <span className="font-mono text-xs font-medium">{row.original.numero}</span>,
@@ -43,15 +44,19 @@ export function Component() {
       {
         accessorKey: 'objet',
         header: t('columns.objet'),
-        meta: { mobilePrimary: true },
+        meta: { mobilePrimary: true, minWidth: 220 },
         cell: ({ row }) => (
-          <div className="grid min-w-0 max-w-xs">
-            <span className="truncate font-medium">{row.original.objet}</span>
-            <span className="truncate text-xs text-muted-foreground">{row.original.designation}</span>
+          <div className="grid min-w-0 max-w-sm">
+            <span className="line-clamp-2 font-medium">{row.original.objet}</span>
+            <span className="line-clamp-1 text-xs text-muted-foreground">{row.original.designation}</span>
           </div>
         ),
       },
-      { accessorKey: 'fournisseurNom', header: t('columns.fournisseur') },
+      {
+        accessorKey: 'fournisseurNom',
+        header: t('columns.fournisseur'),
+        meta: { minWidth: 160 },
+      },
       {
         accessorKey: 'montant',
         header: t('columns.montant'),
@@ -61,6 +66,7 @@ export function Component() {
       {
         accessorKey: 'statut',
         header: t('columns.statut'),
+        meta: { nowrap: true },
         enableSorting: true,
         cell: ({ row }) => <StatusBadge kind="statutContrat" value={row.original.statut} />,
       },
@@ -68,7 +74,7 @@ export function Component() {
         accessorKey: 'dateLivraisonPrevue',
         header: t('columns.livraison'),
         enableSorting: true,
-        meta: { hideOnMobile: true },
+        meta: { hideOnMobile: true, nowrap: true },
         cell: ({ row }) => (
           <span className="inline-flex items-center gap-1.5 tabular-nums">
             {formatDate(row.original.dateLivraisonPrevue)}

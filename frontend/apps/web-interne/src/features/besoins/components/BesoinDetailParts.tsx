@@ -4,7 +4,7 @@ import { Skeleton } from '@/shared/ui/skeleton'
 /** Paire libelle / valeur d'une fiche. */
 export function Fact({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="grid gap-0.5">
+    <div className="grid content-start gap-0.5">
       <dt className="text-xs text-muted-foreground">{label}</dt>
       <dd className="text-sm font-medium tabular-nums">{children}</dd>
     </div>

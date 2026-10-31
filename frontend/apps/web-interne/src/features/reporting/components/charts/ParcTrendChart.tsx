@@ -2,7 +2,14 @@ import { LineChart as LineIcon } from 'lucide-react'
 import { Area, CartesianGrid, ComposedChart, Line, Tooltip, XAxis, YAxis } from 'recharts'
 import { Card, CardContent, CardHeader } from '@/shared/ui/card'
 import { ChartContainer, ChartLegend, ChartTooltipContent } from '@/shared/ui/chart'
-import { axisProps, chartColor, cursorProps, gridProps } from '@/shared/ui/chart-theme'
+import {
+  axisProps,
+  chartColor,
+  chartMargin,
+  cursorProps,
+  gridProps,
+  yAxisWidth,
+} from '@/shared/ui/chart-theme'
 import { EmptyState } from '@/shared/ui/empty-state'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { formatTaux } from '../../lib/format'
@@ -72,7 +79,7 @@ export function ParcTrendChart({ disponibilite = [], utilisation = [], loading }
             height={280}
             label="Évolution des taux de disponibilité et d'utilisation du parc sur la période"
           >
-            <ComposedChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            <ComposedChart data={data} margin={chartMargin}>
               <defs>
                 <linearGradient id="grad-disponibilite" x1="0" x2="0" y1="0" y2="1">
                   <stop offset="0%" stopColor={chartColor(0)} stopOpacity={0.22} />
@@ -83,7 +90,7 @@ export function ParcTrendChart({ disponibilite = [], utilisation = [], loading }
               <XAxis dataKey="periode" {...axisProps} tickFormatter={periodeLabel} minTickGap={24} />
               <YAxis
                 {...axisProps}
-                width={44}
+                width={yAxisWidth([formatTaux(100, 0)])}
                 domain={[0, 100]}
                 ticks={[0, 25, 50, 75, 100]}
                 tickFormatter={(value: number) => formatTaux(value, 0)}

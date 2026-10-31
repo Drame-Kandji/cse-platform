@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { describeStatus } from '@/shared/domain/labels'
+import { describeStatus, labelOf } from '@/shared/domain/labels'
 import { EmptyState } from '@/shared/ui/empty-state'
 import { ErrorState } from '@/shared/ui/error-state'
 import { Skeleton } from '@/shared/ui/skeleton'
@@ -27,7 +27,7 @@ export function BesoinHistorique({ besoinId }: { besoinId: string }) {
     const statut = describeStatus('statutBesoin', event.statut)
     return {
       id: event.id,
-      title: event.action,
+      title: labelOf('actionHistoriqueBesoin', event.action),
       description: event.commentaire ?? undefined,
       date: event.date,
       actor: `${event.auteurNom} · ${statut.label}`,

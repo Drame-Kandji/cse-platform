@@ -23,6 +23,7 @@ const columns: ColumnDef<AuditLog>[] = [
   {
     accessorKey: 'occurredAt',
     header: 'Date',
+    meta: { nowrap: true },
     enableSorting: true,
     cell: ({ row }) => (
       <span className="whitespace-nowrap tabular-nums">{formatDateTime(row.original.occurredAt)}</span>
@@ -31,17 +32,19 @@ const columns: ColumnDef<AuditLog>[] = [
   {
     accessorKey: 'utilisateurNom',
     header: 'Utilisateur',
+    meta: { nowrap: true },
     cell: ({ row }) => row.original.utilisateurNom ?? <span className="text-muted-foreground">Système</span>,
   },
   {
     accessorKey: 'action',
     header: 'Action',
-    meta: { mobilePrimary: true },
+    meta: { mobilePrimary: true, nowrap: true },
     cell: ({ row }) => <span className="font-mono text-xs">{row.original.action}</span>,
   },
   {
     accessorKey: 'entite',
     header: 'Entité',
+    meta: { nowrap: true },
     cell: ({ row }) => (
       <span className="grid">
         <span>{row.original.entite}</span>
@@ -54,15 +57,15 @@ const columns: ColumnDef<AuditLog>[] = [
   {
     accessorKey: 'service',
     header: 'Service',
-    meta: { hideOnMobile: true },
+    meta: { hideOnMobile: true, nowrap: true, hideBelow: 'xl' },
     cell: ({ row }) => <Badge size="sm">{row.original.service}</Badge>,
   },
   {
     accessorKey: 'resume',
     header: 'Résumé',
-    meta: { hideOnMobile: true },
+    meta: { hideOnMobile: true, minWidth: 240 },
     cell: ({ row }) => (
-      <span className="line-clamp-1 max-w-72 text-muted-foreground">{row.original.resume ?? ''}</span>
+      <span className="line-clamp-2 max-w-md text-muted-foreground">{row.original.resume ?? ''}</span>
     ),
   },
 ]

@@ -14,6 +14,7 @@ export const materielColumns: ColumnDef<Materiel>[] = [
     header: 'Code',
     enableSorting: true,
     enableHiding: false,
+    meta: { nowrap: true },
     cell: ({ row }) => (
       <div className="grid">
         <span className="font-mono text-xs font-medium text-foreground">{row.original.code}</span>
@@ -27,14 +28,14 @@ export const materielColumns: ColumnDef<Materiel>[] = [
     accessorKey: 'designation',
     header: 'Désignation',
     enableSorting: true,
-    meta: { mobilePrimary: true },
+    meta: { mobilePrimary: true, minWidth: 240 },
     cell: ({ row }) => {
       const m = row.original
       const sub = [m.marque, m.modele].filter(Boolean).join(' ') || m.typeEnginLibelle
       return (
-        <div className="grid min-w-0 max-w-72">
-          <span className="truncate font-medium text-foreground">{m.designation}</span>
-          <span className="truncate text-xs text-muted-foreground">
+        <div className="grid min-w-0">
+          <span className="line-clamp-2 font-medium text-foreground">{m.designation}</span>
+          <span className="line-clamp-1 text-xs text-muted-foreground">
             {sub ?? labelOf('categorieMateriel', m.categorie)}
           </span>
         </div>
@@ -45,7 +46,7 @@ export const materielColumns: ColumnDef<Materiel>[] = [
     accessorKey: 'categorie',
     header: 'Catégorie',
     enableSorting: true,
-    meta: { hideOnMobile: true },
+    meta: { hideOnMobile: true, nowrap: true, hideBelow: '2xl' },
     cell: ({ row }) => (
       <span className="text-sm text-muted-foreground">
         {labelOf('categorieMateriel', row.original.categorie)}
@@ -56,6 +57,7 @@ export const materielColumns: ColumnDef<Materiel>[] = [
     accessorKey: 'etat',
     header: 'État',
     enableSorting: true,
+    meta: { nowrap: true },
     cell: ({ row }) => (
       <div className="flex flex-wrap items-center gap-1.5">
         <StatusBadge kind="etatMateriel" value={row.original.etat} />
@@ -70,22 +72,22 @@ export const materielColumns: ColumnDef<Materiel>[] = [
   {
     accessorKey: 'chantierActuelNom',
     header: 'Chantier',
-    meta: { label: 'Chantier actuel' },
+    meta: { label: 'Chantier actuel', minWidth: 160 },
     cell: ({ row }) => (
-      <span className="block max-w-48 truncate text-sm">{row.original.chantierActuelNom ?? EMPTY_VALUE}</span>
+      <span className="line-clamp-2 text-sm">{row.original.chantierActuelNom ?? EMPTY_VALUE}</span>
     ),
   },
   {
     id: 'utilisation',
     header: 'Depuis maintenance',
-    meta: { label: 'Heures depuis maintenance', hideOnMobile: true },
+    meta: { label: 'Heures depuis maintenance', hideOnMobile: true, nowrap: true, hideBelow: '2xl' },
     cell: ({ row }) => <MaintenanceGauge materiel={row.original} />,
   },
   {
     accessorKey: 'prochaineMaintenance',
     header: 'Prochaine maintenance',
     enableSorting: true,
-    meta: { hideOnMobile: true },
+    meta: { hideOnMobile: true, nowrap: true },
     cell: ({ row }) =>
       row.original.maintenanceDue ? (
         <Badge tone="danger" size="sm">

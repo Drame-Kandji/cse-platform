@@ -39,17 +39,19 @@ export function ClassementTab() {
     {
       accessorKey: 'raisonSociale',
       header: t('columns.raisonSociale'),
-      meta: { mobilePrimary: true },
+      meta: { mobilePrimary: true, minWidth: 200 },
       cell: ({ row }) => <span className="font-medium">{row.original.raisonSociale}</span>,
     },
     {
       id: 'specialites',
       header: t('columns.specialites'),
+      meta: { minWidth: 180 },
       cell: ({ row }) => <SpecialitesChips specialites={row.original.specialites} />,
     },
     {
       accessorKey: 'scorePerformance',
       header: t('columns.score'),
+      meta: { nowrap: true },
       cell: ({ row }) => <ScoreBar score={row.original.scorePerformance} />,
     },
     {

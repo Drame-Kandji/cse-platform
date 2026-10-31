@@ -2,7 +2,14 @@ import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts'
 import { describeStatus, type StatutAO } from '@/shared/domain/labels'
 import { formatNumber } from '@/shared/lib/format'
 import { ChartContainer, ChartLegend, ChartTooltipContent } from '@/shared/ui/chart'
-import { axisProps, chartColor, cursorProps, gridProps } from '@/shared/ui/chart-theme'
+import {
+  axisProps,
+  chartColor,
+  chartMargin,
+  cursorProps,
+  gridProps,
+  yAxisWidth,
+} from '@/shared/ui/chart-theme'
 import type { Comparatif } from '../api/types'
 import { nomOffre } from './offre-display'
 
@@ -28,10 +35,10 @@ export function ComparatifChart({ comparatif, statut }: { comparatif: Comparatif
     <div className="grid gap-3">
       {series.length > 1 && <ChartLegend items={series} />}
       <ChartContainer label="Notes sur 100 de chaque offre pour chaque critère d'évaluation" height={300}>
-        <BarChart data={data} barGap={2} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+        <BarChart data={data} barGap={2} margin={chartMargin}>
           <CartesianGrid {...gridProps} />
           <XAxis dataKey="critere" {...axisProps} interval={0} />
-          <YAxis {...axisProps} domain={[0, 100]} width={36} />
+          <YAxis {...axisProps} domain={[0, 100]} width={yAxisWidth(['100'])} />
           <Tooltip
             cursor={cursorProps}
             content={

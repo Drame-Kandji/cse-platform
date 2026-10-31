@@ -1,4 +1,14 @@
 /* Habillage Leaflet aligne sur les jetons du theme (clair / sombre). */
+
+/*
+ * Theme sombre : tuiles OpenStreetMap standard assombries par filtre, applique au seul calque des
+ * tuiles (les marqueurs, popups et controles gardent leurs couleurs). invert + hue-rotate(180deg)
+ * conserve les teintes (eau bleue, vegetation verte) ; luminosite et saturation reduites pour se
+ * fondre dans le fond sombre de l'application.
+ */
+.cse-carte--dark .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9) saturate(0.55);
+}
 .cse-carte .leaflet-container {
   background: rgb(var(--surface-sunken));
   font-family: inherit;
@@ -18,6 +28,11 @@
 
 .cse-carte .leaflet-popup-content {
   margin: 0.75rem 0.875rem;
+}
+
+/* Leaflet impose des marges de paragraphe (1.3em) : l'espacement vient des utilitaires du contenu. */
+.cse-carte .leaflet-popup-content p {
+  margin: 0;
 }
 
 .cse-carte .leaflet-container a.leaflet-popup-close-button {

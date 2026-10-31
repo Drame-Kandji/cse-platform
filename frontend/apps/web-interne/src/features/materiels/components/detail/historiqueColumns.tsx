@@ -17,6 +17,7 @@ export const affectationColumns: ColumnDef<Affectation>[] = [
   {
     id: 'periode',
     header: 'Période prévue',
+    meta: { nowrap: true },
     cell: ({ row }) => (
       <span className="tabular-nums">{periode(row.original.dateDebut, row.original.dateFinPrevue)}</span>
     ),
@@ -24,11 +25,13 @@ export const affectationColumns: ColumnDef<Affectation>[] = [
   {
     accessorKey: 'dateFinReelle',
     header: 'Fin réelle',
+    meta: { nowrap: true },
     cell: ({ row }) => formatDate(row.original.dateFinReelle),
   },
   {
     accessorKey: 'statut',
     header: 'Statut',
+    meta: { nowrap: true },
     cell: ({ row }) => <StatusBadge kind="statutAffectation" value={row.original.statut} />,
   },
   {
@@ -52,11 +55,13 @@ export const maintenanceColumns: ColumnDef<Maintenance>[] = [
   {
     accessorKey: 'numeroOt',
     header: 'OT',
+    meta: { nowrap: true },
     cell: ({ row }) => <span className="font-mono text-xs">{row.original.numeroOt}</span>,
   },
   {
     accessorKey: 'type',
     header: 'Type',
+    meta: { nowrap: true },
     cell: ({ row }) => <StatusBadge kind="typeMaintenance" value={row.original.type} dot={false} />,
   },
   {
@@ -72,11 +77,13 @@ export const maintenanceColumns: ColumnDef<Maintenance>[] = [
   {
     accessorKey: 'datePlanifiee',
     header: 'Planifiée le',
+    meta: { nowrap: true },
     cell: ({ row }) => formatDate(row.original.datePlanifiee),
   },
   {
     accessorKey: 'statut',
     header: 'Statut',
+    meta: { nowrap: true },
     cell: ({ row }) => <StatusBadge kind="statutMaintenance" value={row.original.statut} />,
   },
   {
@@ -91,11 +98,13 @@ export const panneColumns: ColumnDef<Panne>[] = [
   {
     accessorKey: 'dateSignalement',
     header: 'Signalée le',
+    meta: { nowrap: true },
     cell: ({ row }) => <span className="tabular-nums">{formatDateTime(row.original.dateSignalement)}</span>,
   },
   {
     accessorKey: 'gravite',
     header: 'Gravité',
+    meta: { nowrap: true },
     cell: ({ row }) => <StatusBadge kind="gravitePanne" value={row.original.gravite} />,
   },
   {
@@ -122,6 +131,7 @@ export const panneColumns: ColumnDef<Panne>[] = [
   {
     accessorKey: 'statut',
     header: 'Statut',
+    meta: { nowrap: true },
     cell: ({ row }) => <StatusBadge kind="statutPanne" value={row.original.statut} />,
   },
 ]

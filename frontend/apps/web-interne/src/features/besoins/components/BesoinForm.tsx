@@ -230,7 +230,10 @@ export function BesoinForm({ defaultValues, submitLabel, onSubmit, onCancel }: B
         </CardContent>
       </Card>
 
-      <div className="pb-safe fixed inset-x-0 bottom-0 z-20 flex gap-2 border-t border-border bg-surface/95 px-4 py-3 backdrop-blur sm:static sm:justify-end sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
+      <div
+        data-mobile-action-bar
+        className="pb-safe fixed inset-x-0 bottom-0 z-20 flex gap-2 border-t border-border bg-surface/95 px-4 py-3 backdrop-blur sm:static sm:justify-end sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none"
+      >
         <Button variant="secondary" onClick={onCancel} className="flex-1 sm:flex-none">
           {t('form.cancel')}
         </Button>

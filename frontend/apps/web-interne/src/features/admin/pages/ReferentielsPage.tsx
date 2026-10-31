@@ -19,6 +19,7 @@ function columns(onEdit: (typeEngin: TypeEngin) => void): ColumnDef<TypeEngin>[]
     {
       accessorKey: 'code',
       header: 'Code',
+      meta: { nowrap: true },
       enableSorting: true,
       cell: ({ row }) => <span className="font-mono text-xs">{row.original.code}</span>,
     },
@@ -33,6 +34,7 @@ function columns(onEdit: (typeEngin: TypeEngin) => void): ColumnDef<TypeEngin>[]
     {
       accessorKey: 'categorie',
       header: 'Catégorie',
+      meta: { nowrap: true },
       enableSorting: true,
       cell: ({ row }) => (
         <StatusBadge kind="categorieMateriel" value={row.original.categorie} dot={false} size="sm" />
@@ -61,6 +63,7 @@ function columns(onEdit: (typeEngin: TypeEngin) => void): ColumnDef<TypeEngin>[]
     {
       accessorKey: 'actif',
       header: 'Statut',
+      meta: { nowrap: true },
       cell: ({ row }) => (
         <Badge tone={row.original.actif ? 'success' : 'neutral'} dot size="sm">
           {row.original.actif ? 'Actif' : 'Inactif'}

@@ -15,6 +15,7 @@ const columns: ColumnDef<AppelOffre>[] = [
   {
     accessorKey: 'reference',
     header: 'Référence',
+    meta: { nowrap: true },
     enableSorting: true,
     enableHiding: false,
     cell: ({ row }) => <span className="font-mono text-xs">{row.original.reference}</span>,
@@ -22,12 +23,12 @@ const columns: ColumnDef<AppelOffre>[] = [
   {
     accessorKey: 'objet',
     header: 'Objet',
-    meta: { mobilePrimary: true },
+    meta: { mobilePrimary: true, minWidth: 240 },
     cell: ({ row }) => (
       <div className="min-w-0">
-        <p className="truncate font-medium">{row.original.objet}</p>
+        <p className="line-clamp-2 font-medium">{row.original.objet}</p>
         {row.original.chantierNom && (
-          <p className="truncate text-xs text-muted-foreground">{row.original.chantierNom}</p>
+          <p className="line-clamp-1 text-xs text-muted-foreground">{row.original.chantierNom}</p>
         )}
       </div>
     ),
@@ -35,17 +36,19 @@ const columns: ColumnDef<AppelOffre>[] = [
   {
     accessorKey: 'type',
     header: 'Type',
-    meta: { hideOnMobile: true },
+    meta: { hideOnMobile: true, nowrap: true, hideBelow: 'xl' },
     cell: ({ row }) => <StatusBadge kind="typeAppelOffre" value={row.original.type} dot={false} />,
   },
   {
     accessorKey: 'statut',
     header: 'Statut',
+    meta: { nowrap: true },
     cell: ({ row }) => <StatusBadge kind="statutAO" value={row.original.statut} />,
   },
   {
     accessorKey: 'dateLimite',
     header: 'Date limite',
+    meta: { nowrap: true },
     enableSorting: true,
     cell: ({ row }) => (
       <div className="grid">

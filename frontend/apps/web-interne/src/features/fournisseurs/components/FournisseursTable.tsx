@@ -53,7 +53,7 @@ export function FournisseursTable() {
       header: t('columns.raisonSociale'),
       enableSorting: true,
       enableHiding: false,
-      meta: { mobilePrimary: true },
+      meta: { mobilePrimary: true, minWidth: 220 },
       cell: ({ row }) => (
         <div className="grid min-w-0">
           <span className="truncate font-medium text-foreground">{row.original.raisonSociale}</span>
@@ -61,15 +61,23 @@ export function FournisseursTable() {
         </div>
       ),
     },
-    { accessorKey: 'ville', header: t('columns.ville'), enableSorting: true, cell: ({ row }) => row.original.ville ?? '—' },
+    {
+      accessorKey: 'ville',
+      header: t('columns.ville'),
+      meta: { nowrap: true },
+      enableSorting: true,
+      cell: ({ row }) => row.original.ville ?? '—',
+    },
     {
       id: 'specialites',
       header: t('columns.specialites'),
+      meta: { minWidth: 180, hideBelow: 'xl' },
       cell: ({ row }) => <SpecialitesChips specialites={row.original.specialites} />,
     },
     {
       accessorKey: 'statut',
       header: t('columns.statut'),
+      meta: { nowrap: true },
       enableSorting: true,
       cell: ({ row }) => (
         <div className="flex flex-wrap items-center gap-1">
@@ -85,6 +93,7 @@ export function FournisseursTable() {
     {
       accessorKey: 'scorePerformance',
       header: t('columns.score'),
+      meta: { nowrap: true },
       enableSorting: true,
       cell: ({ row }) => <ScoreBar score={row.original.scorePerformance} />,
     },

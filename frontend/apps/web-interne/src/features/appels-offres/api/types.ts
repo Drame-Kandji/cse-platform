@@ -62,6 +62,8 @@ export interface AppelOffre {
   readonly offreRetenueId?: string | null
   readonly montantAttribue?: number | null
   readonly attribution?: Attribution | null
+  /** Contrat genere une fois l'AO ATTRIBUE (contrat section 5 ; absent des anciennes versions). */
+  readonly contratId?: string | null
   readonly creeParNom: string
   readonly version: number
 }
@@ -161,7 +163,8 @@ export type EvaluationOffre = Partial<Record<CritereManuel, number>>
 /** Sous-ensemble de `Contrat` (§5) utile pour relier un AO attribue a son contrat. */
 export interface ContratLie {
   readonly id: string
-  readonly numero: string
+  /** Inconnu quand le lien vient directement de `AppelOffre.contratId`. */
+  readonly numero?: string | null
   readonly appelOffreId: string
 }
 

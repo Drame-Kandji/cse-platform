@@ -3,7 +3,14 @@ import { Bar, BarChart, CartesianGrid, Cell, Tooltip, XAxis, YAxis } from 'recha
 import { formatMoney } from '@/shared/lib/format'
 import { Card, CardContent, CardHeader } from '@/shared/ui/card'
 import { ChartContainer, ChartTooltipContent } from '@/shared/ui/chart'
-import { axisProps, chartColor, cursorProps, gridProps } from '@/shared/ui/chart-theme'
+import {
+  axisProps,
+  chartColor,
+  chartMargin,
+  cursorProps,
+  gridProps,
+  yAxisWidthFor,
+} from '@/shared/ui/chart-theme'
 import { Skeleton } from '@/shared/ui/skeleton'
 import type { SyntheseFinance } from '../api/types'
 
@@ -34,10 +41,17 @@ export function BudgetChart({
           <Skeleton className="h-[240px] w-full" />
         ) : (
           <ChartContainer label={t('chart.label')} height={240}>
-            <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            <BarChart data={data} margin={chartMargin}>
               <CartesianGrid {...gridProps} />
               <XAxis dataKey="etape" {...axisProps} />
-              <YAxis {...axisProps} width={88} tickFormatter={compactMoney} />
+              <YAxis
+                {...axisProps}
+                width={yAxisWidthFor(
+                  data.map((d) => d.montant),
+                  compactMoney,
+                )}
+                tickFormatter={compactMoney}
+              />
               <Tooltip
                 cursor={cursorProps}
                 content={<ChartTooltipContent valueFormatter={(value) => formatMoney(value)} />}

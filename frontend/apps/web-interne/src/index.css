@@ -169,3 +169,13 @@
     background-size: 32px 32px;
   }
 }
+
+/*
+ * Mobile : une barre d'actions fixee en bas de page (`data-mobile-action-bar`, ex. formulaire de
+ * besoin) remonte le bouton flottant de l'assistant pour qu'il ne masque pas l'action principale.
+ */
+@media (max-width: 639px) {
+  body:has([data-mobile-action-bar]) .cse-assistant-fab {
+    bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
+  }
+}

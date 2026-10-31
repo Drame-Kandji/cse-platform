@@ -25,7 +25,7 @@ export function kpiTables(tableau: Tableau): KpiTable[] {
         { label: 'Affectés', value: n(parc.affectes) },
         { label: 'En maintenance', value: n(parc.enMaintenance) },
         { label: 'Réformés', value: n(parc.reformes) },
-        { label: 'Taux de disponibilité', value: formatTaux(parc.tauxDisponibilite) },
+        { label: 'Disponibilité opérationnelle', value: formatTaux(parc.tauxDisponibilite) },
         { label: "Taux d'utilisation", value: formatTaux(parc.tauxUtilisation) },
         { label: 'Maintenances en cours', value: n(parc.maintenancesEnCours) },
         { label: 'Pannes ouvertes', value: n(parc.pannesOuvertes) },

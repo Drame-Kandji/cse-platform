@@ -47,7 +47,7 @@ export function FacturesPanel() {
         accessorKey: 'numero',
         header: t('columns.numero'),
         enableSorting: true,
-        meta: { mobilePrimary: true },
+        meta: { mobilePrimary: true, nowrap: true },
         cell: ({ row }) => (
           <span className="flex flex-wrap items-center gap-2 font-medium">
             {row.original.numero}
@@ -63,6 +63,7 @@ export function FacturesPanel() {
       {
         id: 'contrat',
         header: t('columns.contrat'),
+        meta: { nowrap: true },
         cell: ({ row }) => (
           <Link
             to={to.contratDetail(row.original.contratId)}
@@ -72,7 +73,11 @@ export function FacturesPanel() {
           </Link>
         ),
       },
-      { accessorKey: 'fournisseurNom', header: t('columns.fournisseur') },
+      {
+        accessorKey: 'fournisseurNom',
+        header: t('columns.fournisseur'),
+        meta: { minWidth: 160 },
+      },
       {
         accessorKey: 'montantTtc',
         header: t('columns.montantTtc'),
@@ -87,6 +92,7 @@ export function FacturesPanel() {
       {
         accessorKey: 'dateEcheance',
         header: t('columns.echeance'),
+        meta: { nowrap: true },
         enableSorting: true,
         cell: ({ row }) => (
           <span className={cn(row.original.enRetard && 'font-medium text-danger-emphasis')}>
@@ -97,6 +103,7 @@ export function FacturesPanel() {
       {
         accessorKey: 'statut',
         header: t('columns.statut'),
+        meta: { nowrap: true },
         enableSorting: true,
         cell: ({ row }) => (
           <span className="grid gap-0.5">
@@ -115,6 +122,7 @@ export function FacturesPanel() {
       {
         accessorKey: 'referenceMandat',
         header: t('columns.mandat'),
+        meta: { nowrap: true, hideBelow: '2xl' },
         cell: ({ row }) => row.original.referenceMandat ?? EMPTY_VALUE,
       },
     ]
@@ -124,7 +132,7 @@ export function FacturesPanel() {
       {
         id: 'actions',
         header: t('columns.actions'),
-        meta: { align: 'right', label: t('columns.actions') },
+        meta: { align: 'right', label: t('columns.actions'), nowrap: true },
         cell: ({ row }) => (
           <FactureRowActions facture={row.original} onMandater={setAMandater} onRejeter={setARejeter} />
         ),

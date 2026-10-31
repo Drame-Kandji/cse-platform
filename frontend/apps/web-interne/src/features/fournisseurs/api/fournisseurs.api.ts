@@ -37,8 +37,7 @@ export const fournisseursApi = {
   comparaisonPrix: (params: { categorie?: CategorieMateriel; q?: string }, signal?: AbortSignal) =>
     http.get<ComparaisonPrix[]>(`${base}/comparaison-prix`, { query: params, signal }),
   creer: (body: FournisseurSaisie) => http.post<FournisseurDetail>(base, body),
-  modifier: (id: string, body: FournisseurModification) =>
-    http.put<FournisseurDetail>(one(id), body),
+  modifier: (id: string, body: FournisseurModification) => http.put<FournisseurDetail>(one(id), body),
   validerInscription: (id: string) => http.patch<Fournisseur>(`${one(id)}/valider-inscription`),
   suspendre: (id: string, motif: string) => http.patch<Fournisseur>(`${one(id)}/suspendre`, { motif }),
   reactiver: (id: string) => http.patch<Fournisseur>(`${one(id)}/reactiver`),

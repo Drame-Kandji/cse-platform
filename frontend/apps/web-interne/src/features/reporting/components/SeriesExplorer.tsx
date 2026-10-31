@@ -4,7 +4,14 @@ import { Area, AreaChart, Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } 
 import { formatMoney, formatNumber } from '@/shared/lib/format'
 import { Card, CardContent, CardHeader } from '@/shared/ui/card'
 import { ChartContainer, ChartTooltipContent } from '@/shared/ui/chart'
-import { axisProps, chartColor, cursorProps, gridProps } from '@/shared/ui/chart-theme'
+import {
+  axisProps,
+  chartColor,
+  chartMargin,
+  cursorProps,
+  gridProps,
+  yAxisWidthFor,
+} from '@/shared/ui/chart-theme'
 import { EmptyState } from '@/shared/ui/empty-state'
 import { ErrorState } from '@/shared/ui/error-state'
 import { Select } from '@/shared/ui/select'
@@ -57,6 +64,7 @@ export function SeriesExplorer({ indicateurs, du, au, chantierId, defaultGranula
   const format = formatterFor(indicateur)
   const points = query.data ?? []
   const values = points.map((point) => point.valeur)
+  const axisWidth = yAxisWidthFor(meta.unite === 'pourcentage' ? [...values, 100] : values, format.axis)
   const cumul = meta.unite === 'montant' || meta.unite === 'nombre'
   const stats =
     values.length > 0
@@ -143,10 +151,10 @@ export function SeriesExplorer({ indicateurs, du, au, chantierId, defaultGranula
             label={`${meta.label} par ${GRANULARITE_LABELS[granularite].toLowerCase()}`}
           >
             {cumul ? (
-              <BarChart data={points} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <BarChart data={points} margin={chartMargin}>
                 <CartesianGrid {...gridProps} />
                 <XAxis dataKey="periode" {...axisProps} tickFormatter={periodeLabel} minTickGap={16} />
-                <YAxis {...axisProps} width={80} tickFormatter={format.axis} />
+                <YAxis {...axisProps} width={axisWidth} tickFormatter={format.axis} />
                 <Tooltip
                   cursor={cursorProps}
                   content={
@@ -162,7 +170,7 @@ export function SeriesExplorer({ indicateurs, du, au, chantierId, defaultGranula
                 />
               </BarChart>
             ) : (
-              <AreaChart data={points} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <AreaChart data={points} margin={chartMargin}>
                 <defs>
                   <linearGradient id="grad-serie" x1="0" x2="0" y1="0" y2="1">
                     <stop offset="0%" stopColor={chartColor(0)} stopOpacity={0.2} />
@@ -173,7 +181,7 @@ export function SeriesExplorer({ indicateurs, du, au, chantierId, defaultGranula
                 <XAxis dataKey="periode" {...axisProps} tickFormatter={periodeLabel} minTickGap={16} />
                 <YAxis
                   {...axisProps}
-                  width={56}
+                  width={axisWidth}
                   tickFormatter={format.axis}
                   domain={meta.unite === 'pourcentage' ? [0, 100] : ['auto', 'auto']}
                 />

@@ -34,9 +34,9 @@ function isValidCoordinate(lat: number, lng: number): boolean {
 /**
  * Regroupe les entites GeoJSON (agregation sans dependance de clustering).
  * ms-suivi renvoie la position GPS propre de chaque engin (quelques centaines de metres autour du
- * chantier) et seulement le nom de son chantier : un engin dont `chantierNom` correspond a un chantier
- * renvoye est rattache au marqueur de ce chantier (positionne sur le chantier). Les autres (depot,
- * chantier hors perimetre) sont regroupes par coordonnees arrondies.
+ * chantier) : un engin est rattache au marqueur de son chantier (positionne sur le chantier) via
+ * `chantierId` lorsque l'API le fournit, sinon par correspondance de `chantierNom` (anciennes
+ * versions). Les autres (depot, chantier hors perimetre) sont regroupes par coordonnees arrondies.
  * GeoJSON ordonne les coordonnees [longitude, latitude].
  *
  * @param features entites de `GET /api/materiels/carte`
@@ -61,9 +61,10 @@ export function grouperParPosition(features: readonly CarteFeature[], precision 
   }
   for (const feature of points) {
     if (feature.properties.kind === 'CHANTIER') continue
-    const chantier = feature.properties.chantierNom
-      ? parNomChantier.get(feature.properties.chantierNom)
-      : undefined
+    const { chantierId, chantierNom } = feature.properties
+    const chantier =
+      (chantierId ? groupes.get(`chantier:${chantierId}`) : undefined) ??
+      (chantierNom ? parNomChantier.get(chantierNom) : undefined)
     if (chantier) {
       chantier.materiels.push(feature.properties)
       continue

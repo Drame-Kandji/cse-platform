@@ -86,7 +86,11 @@ export function AttributionTab({ ao }: { ao: AppelOffre }) {
             <Button asChild size="sm" variant="secondary">
               <Link to={contrat.data ? to.contratDetail(contrat.data.id) : paths.contrats}>
                 <FileSignature aria-hidden />
-                {contrat.data ? `Voir le contrat ${contrat.data.numero}` : 'Voir les contrats'}
+                {contrat.data
+                  ? contrat.data.numero
+                    ? `Voir le contrat ${contrat.data.numero}`
+                    : 'Voir le contrat'
+                  : 'Voir les contrats'}
               </Link>
             </Button>
           )}

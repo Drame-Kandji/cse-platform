@@ -63,6 +63,7 @@ export function MaintenancesTab({ onPlanifier }: { onPlanifier: () => void }) {
       {
         accessorKey: 'numeroOt',
         header: t('columns.numeroOt'),
+        meta: { nowrap: true },
         enableSorting: true,
         enableHiding: false,
         cell: ({ row }) => <span className="font-mono text-xs font-medium">{row.original.numeroOt}</span>,
@@ -70,10 +71,10 @@ export function MaintenancesTab({ onPlanifier }: { onPlanifier: () => void }) {
       {
         accessorKey: 'materielDesignation',
         header: t('columns.materiel'),
-        meta: { mobilePrimary: true },
+        meta: { mobilePrimary: true, minWidth: 220 },
         cell: ({ row }) => (
           <Link to={to.materielDetail(row.original.materielId)} className="group block min-w-0">
-            <span className="block truncate font-medium group-hover:underline">
+            <span className="line-clamp-2 font-medium group-hover:underline">
               {row.original.materielDesignation}
             </span>
             <span className="block truncate text-xs text-muted-foreground">
@@ -86,23 +87,26 @@ export function MaintenancesTab({ onPlanifier }: { onPlanifier: () => void }) {
       {
         accessorKey: 'type',
         header: t('columns.type'),
+        meta: { nowrap: true },
         cell: ({ row }) => <StatusBadge kind="typeMaintenance" value={row.original.type} dot={false} />,
       },
       {
         accessorKey: 'statut',
         header: t('columns.statut'),
+        meta: { nowrap: true },
         cell: ({ row }) => <StatusBadge kind="statutMaintenance" value={row.original.statut} />,
       },
       {
         accessorKey: 'datePlanifiee',
         header: t('columns.datePlanifiee'),
+        meta: { nowrap: true },
         enableSorting: true,
         cell: ({ row }) => <span className="tabular-nums">{formatDate(row.original.datePlanifiee)}</span>,
       },
       {
         accessorKey: 'technicien',
         header: t('columns.technicien'),
-        meta: { hideOnMobile: true },
+        meta: { hideOnMobile: true, hideBelow: '2xl' },
         cell: ({ row }) => row.original.technicien ?? EMPTY_VALUE,
       },
       {
@@ -117,7 +121,7 @@ export function MaintenancesTab({ onPlanifier }: { onPlanifier: () => void }) {
               id: 'actions',
               header: t('columns.actions'),
               enableHiding: false,
-              meta: { align: 'right' as const, label: t('columns.actions') },
+              meta: { align: 'right' as const, label: t('columns.actions'), nowrap: true },
               cell: ({ row }: { row: { original: Maintenance } }) =>
                 row.original.statut === 'PLANIFIEE' ? (
                   <DemarrerAction maintenance={row.original} />

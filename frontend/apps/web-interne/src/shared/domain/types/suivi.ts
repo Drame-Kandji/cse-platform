@@ -177,6 +177,8 @@ export interface CarteFeatureProperties {
   readonly categorie?: CategorieMateriel | null
   readonly etat?: EtatMateriel | null
   readonly statut?: StatutChantier | null
+  /** Chantier d'affectation d'un materiel (contrat section 2 ; absent des anciennes versions de l'API). */
+  readonly chantierId?: string | null
   readonly chantierNom?: string | null
   readonly nombreMateriels?: number | null
 }

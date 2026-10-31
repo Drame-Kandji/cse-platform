@@ -45,16 +45,31 @@ export const appelsOffresApi = {
   approuver: (id: string, body: DecisionApprobation) =>
     http.post<AppelOffre>(`${base(id)}/attribution/approuver`, body),
   /**
-   * Contrat genere a l'attribution (R03). Ni AppelOffre ni Attribution n'exposent son id et
-   * `GET /contrats?q` cherche dans numero/objet/fournisseurNom : on cherche par objet (repris
-   * de l'AO) puis on filtre sur `appelOffreId`.
+   * Contrat genere a l'attribution (R03), par ordre de preference :
+   * 1. `AppelOffre.contratId` (lien direct, aucun appel) ;
+   * 2. `GET /contrats?appelOffreId=` (filtre serveur ; un serveur plus ancien l'ignore, d'ou la
+   *    verification de `appelOffreId` sur chaque ligne) ;
+   * 3. repli historique : recherche plein texte sur l'objet de l'AO puis filtre sur `appelOffreId`.
    */
-  contratLie: async (ao: Pick<AppelOffre, 'id' | 'objet'>, signal?: AbortSignal) => {
-    const page = await http.get<PageResponse<ContratLie>>('/contrats', {
-      query: { q: ao.objet, size: 50 },
-      signal,
-    })
-    return page.content.find((c) => c.appelOffreId === ao.id) ?? null
+  contratLie: async (
+    ao: Pick<AppelOffre, 'id' | 'objet' | 'contratId'>,
+    signal?: AbortSignal,
+  ): Promise<ContratLie | null> => {
+    if (ao.contratId) return { id: ao.contratId, appelOffreId: ao.id }
+    const lie = (page: PageResponse<ContratLie>) => page.content.find((c) => c.appelOffreId === ao.id) ?? null
+    const parFiltre = lie(
+      await http.get<PageResponse<ContratLie>>('/contrats', {
+        query: { appelOffreId: ao.id, size: 50 },
+        signal,
+      }),
+    )
+    if (parFiltre) return parFiltre
+    return lie(
+      await http.get<PageResponse<ContratLie>>('/contrats', {
+        query: { q: ao.objet, size: 50 },
+        signal,
+      }),
+    )
   },
   procesVerbal: (id: string, reference: string, type: TypeProcesVerbal) =>
     downloadFile(`${base(id)}/proces-verbaux/${type}`, `PV-${type}-${reference}.pdf`),

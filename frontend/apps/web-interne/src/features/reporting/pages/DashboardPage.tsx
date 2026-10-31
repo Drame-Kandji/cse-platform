@@ -43,7 +43,8 @@ export function Component() {
               <ProfilSwitcher profils={filters.allowed} value={profil} onChange={filters.setProfil} />
               <PeriodSelector value={period} onChange={filters.setPeriod} />
               <Can roles={access.rapports}>
-                <Button asChild variant="secondary">
+                {/* Sur mobile, les rapports restent accessibles par le menu : en-tete allege. */}
+                <Button asChild variant="secondary" className="max-sm:hidden">
                   <Link to={paths.rapports}>
                     <BarChart3 aria-hidden />
                     Rapports

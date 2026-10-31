@@ -95,7 +95,12 @@ export function BesoinStats({ onFilter, actif }: Props) {
   return (
     <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
       {cards.map((card) => {
-        if (card.filtre === undefined) return <div key={card.key}>{card.node}</div>
+        if (card.filtre === undefined)
+          return (
+            <div key={card.key} className="grid">
+              {card.node}
+            </div>
+          )
         const filtre = card.filtre ?? undefined
         const active = filtre === actif
         return (
@@ -108,7 +113,7 @@ export function BesoinStats({ onFilter, actif }: Props) {
               onFilter(active ? undefined : filtre)
             }}
             className={cn(
-              'rounded-xl text-left transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              'grid rounded-xl text-left transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               active && 'ring-2 ring-primary/40',
             )}
           >

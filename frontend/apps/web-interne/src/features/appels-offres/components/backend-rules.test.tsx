@@ -71,16 +71,38 @@ describe('regles verifiees sur le backend ms-achats', () => {
     ).toBeInTheDocument()
   })
 
-  it('relie un AO attribue a son contrat genere', async () => {
+  it('relie un AO attribue a son contrat via le filtre appelOffreId', async () => {
+    const vus: { appelOffreId: string | null; q: string | null }[] = []
+    server.use(
+      http.get(`${API}/contrats`, ({ request }) => {
+        const params = new URL(request.url).searchParams
+        vus.push({ appelOffreId: params.get('appelOffreId'), q: params.get('q') })
+        return HttpResponse.json(page([{ id: 'ctr-1', numero: 'CTR-2026-001', appelOffreId: 'ao-1' }]))
+      }),
+    )
+    const attr = attribution({ coValidationMateriel: { statut: 'APPROUVEE' } })
+    renderWithProviders(<AttributionTab ao={appelOffre({ statut: 'ATTRIBUE', attribution: attr })} />, {
+      user: testUser(['RESPONSABLE_ACHATS']),
+    })
+    const lien = await screen.findByRole('link', { name: /Voir le contrat CTR-2026-001/ })
+    expect(lien).toHaveAttribute('href', '/contrats/ctr-1')
+    expect(vus).toEqual([{ appelOffreId: 'ao-1', q: null }])
+  })
+
+  it('se replie sur la recherche par objet si le serveur ignore appelOffreId', async () => {
     let q: string | null = null
     server.use(
       http.get(`${API}/contrats`, ({ request }) => {
         q = new URL(request.url).searchParams.get('q')
         return HttpResponse.json(
-          page([
-            { id: 'ctr-x', numero: 'CTR-2026-009', appelOffreId: 'autre-ao' },
-            { id: 'ctr-1', numero: 'CTR-2026-001', appelOffreId: 'ao-1' },
-          ]),
+          page(
+            q
+              ? [
+                  { id: 'ctr-x', numero: 'CTR-2026-009', appelOffreId: 'autre-ao' },
+                  { id: 'ctr-1', numero: 'CTR-2026-001', appelOffreId: 'ao-1' },
+                ]
+              : [{ id: 'ctr-x', numero: 'CTR-2026-009', appelOffreId: 'autre-ao' }],
+          ),
         )
       }),
     )
@@ -91,5 +113,23 @@ describe('regles verifiees sur le backend ms-achats', () => {
     const lien = await screen.findByRole('link', { name: /Voir le contrat CTR-2026-001/ })
     expect(lien).toHaveAttribute('href', '/contrats/ctr-1')
     expect(q).toBe('Fourniture de deux pelles hydrauliques')
+  })
+
+  it('utilise directement contratId quand l AO le fournit (aucun appel)', async () => {
+    const appel = vi.fn()
+    server.use(
+      http.get(`${API}/contrats`, () => {
+        appel()
+        return HttpResponse.json(page([]))
+      }),
+    )
+    const attr = attribution({ coValidationMateriel: { statut: 'APPROUVEE' } })
+    renderWithProviders(
+      <AttributionTab ao={appelOffre({ statut: 'ATTRIBUE', attribution: attr, contratId: 'ctr-7' })} />,
+      { user: testUser(['RESPONSABLE_ACHATS']) },
+    )
+    const lien = await screen.findByRole('link', { name: 'Voir le contrat' })
+    expect(lien).toHaveAttribute('href', '/contrats/ctr-7')
+    expect(appel).not.toHaveBeenCalled()
   })
 })

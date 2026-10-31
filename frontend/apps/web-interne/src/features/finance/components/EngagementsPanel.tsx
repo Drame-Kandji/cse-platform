@@ -35,7 +35,7 @@ export function EngagementsPanel() {
       {
         id: 'contratNumero',
         header: t('columns.contrat'),
-        meta: { mobilePrimary: true },
+        meta: { mobilePrimary: true, nowrap: true },
         cell: ({ row }) => (
           <Link
             to={to.contratDetail(row.original.contratId)}
@@ -45,13 +45,18 @@ export function EngagementsPanel() {
           </Link>
         ),
       },
-      { accessorKey: 'fournisseurNom', header: t('columns.fournisseur') },
+      {
+        accessorKey: 'fournisseurNom',
+        header: t('columns.fournisseur'),
+        meta: { minWidth: 160 },
+      },
       {
         accessorKey: 'objet',
         header: t('columns.objet'),
+        meta: { minWidth: 200 },
         cell: ({ row }) => (
           <span className="grid">
-            <span className="truncate">{row.original.objet}</span>
+            <span className="line-clamp-2">{row.original.objet}</span>
             {row.original.chantierNom && (
               <span className="text-xs text-muted-foreground">{row.original.chantierNom}</span>
             )}
@@ -67,17 +72,20 @@ export function EngagementsPanel() {
       {
         accessorKey: 'dateDemande',
         header: t('columns.dateDemande'),
+        meta: { nowrap: true },
         enableSorting: true,
         cell: ({ row }) => formatDate(row.original.dateDemande),
       },
       {
         accessorKey: 'statut',
         header: t('columns.statut'),
+        meta: { nowrap: true },
         cell: ({ row }) => <StatusBadge kind="statutApprobation" value={row.original.statut} />,
       },
       {
         id: 'decision',
         header: t('columns.decision'),
+        meta: { hideBelow: '2xl' },
         cell: ({ row }) =>
           row.original.dateDecision
             ? `${row.original.parNom ?? EMPTY_VALUE}, ${formatDate(row.original.dateDecision)}`
@@ -90,7 +98,7 @@ export function EngagementsPanel() {
       {
         id: 'actions',
         header: t('columns.actions'),
-        meta: { align: 'right', label: t('columns.actions') },
+        meta: { align: 'right', label: t('columns.actions'), nowrap: true },
         cell: ({ row }) =>
           row.original.statut === 'EN_ATTENTE' ? (
             <div className="flex justify-end gap-2">

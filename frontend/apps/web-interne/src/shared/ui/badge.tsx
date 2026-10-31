@@ -40,7 +40,10 @@ export function Badge({
   return (
     <span className={cn(badgeVariants({ size }), toneClass, className)} {...props}>
       {dot && <span className={cn('size-1.5 shrink-0 rounded-full', dotToneClasses[tone])} aria-hidden />}
-      <span className="truncate">{children}</span>
+      {/* Preflight rend les SVG `block` : on les remet en ligne pour garder icone + libelle sur une ligne. */}
+      <span className="truncate [&_svg]:-mt-px [&_svg]:mr-1 [&_svg]:inline-block [&_svg]:align-middle">
+        {children}
+      </span>
     </span>
   )
 }

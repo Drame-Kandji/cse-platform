@@ -26,11 +26,11 @@ export function PeriodSelector({ value, onChange, className }: PeriodSelectorPro
     // eslint-disable-next-line react-hooks/exhaustive-deps -- resynchronise sur la periode appliquee
   }, [value.preset, value.du, value.au])
   return (
-    <div className={cn('flex flex-wrap items-center gap-2', className)}>
+    <div className={cn('flex flex-wrap items-center gap-2 max-sm:w-full', className)}>
       <div
         role="radiogroup"
         aria-label="Période d'analyse"
-        className="inline-flex rounded-lg border border-border bg-surface p-0.5 shadow-xs"
+        className="inline-flex rounded-lg border border-border bg-surface p-0.5 shadow-xs max-sm:w-full"
       >
         {PERIOD_PRESETS.map((preset) => {
           const active = value.preset === preset.value
@@ -44,7 +44,7 @@ export function PeriodSelector({ value, onChange, className }: PeriodSelectorPro
                 onChange({ preset: preset.value })
               }}
               className={cn(
-                'h-9 rounded-md px-3 text-sm font-medium transition-colors sm:h-8',
+                'h-10 rounded-md px-3 text-sm font-medium transition-colors max-sm:flex-1 sm:h-8',
                 active
                   ? 'bg-primary text-primary-foreground shadow-xs'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -56,7 +56,10 @@ export function PeriodSelector({ value, onChange, className }: PeriodSelectorPro
         })}
       </div>
       <DateRangePicker
-        className={cn('w-auto min-w-56', value.preset === 'custom' && '[&_button]:border-primary/40')}
+        className={cn(
+          'min-w-0 max-sm:flex-1 sm:w-auto sm:min-w-56',
+          value.preset === 'custom' && '[&_button]:border-primary/40',
+        )}
         placeholder="Plage personnalisée"
         max={new Date()}
         value={draft}

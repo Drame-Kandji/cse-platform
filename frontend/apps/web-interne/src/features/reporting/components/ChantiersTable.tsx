@@ -25,7 +25,7 @@ const columns: ColumnDef<LigneChantier>[] = [
     header: 'Chantier',
     enableSorting: true,
     enableHiding: false,
-    meta: { mobilePrimary: true },
+    meta: { mobilePrimary: true, minWidth: 200 },
     cell: ({ row }) => (
       <span className="grid">
         <span className="font-medium">{row.original.chantierNom}</span>

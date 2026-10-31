@@ -31,6 +31,20 @@ export type Role = (typeof ROLES)[number]
 export const STATUT_BESOIN = ['EN_ATTENTE', 'VALIDE', 'REJETE', 'AFFECTE_DIRECT', 'EN_ACHAT'] as const
 export type StatutBesoin = (typeof STATUT_BESOIN)[number]
 
+/** Nature d'une entree de l'historique d'un besoin (enum Java `ActionHistorique`, ms-besoins). */
+export const ACTION_HISTORIQUE_BESOIN = [
+  'SOUMISSION',
+  'MODIFICATION',
+  'APPROBATION_ETAPE',
+  'VALIDATION',
+  'REJET',
+  'ORIENTATION_EN_ATTENTE',
+  'AFFECTATION_DIRECTE',
+  'ORIENTATION_ACHAT',
+  'MATERIEL_AFFECTE',
+] as const
+export type ActionHistoriqueBesoin = (typeof ACTION_HISTORIQUE_BESOIN)[number]
+
 export const PRIORITE = ['NORMAL', 'URGENT', 'CRITIQUE'] as const
 export type Priorite = (typeof PRIORITE)[number]
 
@@ -185,6 +199,17 @@ export const STATUS_MAPS = {
     AFFECTE_DIRECT: { label: 'Affecté directement', tone: 'info' },
     EN_ACHAT: { label: 'En achat', tone: 'primary' },
   } satisfies DescriptorMap<StatutBesoin>,
+  actionHistoriqueBesoin: {
+    SOUMISSION: { label: 'Soumission', tone: 'info' },
+    MODIFICATION: { label: 'Modification', tone: 'neutral' },
+    APPROBATION_ETAPE: { label: "Approbation d'étape", tone: 'primary' },
+    VALIDATION: { label: 'Validation', tone: 'success' },
+    REJET: { label: 'Rejet', tone: 'danger' },
+    ORIENTATION_EN_ATTENTE: { label: 'Orientation en attente', tone: 'warning' },
+    AFFECTATION_DIRECTE: { label: 'Affectation directe', tone: 'info' },
+    ORIENTATION_ACHAT: { label: 'Orientation vers les achats', tone: 'primary' },
+    MATERIEL_AFFECTE: { label: 'Matériel affecté', tone: 'success' },
+  } satisfies DescriptorMap<ActionHistoriqueBesoin>,
   priorite: {
     NORMAL: { label: 'Normale', tone: 'neutral' },
     URGENT: { label: 'Urgente', tone: 'warning' },

@@ -49,7 +49,7 @@ function colonnes(ao: AppelOffre): ColumnDef<Offre>[] {
     {
       accessorKey: 'dateDepot',
       header: 'Dépôt',
-      meta: { hideOnMobile: true },
+      meta: { hideOnMobile: true, nowrap: true },
       cell: ({ row }) => formatDateTime(row.original.dateDepot),
     },
   ]

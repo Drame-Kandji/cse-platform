@@ -22,8 +22,8 @@ export function MapDemo() {
         <div className="h-80 overflow-hidden rounded-lg border border-border">
           <MapContainer center={[14.9, -16.9]} zoom={7} scrollWheelZoom={false} className="size-full">
             <TileLayer
-              attribution="&copy; OpenStreetMap"
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">contributeurs OpenStreetMap</a>'
+              url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             {SITES.map((site) => (
               <CircleMarker

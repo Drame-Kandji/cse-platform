@@ -3,7 +3,7 @@ import { labelOf } from '@/shared/domain/labels'
 import { formatNumber } from '@/shared/lib/format'
 import { Card, CardContent, CardHeader } from '@/shared/ui/card'
 import { ChartContainer, ChartLegend, ChartTooltipContent } from '@/shared/ui/chart'
-import { axisProps, cursorProps, gridProps } from '@/shared/ui/chart-theme'
+import { axisProps, chartMargin, cursorProps, gridProps, yAxisWidthFor } from '@/shared/ui/chart-theme'
 import type { ParcCategorie } from '../../types'
 
 /** Couleurs alignees sur les badges d'etat matériel (disponible / affecte / maintenance). */
@@ -31,7 +31,7 @@ export function CategorieChart({ categories }: { categories: readonly ParcCatego
           height={260}
           label="Nombre de matériels disponibles, affectés et en maintenance par catégorie"
         >
-          <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="28%">
+          <BarChart data={data} margin={chartMargin} barCategoryGap="28%">
             <CartesianGrid {...gridProps} />
             <XAxis
               dataKey="libelle"
@@ -39,7 +39,14 @@ export function CategorieChart({ categories }: { categories: readonly ParcCatego
               interval={0}
               tickFormatter={(value: string) => value.split(' ')[0] ?? value}
             />
-            <YAxis {...axisProps} width={36} allowDecimals={false} />
+            <YAxis
+              {...axisProps}
+              width={yAxisWidthFor(
+                data.map((d) => d.total),
+                String,
+              )}
+              allowDecimals={false}
+            />
             <Tooltip
               cursor={cursorProps}
               content={<ChartTooltipContent valueFormatter={(value) => formatNumber(value)} />}

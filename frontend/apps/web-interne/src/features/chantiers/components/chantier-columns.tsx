@@ -10,6 +10,7 @@ export function chantierColumns(t: TFunction<'chantiers'>): ColumnDef<Chantier>[
     {
       accessorKey: 'code',
       header: t('columns.code'),
+      meta: { nowrap: true },
       enableSorting: true,
       enableHiding: false,
       cell: ({ row }) => <span className="font-mono text-xs font-medium">{row.original.code}</span>,
@@ -18,24 +19,30 @@ export function chantierColumns(t: TFunction<'chantiers'>): ColumnDef<Chantier>[
       accessorKey: 'nom',
       header: t('columns.nom'),
       enableSorting: true,
-      meta: { mobilePrimary: true },
+      meta: { mobilePrimary: true, minWidth: 220 },
       cell: ({ row }) => (
         <div className="min-w-0">
-          <p className="truncate font-medium">{row.original.nom}</p>
-          <p className="truncate text-xs text-muted-foreground">{row.original.localisation}</p>
+          <p className="line-clamp-2 font-medium">{row.original.nom}</p>
+          <p className="line-clamp-1 text-xs text-muted-foreground">{row.original.localisation}</p>
         </div>
       ),
     },
-    { accessorKey: 'region', header: t('columns.region'), enableSorting: true },
+    {
+      accessorKey: 'region',
+      header: t('columns.region'),
+      meta: { nowrap: true },
+      enableSorting: true,
+    },
     {
       accessorKey: 'statut',
       header: t('columns.statut'),
+      meta: { nowrap: true },
       cell: ({ row }) => <StatusBadge kind="statutChantier" value={row.original.statut} />,
     },
     {
       accessorKey: 'chefChantierNom',
       header: t('columns.chef'),
-      meta: { hideOnMobile: true },
+      meta: { hideOnMobile: true, nowrap: true, hideBelow: '2xl' },
       cell: ({ row }) => row.original.chefChantierNom ?? EMPTY_VALUE,
     },
     {
@@ -48,7 +55,7 @@ export function chantierColumns(t: TFunction<'chantiers'>): ColumnDef<Chantier>[
     {
       accessorKey: 'montantMarche',
       header: t('columns.montantMarche'),
-      meta: { align: 'right', hideOnMobile: true },
+      meta: { align: 'right', hideOnMobile: true, hideBelow: '2xl' },
       cell: ({ row }) => formatMoney(row.original.montantMarche),
     },
     {
@@ -61,7 +68,7 @@ export function chantierColumns(t: TFunction<'chantiers'>): ColumnDef<Chantier>[
       accessorKey: 'dateDebut',
       header: t('columns.dateDebut'),
       enableSorting: true,
-      meta: { hideOnMobile: true },
+      meta: { hideOnMobile: true, nowrap: true },
       cell: ({ row }) => formatDate(row.original.dateDebut),
     },
   ]

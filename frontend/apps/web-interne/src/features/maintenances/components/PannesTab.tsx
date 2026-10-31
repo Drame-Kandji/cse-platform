@@ -38,15 +38,16 @@ export function PannesTab({ onSignaler, onCreerOt }: Props) {
       {
         accessorKey: 'gravite',
         header: t('columns.gravite'),
+        meta: { nowrap: true },
         cell: ({ row }) => <StatusBadge kind="gravitePanne" value={row.original.gravite} />,
       },
       {
         accessorKey: 'materielDesignation',
         header: t('columns.materiel'),
-        meta: { mobilePrimary: true },
+        meta: { mobilePrimary: true, minWidth: 200 },
         cell: ({ row }) => (
           <Link to={to.materielDetail(row.original.materielId)} className="group block min-w-0">
-            <span className="block truncate font-medium group-hover:underline">
+            <span className="line-clamp-2 font-medium group-hover:underline">
               {row.original.materielDesignation}
             </span>
             <span className="block font-mono text-xs text-muted-foreground">{row.original.materielCode}</span>
@@ -56,22 +57,25 @@ export function PannesTab({ onSignaler, onCreerOt }: Props) {
       {
         accessorKey: 'description',
         header: t('columns.description'),
+        meta: { minWidth: 240 },
         cell: ({ row }) => <p className="line-clamp-2 max-w-md text-sm">{row.original.description}</p>,
       },
       {
         accessorKey: 'chantierNom',
         header: t('columns.chantier'),
-        meta: { hideOnMobile: true },
+        meta: { hideOnMobile: true, minWidth: 160, hideBelow: 'xl' },
         cell: ({ row }) => row.original.chantierNom ?? EMPTY_VALUE,
       },
       {
         accessorKey: 'statut',
         header: t('columns.statut'),
+        meta: { nowrap: true },
         cell: ({ row }) => <StatusBadge kind="statutPanne" value={row.original.statut} />,
       },
       {
         accessorKey: 'dateSignalement',
         header: t('columns.dateSignalement'),
+        meta: { nowrap: true },
         cell: ({ row }) => (
           <span title={formatDateTime(row.original.dateSignalement)}>
             {formatRelative(row.original.dateSignalement)}

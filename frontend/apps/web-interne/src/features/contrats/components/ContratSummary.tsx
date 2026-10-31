@@ -11,7 +11,7 @@ import { livraisonEnRetard } from './contrat-domain'
 
 function Item({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="grid gap-0.5">
+    <div className="grid content-start gap-0.5">
       <dt className="text-xs text-muted-foreground">{label}</dt>
       <dd className="text-sm font-medium text-foreground">{children}</dd>
     </div>
@@ -35,7 +35,7 @@ export function ContratSummary({ contrat }: { contrat: Contrat }) {
             className="flex gap-3 rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger-emphasis"
           >
             <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
-            <div className="grid gap-0.5">
+            <div className="grid content-start gap-0.5">
               <p className="font-semibold">{late ? t('detail.late') : t('detail.penalties')}</p>
               {contrat.penalitesRetard > 0 && (
                 <p>

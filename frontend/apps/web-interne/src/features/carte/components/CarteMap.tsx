@@ -5,6 +5,7 @@ import { Crosshair } from 'lucide-react'
 import { useContext, useEffect, useRef, useState } from 'react'
 import { CircleMarker, MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import { labelOf } from '@/shared/domain/labels'
+import { cn } from '@/shared/lib/cn'
 import { ThemeContext } from '@/shared/theme/theme-context'
 import { IconButton } from '@/shared/ui/button'
 import {
@@ -14,7 +15,7 @@ import {
   tailleMarqueur,
   type CarteGroupe,
 } from '../lib/grouping'
-import { ETAT_FILL, TILES } from '../lib/tiles'
+import { ETAT_FILL, OSM_TILES } from '../lib/tiles'
 import { GroupePopup } from './GroupePopup'
 import { chantierIcon, clusterIcon } from './markerIcons'
 
@@ -31,7 +32,6 @@ type Layer = LeafletMarker | LeafletCircle
 /** Carte Leaflet du parc : chantiers (carres dimensionnes), engins isoles (cercles par etat), agregats. */
 export function CarteMap({ groupes, selectedKey, onSelect, onPopupClose }: CarteMapProps) {
   const theme = useContext(ThemeContext)?.resolvedTheme ?? 'light'
-  const tiles = TILES[theme]
   const [map, setMap] = useState<LeafletMap | null>(null)
   const layers = useRef(new Map<string, Layer>())
 
@@ -39,8 +39,23 @@ export function CarteMap({ groupes, selectedKey, onSelect, onPopupClose }: Carte
     if (!map || !selectedKey) return
     const groupe = groupes.find((item) => item.key === selectedKey)
     if (!groupe) return
-    map.flyTo([groupe.lat, groupe.lng], Math.max(map.getZoom(), 10), { duration: 0.6 })
-    layers.current.get(selectedKey)?.openPopup()
+    const layer = layers.current.get(selectedKey)
+    const zoom = Math.max(map.getZoom(), 10)
+    const target: [number, number] = [groupe.lat, groupe.lng]
+    // L'infobulle s'ouvre une fois le vol termine : ouverte pendant l'animation, son recentrage
+    // automatique (autoPan) est annule et elle sort du cadre.
+    const open = () => {
+      layer?.openPopup()
+    }
+    if (map.getZoom() === zoom && map.getCenter().distanceTo(target) < 1) {
+      open()
+      return
+    }
+    map.once('moveend', open)
+    map.flyTo(target, zoom, { duration: 0.6 })
+    return () => {
+      map.off('moveend', open)
+    }
   }, [map, selectedKey, groupes])
 
   const register = (key: string) => (layer: Layer | null) => {
@@ -57,7 +72,7 @@ export function CarteMap({ groupes, selectedKey, onSelect, onPopupClose }: Carte
   })
 
   return (
-    <div className="cse-carte relative isolate size-full">
+    <div className={cn('cse-carte relative isolate size-full', theme === 'dark' && 'cse-carte--dark')}>
       <MapContainer
         ref={setMap}
         bounds={SENEGAL_BOUNDS}
@@ -66,12 +81,7 @@ export function CarteMap({ groupes, selectedKey, onSelect, onPopupClose }: Carte
         className="size-full"
         zoomControl
       >
-        <TileLayer
-          key={theme}
-          url={tiles.url}
-          attribution={tiles.attribution}
-          subdomains={tiles.subdomains}
-        />
+        <TileLayer url={OSM_TILES.url} attribution={OSM_TILES.attribution} maxZoom={19} />
         {groupes.map((groupe) => {
           const position: [number, number] = [groupe.lat, groupe.lng]
           const popup = (

@@ -15,7 +15,7 @@ import { SpecialitesChips } from './SpecialitesChips'
 
 function Info({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="grid gap-0.5">
+    <div className="grid content-start gap-0.5">
       <dt className="text-xs text-muted-foreground">{label}</dt>
       <dd className="text-sm text-foreground">{children ?? EMPTY_VALUE}</dd>
     </div>

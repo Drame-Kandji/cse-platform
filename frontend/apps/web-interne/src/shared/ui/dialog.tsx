@@ -42,13 +42,13 @@ export const DialogContent = forwardRef<ElementRef<typeof DialogPrimitive.Conten
           ref={ref}
           aria-describedby={description ? undefined : props['aria-describedby']}
           className={cn(
-            'fixed left-1/2 top-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 gap-0 overflow-hidden rounded-2xl border border-border bg-surface-raised shadow-overlay data-[state=open]:animate-zoom-in',
+            'fixed left-1/2 top-1/2 z-50 flex max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 flex-col gap-0 overflow-hidden rounded-2xl border border-border bg-surface-raised shadow-overlay data-[state=open]:animate-zoom-in',
             sizes[size],
             className,
           )}
           {...props}
         >
-          <div className="flex items-start justify-between gap-4 px-6 pb-2 pt-5">
+          <div className="flex shrink-0 items-start justify-between gap-4 px-6 pb-2 pt-5">
             <div className="grid gap-1">
               <DialogPrimitive.Title className="text-base font-semibold tracking-tight">
                 {title}
@@ -68,19 +68,20 @@ export const DialogContent = forwardRef<ElementRef<typeof DialogPrimitive.Conten
               </DialogPrimitive.Close>
             )}
           </div>
-          <div className="overflow-y-auto px-6 py-3">{children}</div>
+          {/* Corps defilant : le pied (DialogFooter, collant) reste visible sur les longs formulaires. */}
+          <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-6 py-3">{children}</div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     )
   },
 )
 
-/** Pied de dialogue (actions alignees a droite, empilees sur mobile). */
+/** Pied de dialogue (actions alignees a droite, empilees sur mobile), colle au bas de la zone defilante. */
 export function DialogFooter({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(
-        '-mx-6 -mb-3 mt-3 flex flex-col-reverse gap-2 border-t border-border bg-surface-sunken/60 px-6 py-3 sm:flex-row sm:justify-end',
+        'sticky bottom-0 z-10 -mx-6 -mb-3 mt-3 flex flex-col-reverse gap-2 border-t border-border bg-surface-sunken px-6 py-3 sm:flex-row sm:justify-end',
         className,
       )}
       {...props}

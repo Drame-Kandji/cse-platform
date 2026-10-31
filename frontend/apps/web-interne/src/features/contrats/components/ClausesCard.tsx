@@ -49,7 +49,7 @@ export function ClausesCard({ contrat, editable }: { contrat: Contrat; editable:
       <CardContent>
         <dl className="grid gap-3 text-sm">
           {rows.map((row) => (
-            <div key={row.label} className="grid gap-0.5">
+            <div key={row.label} className="grid content-start gap-0.5">
               <dt className="text-xs text-muted-foreground">{row.label}</dt>
               <dd className="whitespace-pre-line text-foreground">{row.value}</dd>
             </div>

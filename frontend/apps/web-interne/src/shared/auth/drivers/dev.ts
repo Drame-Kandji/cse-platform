@@ -2,28 +2,69 @@ import { ROLES, type Role } from '@/shared/domain/labels'
 import { STORAGE_KEYS } from '@/shared/lib/storage'
 import type { AuthDriver, AuthUser } from '../types'
 
-/**
- * Profils fictifs du mode developpement (VITE_AUTH_MODE=dev).
- * Ce module n'est importe que si `import.meta.env.DEV` : il est exclu du build de production.
- */
-export const DEV_PERSONAS: Readonly<Record<Role, { name: string; username: string }>> = {
-  CHEF_CHANTIER: { name: 'Moussa Ndiaye', username: 'm.ndiaye' },
-  RESPONSABLE_MATERIEL: { name: 'Fatou Sarr', username: 'f.sarr' },
-  RESPONSABLE_ACHATS: { name: 'Ibrahima Fall', username: 'i.fall' },
-  DAF: { name: 'Aminata Diallo', username: 'a.diallo' },
-  DIRECTION_GENERALE: { name: 'Cheikh Ba', username: 'c.ba' },
-  ADMIN_SYSTEME: { name: 'Awa Diop', username: 'a.diop' },
+/** Profil fictif aligne sur le jeu de donnees de demonstration (contrat d'API, section 12). */
+export interface DevPersona {
+  readonly id: string
+  readonly name: string
+  readonly email: string
+  readonly chantierIds: readonly string[]
 }
 
-function personaUser(role: Role): AuthUser {
+/**
+ * Profils fictifs du mode developpement (VITE_AUTH_MODE=dev), identiques aux comptes Keycloak de
+ * demonstration (memes identifiants, noms, e-mails et chantiers) pour que les donnees seedees
+ * (demandeurs, auteurs, perimetre CHEF) restent coherentes.
+ * Ce module n'est importe que si `import.meta.env.DEV` : il est exclu du build de production.
+ */
+export const DEV_PERSONAS: Readonly<Record<Role, DevPersona>> = {
+  CHEF_CHANTIER: {
+    id: '00000000-0000-0000-0000-000000000101',
+    name: 'Mamadou Diop',
+    email: 'chef.chantier@cse.sn',
+    chantierIds: ['c0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000002'],
+  },
+  RESPONSABLE_MATERIEL: {
+    id: '00000000-0000-0000-0000-000000000201',
+    name: 'Ibrahima Fall',
+    email: 'resp.materiel@cse.sn',
+    chantierIds: [],
+  },
+  RESPONSABLE_ACHATS: {
+    id: '00000000-0000-0000-0000-000000000301',
+    name: 'Fatou Sarr',
+    email: 'resp.achats@cse.sn',
+    chantierIds: [],
+  },
+  DAF: {
+    id: '00000000-0000-0000-0000-000000000401',
+    name: 'Ousmane Ba',
+    email: 'daf@cse.sn',
+    chantierIds: [],
+  },
+  DIRECTION_GENERALE: {
+    id: '00000000-0000-0000-0000-000000000501',
+    name: 'Aminata Sow',
+    email: 'dg@cse.sn',
+    chantierIds: [],
+  },
+  ADMIN_SYSTEME: {
+    id: '00000000-0000-0000-0000-000000000601',
+    name: 'Cheikh Ndiaye',
+    email: 'admin@cse.sn',
+    chantierIds: [],
+  },
+}
+
+/** Utilisateur de session correspondant au profil fictif d'un role. */
+export function personaUser(role: Role): AuthUser {
   const persona = DEV_PERSONAS[role]
   return {
-    id: `dev-${persona.username}`,
-    username: persona.username,
+    id: persona.id,
+    username: persona.email,
     name: persona.name,
-    email: `${persona.username}@cse.sn`,
+    email: persona.email,
     roles: [role],
-    chantierIds: role === 'CHEF_CHANTIER' ? ['dev-chantier-diamniadio'] : [],
+    chantierIds: [...persona.chantierIds],
   }
 }
 

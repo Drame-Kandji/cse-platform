@@ -17,7 +17,18 @@ import maintenances from '@/locales/fr/maintenances.json'
  * Les cles sont alors typees automatiquement (voir i18next.d.ts).
  */
 export const resources = {
-  fr: { common, auth, navigation, appelsOffres, contrats, fournisseurs, finance, besoins, chantiers, maintenances },
+  fr: {
+    common,
+    auth,
+    navigation,
+    appelsOffres,
+    contrats,
+    fournisseurs,
+    finance,
+    besoins,
+    chantiers,
+    maintenances,
+  },
 } as const
 
 export const defaultNS = 'common'

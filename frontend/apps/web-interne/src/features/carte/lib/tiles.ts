@@ -1,30 +1,19 @@
 import type { EtatMateriel } from '@/shared/domain/labels'
 
-/** Fond de carte (tuiles raster compatibles OpenStreetMap). */
+/** Fond de carte (tuiles raster OpenStreetMap). */
 export interface TileConfig {
   readonly url: string
   readonly attribution: string
-  readonly subdomains: string
 }
 
-const ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-
 /**
- * Fonds CARTO "Positron" (clair) et "Dark Matter" (sombre), derives d'OpenStreetMap :
- * lisibles sous des marqueurs colores et coherents avec le theme de l'application.
+ * Tuiles standard OpenStreetMap (sans cle d'API). Le theme sombre ne change pas de source : un filtre
+ * CSS est applique au seul calque des tuiles (`.cse-carte--dark`, voir carte.css), les marqueurs
+ * restent intacts.
  */
-export const TILES: Readonly<Record<'light' | 'dark', TileConfig>> = {
-  light: {
-    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-    attribution: ATTRIBUTION,
-    subdomains: 'abcd',
-  },
-  dark: {
-    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    attribution: ATTRIBUTION,
-    subdomains: 'abcd',
-  },
+export const OSM_TILES: TileConfig = {
+  url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">contributeurs OpenStreetMap</a>',
 }
 
 /** Classes de remplissage SVG par etat (jetons semantiques, generes par Tailwind). */
