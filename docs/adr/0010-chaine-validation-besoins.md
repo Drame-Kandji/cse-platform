@@ -16,7 +16,7 @@ La validation est modélisée dans le domaine de ms-besoins par une **chaîne de
 
 - `EtapeValidation(code, roleRequis, CritereDeclenchement)` : une étape franchissable par un rôle ;
   le critère rend l'étape obligatoire sans condition, ou dès qu'**un** des seuils est atteint
-  (`quantiteMinimale`, `prioriteMinimale` — combinaison « OU »).
+  (`quantiteMinimale`, `prioriteMinimale`, combinaison « OU »).
 - `MaillonValidation` : traite la demande si son étape est requise et pas encore franchie, sinon la
   délègue au maillon suivant ; le validateur doit détenir le rôle de l'étape en attente
   (`ValidationNonAutoriseeException`, HTTP 403 `VALIDATION_NON_AUTORISEE`).

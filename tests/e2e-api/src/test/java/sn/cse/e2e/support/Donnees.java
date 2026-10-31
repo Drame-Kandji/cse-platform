@@ -18,7 +18,7 @@ import org.awaitility.core.ConditionFactory;
  */
 public final class Donnees {
 
-  /** Chantier 1 (Dakar–AIBD) du chef de démonstration. */
+  /** Chantier 1 (Dakar-AIBD) du chef de démonstration. */
   public static final String CHANTIER_DAKAR = "c0000000-0000-0000-0000-000000000001";
 
   /** Chantier 2 (Thiès) du chef de démonstration. */

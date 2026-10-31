@@ -1,4 +1,4 @@
-# Sécurité — plateforme CSE
+# Sécurité : plateforme CSE
 
 Ce document décrit le modèle de sécurité **tel qu'il est implémenté** (code de `backend/cse-common`,
 `backend/ms-gateway`, `infra/keycloak/realm-cse.json`, `infra/nginx/web-interne.conf`), la matrice d'accès
@@ -7,7 +7,7 @@ complète dérivée des annotations `@PreAuthorize`, et un bilan OWASP Top 10 av
 Décisions liées : [ADR-0002](adr/0002-keycloak-auth.md) (Keycloak), [ADR-0006](adr/0006-csrf-api-stateless.md)
 (CSRF), [ADR-0007](adr/0007-outbox-et-audit.md) (audit), [ADR-0011](adr/0011-seuil-delegation.md) (seuil R11),
 [ADR-0012](adr/0012-pas-de-mot-de-passe-local.md) (aucun mot de passe local),
-[ADR-0013](adr/ADR-0013-ms-auth-synchronisation-keycloak.md) (synchronisation ms-auth).
+[ADR-0013](adr/0013-ms-auth-synchronisation-keycloak.md) (synchronisation ms-auth).
 
 ## 1. Identité : Keycloak
 
@@ -109,7 +109,7 @@ Générale, ADMIN = Administrateur système, FOURN = Fournisseur. Toute case `·
 | RM | besoins, parc, chantiers, maintenances, AO/offres/contrats, fournisseurs, litiges, besoins à acheter, tableau `RESPONSABLE_MATERIEL` | valider/rejeter/orienter les besoins (R01), parc complet, affectations, maintenances, réforme (étape 1), chantiers, co-validation d'attribution (R11), évaluation d'offres et de fournisseurs, ouverture de litiges |
 | RA | besoins, matériels, AO, contrats, engagements, factures, fournisseurs (y compris coordonnées bancaires), tableau `RESPONSABLE_ACHATS` | AO, offres, clôture, attribution, contrats, livraisons, factures (saisie), référentiel fournisseurs, catalogue, documents, litiges, demande de blacklistage (R09) |
 | DAF | AO, contrats, engagements, factures, synthèse financière, fournisseurs (y compris coordonnées bancaires), tableau `DAF` | valider/rejeter un engagement (R06), saisir/mandater/payer/rejeter une facture |
-| DG | presque tout en lecture (hors factures détaillées, besoins à acheter, administration et audit) : tableaux de tous les profils, AO, offres, contrats, engagements, synthèse financière, parc, besoins, fournisseurs, litiges | uniquement : approbation d'attribution au-delà du seuil (R11), décision de blacklistage (R09), validation de réforme (R13) — **R12** |
+| DG | presque tout en lecture (hors factures détaillées, besoins à acheter, administration et audit) : tableaux de tous les profils, AO, offres, contrats, engagements, synthèse financière, parc, besoins, fournisseurs, litiges | uniquement : approbation d'attribution au-delà du seuil (R11), décision de blacklistage (R09), validation de réforme (R13), **R12** |
 | ADMIN | utilisateurs et rôles, journal d'audit, référentiel des types d'engins, chantiers, état de la plateforme | comptes (création, modification, statut, mot de passe), types d'engins, chantiers |
 | FOURN | `/api/portail/**` limité à son `fournisseur_id` | dépôt d'offres (R02, R14), factures, profil et catalogue |
 
@@ -297,11 +297,11 @@ Générale, ADMIN = Administrateur système, FOURN = Fournisseur. Toute case `·
 | Modification d'un besoin réservée à son demandeur, tant qu'il est `EN_ATTENTE` (R05) | `BesoinMateriel.modifier` | 403 `MODIFICATION_RESERVEE_DEMANDEUR`, 409 `BESOIN_NON_MODIFIABLE` |
 | R01 : validation/rejet par le RM | `@PreAuthorize` **et** `ChaineValidation` du domaine (ADR-0010) | 403 `VALIDATION_NON_AUTORISEE` |
 | **R12 : DG en lecture seule** | aucune expression `@PreAuthorize` d'écriture n'inclut `DIRECTION_GENERALE`, sauf les trois décisions qui lui reviennent (R09, R11, R13) ; vérifié par les tests d'intégration de ms-suivi | 403 |
-| R10 : anonymat des offres tant que l'AO est `PUBLIE` | `AppelOffre.estAnonyme` + mapper (code anonyme, fournisseur `null`, aucune note) | — |
+| R10 : anonymat des offres tant que l'AO est `PUBLIE` | `AppelOffre.estAnonyme` + mapper (code anonyme, fournisseur `null`, aucune note) | - |
 | R11 : séparation des pouvoirs à l'attribution | proposition RA, co-validation RM obligatoire, approbation DG au-delà de `cse.achats.seuil-delegation` | 403 / 409 |
 | R09 : blacklistage en deux étapes, le demandeur ne peut pas statuer | `Fournisseur` (domaine) | 409 |
-| Coordonnées bancaires visibles du RA et de la DAF seulement | mapper de ms-fournisseurs (`null` pour les autres rôles), testé en `@WebMvcTest` | — |
-| Montants et coûts masqués dans l'assistant hors RA, RM, DAF, DG | `cse.chatbot.roles-montants`, sections non autorisées jamais appelées (`cse.chatbot.acces`) | — |
+| Coordonnées bancaires visibles du RA et de la DAF seulement | mapper de ms-fournisseurs (`null` pour les autres rôles), testé en `@WebMvcTest` | - |
+| Montants et coûts masqués dans l'assistant hors RA, RM, DAF, DG | `cse.chatbot.roles-montants`, sections non autorisées jamais appelées (`cse.chatbot.acces`) | - |
 | Portail : un fournisseur ne voit que ses données | filtrage par claim `fournisseur_id` (ms-achats, ms-fournisseurs) | 403 |
 | Conversations de l'assistant et notifications privées | requêtes filtrées par `sub` (et rôles pour les notifications adressées à un rôle) | 404 (pas de fuite d'existence) |
 | Administrateur : pas d'opération sur son propre compte (désactivation, changement de rôle) | ms-auth | 422 `OPERATION_SUR_SOI_INTERDITE` |
@@ -375,7 +375,7 @@ chiffrés** (passerelle → services, services → PostgreSQL/Kafka/Redis/Keyclo
 ## 10. Journal d'audit
 
 - Toute écriture métier émet un événement de domaine via l'outbox, qui produit une entrée `AUDIT` (auteur
-  `sub` + nom + rôles, action, entité, identifiant, résumé, horodatage, corrélation) — voir [events.md](events.md) §6.
+  `sub` + nom + rôles, action, entité, identifiant, résumé, horodatage, corrélation), voir [events.md](events.md) §6.
 - ms-audit stocke en **ajout seul** : port sans suppression, entité `@Immutable`, et déclencheurs PostgreSQL
   `trg_audit_log_immuable` (`UPDATE`/`DELETE`) et `trg_audit_log_sans_truncate` qui lèvent une erreur même
   pour l'utilisateur `ms_audit`. Consultation réservée à `ADMIN_SYSTEME` (`/api/audit`, écran Journal d'audit).
@@ -400,14 +400,14 @@ chiffrés** (passerelle → services, services → PostgreSQL/Kafka/Redis/Keyclo
 |---|---|---|
 | **A01 Contrôle d'accès défaillant** | RBAC à la passerelle **et** dans chaque service (`@PreAuthorize` sur 124 opérations) ; règles de périmètre dans les cas d'utilisation ; tests `@WebMvcTest` 401/403 par service ; `denyAll` par défaut à la passerelle | l'UI masque mais ne protège pas (normal) ; le portail fournisseur n'a pas de front testé |
 | **A02 Défaillances cryptographiques** | AES-256-GCM (IV aléatoire) sur IBAN et montants ; TLS 1.2/1.3 + HSTS au frontal ; mots de passe uniquement dans Keycloak (ADR-0012) | TLS interne non activé ; pas de rotation de clé outillée ; montants en clair dans Kafka et reporting |
-| **A03 Injection** | JPA/JDBC paramétrés partout (pas de concaténation SQL) ; `LIKE` échappé (ms-audit) ; tri en liste blanche ; Bean Validation sur tous les DTO ; assistant : délimiteurs, assainissement des données, aucun gabarit sur l'entrée utilisateur (anti-injection de prompt) | — |
-| **A04 Conception non sécurisée** | règles métier dans le domaine (machines à états, séparation des pouvoirs R09/R11/R13) ; verrou optimiste `@Version` ; index unique anti-double affectation ; outbox (pas d'état incohérent) | — |
+| **A03 Injection** | JPA/JDBC paramétrés partout (pas de concaténation SQL) ; `LIKE` échappé (ms-audit) ; tri en liste blanche ; Bean Validation sur tous les DTO ; assistant : délimiteurs, assainissement des données, aucun gabarit sur l'entrée utilisateur (anti-injection de prompt) | - |
+| **A04 Conception non sécurisée** | règles métier dans le domaine (machines à états, séparation des pouvoirs R09/R11/R13) ; verrou optimiste `@Version` ; index unique anti-double affectation ; outbox (pas d'état incohérent) | - |
 | **A05 Mauvaise configuration** | aucun contournement d'authentification (supprimé à la refonte, ADR-0003) ; Actuator limité à `health,info,metrics,prometheus` ; erreurs RFC 7807 sans pile technique ; conteneurs non-root ; schéma `public` verrouillé | `/actuator/prometheus` et `/actuator/metrics` sont publics/exposés : à restreindre au réseau de supervision en production ; Keycloak en `start-dev` dans le compose ; `cse-tests-e2e` à retirer |
 | **A06 Composants vulnérables** | versions centralisées (`backend/pom.xml`) ; workflow hebdomadaire OWASP dependency-check (échec si CVSS ≥ 7) + `pnpm audit` | dependency-check n'est pas dans `make verify` (CI seulement) |
 | **A07 Identification et authentification** | Keycloak : PKCE, politique de mot de passe, protection force brute, jetons courts (15 min) ; ms-auth impose `CONFIGURE_TOTP` à la création des comptes ADMIN, DG, DAF, RA (`AUTH_OTP_OBLIGATOIRE`) | **l'OTP n'est pas imposé aux comptes de démonstration importés** (ni par une politique de flux d'authentification) : à configurer dans le realm de production |
 | **A08 Intégrité des données et du logiciel** | images construites en CI depuis le dépôt, lockfiles figés (`--frozen-lockfile`) ; événements versionnés ; GCM authentifie les données chiffrées | images non signées |
 | **A09 Journalisation et surveillance** | audit immuable de toute écriture ; corrélation de bout en bout ; DLT ; `GET /api/plateforme/etat` | pas d'alerting centralisé (Prometheus/Grafana non déployés) ; les refus 401/403 ne sont pas audités (seulement journalisés) |
-| **A10 SSRF** | aucune URL fournie par l'utilisateur n'est appelée ; URLs des services et du LLM fixées par configuration | — |
+| **A10 SSRF** | aucune URL fournie par l'utilisateur n'est appelée ; URLs des services et du LLM fixées par configuration | - |
 
 ## 13. Écarts connus (synthèse honnête)
 

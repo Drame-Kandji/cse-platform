@@ -1,4 +1,4 @@
-# Tests de bout en bout — Plateforme CSE
+# Tests de bout en bout : Plateforme CSE
 
 Les 3 scénarios critiques (spec §6.2) sont couverts à deux niveaux, **contre la pile qui tourne** :
 

@@ -2,7 +2,7 @@
 # Jeton : scripts/token.sh <e-mail> (15 min)
 @token = COLLER_LE_JETON_ICI
 
-### Journal (ADMIN_SYSTEME) — filtres combinables
+### Journal (ADMIN_SYSTEME) : filtres combinables
 GET {{gw}}/api/audit?service=ms-achats&action=MARCHE_ATTRIBUE&du=2026-10-01&au=2026-10-31&page=0&size=20&sort=occurredAt,desc
 Authorization: Bearer {{token}}
 

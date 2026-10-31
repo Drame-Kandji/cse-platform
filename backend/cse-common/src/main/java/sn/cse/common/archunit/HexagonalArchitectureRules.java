@@ -11,8 +11,8 @@ import com.tngtech.archunit.lang.ArchRule;
 import java.util.List;
 
 /**
- * Règles d'architecture hexagonale communes (AGENTS.md A.4). Usage dans chaque service (forme JUnit
- * Jupiter explicite : chaque règle devient un test, exécuté par Surefire) :
+ * Règles d'architecture hexagonale communes. Usage dans chaque service (forme JUnit Jupiter
+ * explicite : chaque règle devient un test, exécuté par Surefire) :
  *
  * <pre>{@code
  * class ArchitectureTest {

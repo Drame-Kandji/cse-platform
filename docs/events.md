@@ -89,7 +89,7 @@ Exemple réel (abrégé) :
 
 **Compatibilité des schémas** : les payloads sont des records Java ; on n'ajoute que des champs optionnels
 (les consommateurs utilisent un `ObjectMapper` tolérant aux champs inconnus et les nouveaux champs sont
-`null` dans les anciens messages — exemple : `dateMandatement`/`datePaiement` ajoutés à `FacturePayload`,
+`null` dans les anciens messages, exemple : `dateMandatement`/`datePaiement` ajoutés à `FacturePayload`,
 ms-reporting retombe sur la date de l'événement quand ils sont absents). Une rupture (renommage,
 suppression, changement de type) impose d'incrémenter `version` et de faire cohabiter les deux lectures.
 
@@ -101,7 +101,7 @@ entre parenthèses : destinataires et envoi d'e-mail). Les types sans règle ne 
 consomme tous les types de ses quatre topics (§ vues dans `backend/ms-reporting/README.md`). Chaque
 événement de domaine produit en plus une entrée `AUDIT` (§6).
 
-### 3.1 ms-besoins — `cse.besoins.events`, payload `BesoinPayload`, agrégat `BesoinMateriel`
+### 3.1 ms-besoins : `cse.besoins.events`, payload `BesoinPayload`, agrégat `BesoinMateriel`
 
 | Type | Déclencheur | Consommateurs |
 |---|---|---|
@@ -115,7 +115,7 @@ consomme tous les types de ses quatre topics (§ vues dans `backend/ms-reporting
 `BesoinPayload {besoinId, reference, chantierId, chantierNom, demandeurId, demandeurNom, designation,
 categorie, quantite, specifications?, priorite, statut, dateBesoin, dureeUtilisationJours, motif?, materielIds[]}`
 
-### 3.2 ms-suivi — `cse.suivi.events`
+### 3.2 ms-suivi : `cse.suivi.events`
 
 | Type | Payload | Déclencheur | Consommateurs |
 |---|---|---|---|
@@ -138,7 +138,7 @@ categorie, quantite, specifications?, priorite, statut, dateBesoin, dureeUtilisa
 - `MaintenancePayload {maintenanceId, numeroOt, materielId, materielDesignation, chantierId?, type, statut, cout?, datePlanifiee, dateDebut?, dateFin?}`
 - `PannePayload {panneId, materielId, materielDesignation, chantierId?, chantierNom?, gravite, description, signaleParId, signaleParNom}`
 
-### 3.3 ms-fournisseurs — `cse.fournisseurs.events`
+### 3.3 ms-fournisseurs : `cse.fournisseurs.events`
 
 | Type | Payload | Déclencheur | Consommateurs |
 |---|---|---|---|
@@ -157,7 +157,7 @@ categorie, quantite, specifications?, priorite, statut, dateBesoin, dureeUtilisa
 - `FournisseurPayload {fournisseurId, raisonSociale, email, specialites[], statut, scorePerformance, motif?}`
 - `LitigePayload {litigeId, reference, fournisseurId, raisonSociale, contratId?, objet, gravite, statut}`
 
-### 3.4 ms-achats — `cse.achats.events`
+### 3.4 ms-achats : `cse.achats.events`
 
 | Type | Payload | Déclencheur | Consommateurs |
 |---|---|---|---|
@@ -185,7 +185,7 @@ categorie, quantite, specifications?, priorite, statut, dateBesoin, dureeUtilisa
 > Les montants voyagent en clair dans Kafka (réseau interne) alors qu'ils sont chiffrés au repos dans
 > ms-achats : voir [SECURITY.md](SECURITY.md) §6 (limite connue).
 
-### 3.5 ms-auth — `cse.auth.events`, payload `UtilisateurPayload`
+### 3.5 ms-auth : `cse.auth.events`, payload `UtilisateurPayload`
 
 | Type | Déclencheur | Consommateurs |
 |---|---|---|
@@ -195,7 +195,7 @@ categorie, quantite, specifications?, priorite, statut, dateBesoin, dureeUtilisa
 
 `UtilisateurPayload {utilisateurId, email, prenom, nom, role, actif, chantierIds[]}`
 
-### 3.6 Transverse — `cse.audit.events`
+### 3.6 Transverse : `cse.audit.events`
 
 | Type | Payload | Producteur | Consommateur |
 |---|---|---|---|

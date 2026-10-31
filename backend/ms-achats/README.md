@@ -1,4 +1,4 @@
-# ms-achats — Achats et approvisionnements
+# ms-achats : Achats et approvisionnements
 
 Microservice (port **8083**, schéma PostgreSQL `achats`, utilisateur `ms_achats`) qui couvre la mise en
 concurrence et l'exécution des achats : appels d'offres, offres, évaluation multicritère, attribution,

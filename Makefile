@@ -1,4 +1,4 @@
-# Plateforme CSE — commandes usuelles. `make verify` est la porte de qualité (backend + frontend).
+# Plateforme CSE : commandes usuelles. `make verify` est la porte de qualité (backend + frontend).
 .PHONY: help build test verify up infra start stop status down front front-verify logs clean certs backup restore perf images e2e e2e-api e2e-ui
 
 MVN := mvn -f backend/pom.xml

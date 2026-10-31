@@ -6,7 +6,7 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 import sn.cse.common.archunit.HexagonalArchitectureRules;
 
-/** Règles d'architecture hexagonale communes (AGENTS.md A.4), une règle par test dynamique. */
+/** Règles d'architecture hexagonale communes, une règle par test dynamique. */
 class ArchitectureTest {
 
   @TestFactory

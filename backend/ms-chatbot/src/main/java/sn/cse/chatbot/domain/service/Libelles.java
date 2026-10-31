@@ -65,7 +65,7 @@ public final class Libelles {
 
   /**
    * @param date date
-   * @return {@code jj/mm/aaaa} ou « — »
+   * @return {@code jj/mm/aaaa} ou « - »
    */
   public static String date(LocalDate date) {
     return date == null ? "-" : date.format(JOUR);
@@ -73,7 +73,7 @@ public final class Libelles {
 
   /**
    * @param instant instant
-   * @return {@code jj/mm/aaaa à hh:mm} (UTC) ou « — »
+   * @return {@code jj/mm/aaaa à hh:mm} (UTC) ou « - »
    */
   public static String date(Instant instant) {
     return instant == null ? "-" : HEURE.format(instant);

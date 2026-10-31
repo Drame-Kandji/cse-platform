@@ -8,7 +8,7 @@
 GET {{gw}}/api/besoins?statut=EN_ATTENTE&priorite=URGENT&page=0&size=20&sort=createdAt,desc
 Authorization: Bearer {{token}}
 
-### Soumettre un besoin (CHEF sur ses chantiers, ou RM) — R08 : justification si URGENT/CRITIQUE
+### Soumettre un besoin (CHEF sur ses chantiers, ou RM), R08 : justification si URGENT/CRITIQUE
 POST {{gw}}/api/besoins
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -33,7 +33,7 @@ Authorization: Bearer {{token}}
 GET {{gw}}/api/besoins/{{besoinId}}/historique
 Authorization: Bearer {{token}}
 
-### Modifier (demandeur, EN_ATTENTE uniquement — R05) : renseigner la version courante
+### Modifier (demandeur, EN_ATTENTE uniquement, R05) : renseigner la version courante
 PUT {{gw}}/api/besoins/{{besoinId}}
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -50,14 +50,14 @@ Content-Type: application/json
   "version": 0
 }
 
-### Valider (RM uniquement — R01) : orientation automatique parc / achat
+### Valider (RM uniquement, R01) : orientation automatique parc / achat
 PATCH {{gw}}/api/besoins/{{besoinId}}/valider
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 { "commentaire": "Validé, priorité chantier", "materielIds": [] }
 
-### Rejeter (RM, motif obligatoire — R08)
+### Rejeter (RM, motif obligatoire, R08)
 PATCH {{gw}}/api/besoins/{{besoinId}}/rejeter
 Authorization: Bearer {{token}}
 Content-Type: application/json

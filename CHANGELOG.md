@@ -2,10 +2,9 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) ; versions sémantiques.
 
-## [2.0.0] — 2026-10-31 — Refonte complète
+## [2.0.0] - 2026-10-31 : Refonte complète
 
-Reconstruction de la plateforme après audit de la v1 (voir [ADR-0003](docs/adr/0003-contrat-api-v2.md) et
-`PROGRESS.md`). Rupture de compatibilité : nouveau contrat d'API, nouveaux schémas de base, nouveau realm.
+Reconstruction de la plateforme après audit de la v1 (voir [ADR-0003](docs/adr/0003-contrat-api-v2.md)). Rupture de compatibilité : nouveau contrat d'API, nouveaux schémas de base, nouveau realm.
 
 ### Ajouté
 - **Contrat unique** `docs/API_CONTRACT.md` (routes, DTO, énumérations, rôles, événements, jeu de démonstration).
@@ -49,5 +48,5 @@ Reconstruction de la plateforme après audit de la v1 (voir [ADR-0003](docs/adr/
 - Disponibilité opérationnelle, dates métier des factures, lien AO → contrat, `chantierId` sur la carte,
   tuiles OpenStreetMap en mode sombre, densité des tableaux, axes des graphiques, affichage mobile.
 
-## [1.0.0-SNAPSHOT] — 2025-10-25
+## [1.0.0-SNAPSHOT] - 2025-10-25
 - Initialisation du monorepo, squelettes des microservices et du frontend, infrastructure Docker Compose.

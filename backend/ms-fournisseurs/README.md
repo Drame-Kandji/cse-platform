@@ -1,4 +1,4 @@
-# ms-fournisseurs — Référentiel fournisseurs
+# ms-fournisseurs : Référentiel fournisseurs
 
 Port **8084**, schéma PostgreSQL **`fournisseurs`** (utilisateur `ms_fournisseurs`), topic produit
 `cse.fournisseurs.events`. Contrat : `docs/API_CONTRACT.md` §4 (routes), §11 (événements), §12 (données).
@@ -8,7 +8,7 @@ Port **8084**, schéma PostgreSQL **`fournisseurs`** (utilisateur `ms_fournisseu
 | Domaine | Contenu |
 |---|---|
 | Référentiel | informations légales (NINEA unique, RCCM), contacts, spécialités (`CategorieMateriel`), certifications |
-| Cycle de vie | `EN_ATTENTE_VALIDATION → ACTIF ⇄ SUSPENDU → BLACKLISTE` — table explicite dans `StatutFournisseur`, transition invalide → **409** `TRANSITION_STATUT_INVALIDE` |
+| Cycle de vie | `EN_ATTENTE_VALIDATION → ACTIF ⇄ SUSPENDU → BLACKLISTE`, table explicite dans `StatutFournisseur`, transition invalide → **409** `TRANSITION_STATUT_INVALIDE` |
 | Blacklistage (R09) | étape 1 : le RA demande (`POST …/blacklistage/demande`, fournisseur **SUSPENDU**), étape 2 : la DG approuve/refuse (`PATCH …/blacklister`) ; le demandeur ne peut pas statuer ; réactivation bloquée tant qu'une demande est en attente |
 | Documents | documents administratifs avec date d'expiration ; `expire` et `documentsExpires` calculés à la date du jour |
 | Coordonnées bancaires | chiffrées au repos AES-256-GCM (`EncryptedStringConverter`, clé `CSE_CRYPTO_KEY`) ; renvoyées dans `FournisseurDetail` **uniquement au RA et à la DAF** (`null` sinon) |
@@ -16,7 +16,7 @@ Port **8084**, schéma PostgreSQL **`fournisseurs`** (utilisateur `ms_fournisseu
 | Classement | fournisseurs **ACTIF** (filtrables par catégorie) par score, ponctualité, nombre d'évaluations |
 | Catalogue | upsert par référence ; prix initial et chaque changement de prix historisés (`PrixHistorique`) ; comparaison multi-fournisseurs (actifs) par catégorie + désignation normalisée |
 | Litiges | référence `LIT-AAAA-NNN` (séquence PostgreSQL par année), chronologie d'actions, `OUVERT → EN_COURS → RESOLU/CLASSE` |
-| Portail (SPEC §B.6) | `GET/PUT /api/portail/profil`, `GET/PUT /api/portail/catalogue` — rôle `FOURNISSEUR`, limité au claim `fournisseur_id` |
+| Portail (SPEC §B.6) | `GET/PUT /api/portail/profil`, `GET/PUT /api/portail/catalogue`, rôle `FOURNISSEUR`, limité au claim `fournisseur_id` |
 
 ## Score de performance (R07)
 

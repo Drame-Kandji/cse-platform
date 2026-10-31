@@ -1,4 +1,4 @@
-# Plateforme CSE — gestion des matériels, achats et pilotage
+# Plateforme CSE : gestion des matériels, achats et pilotage
 
 Système de management et de suivi des matériels et équipements de la **Compagnie Sahélienne d'Entreprises**
 (BTP, Sénégal) : expression et validation des besoins des chantiers, gestion du parc (affectations,
@@ -6,7 +6,7 @@ maintenance, pannes, réforme), achats (appels d'offres anonymisés, évaluation
 engagements, factures), référentiel fournisseurs, tableaux de bord par profil, assistant IA, notifications
 et journal d'audit.
 
-Projet de Master (MILIA — EPT), encadré par le Pr. Guissé. Version **2.0.0** ([CHANGELOG](CHANGELOG.md)).
+Projet de Master (MILIA, EPT), encadré par le Pr. Guissé. Version **2.0.0** ([CHANGELOG](CHANGELOG.md)).
 
 ![Tableau de bord de la Direction Générale](docs/images/dg-dashboard.png)
 
@@ -68,7 +68,7 @@ environ 12 Go de RAM.
 
 ```bash
 cp .env.example .env && sed -i "s|^CSE_CRYPTO_KEY=.*|CSE_CRYPTO_KEY=$(head -c32 /dev/urandom | base64)|" .env
-make infra    # PostgreSQL, Kafka, Keycloak (import du realm), Redis, MailHog — attend que Keycloak soit prêt
+make infra    # PostgreSQL, Kafka, Keycloak (import du realm), Redis, MailHog, attend que Keycloak soit prêt
 make build    # compile les 12 modules Maven (tests inclus ; plusieurs minutes)
 make start    # lance les 10 microservices sur l'hôte (profil dev, données de démonstration) ; make status
 make front    # http://localhost:5173 (la première fois : pnpm --dir frontend install)
@@ -78,7 +78,7 @@ Ouvrir http://localhost:5173 et se connecter avec un compte ci-dessous. Les serv
 démonstration au premier démarrage (chantiers, parc, besoins, fournisseurs, appels d'offres, contrats,
 factures sur 9 mois) ; compter 2 à 3 minutes pour que les tableaux de bord soient complets.
 
-Plateforme entièrement conteneurisée avec frontal HTTPS (https://localhost:8443) : `make up` — voir
+Plateforme entièrement conteneurisée avec frontal HTTPS (https://localhost:8443) : `make up`, voir
 [docs/OPERATIONS.md](docs/OPERATIONS.md).
 
 ## Comptes de démonstration
@@ -108,7 +108,7 @@ Jeton pour les appels en ligne de commande : `TOKEN=$(scripts/token.sh dg@cse.sn
 | Swagger d'un service | http://localhost:808N/swagger-ui.html | idem |
 | État de la plateforme | http://localhost:8080/api/plateforme/etat · écran Administration | rôle interne |
 | Console Keycloak | http://localhost:8180/admin | `KEYCLOAK_ADMIN` / `KEYCLOAK_ADMIN_PASSWORD` de `.env` |
-| MailHog (e-mails envoyés) | http://localhost:8025 | — |
+| MailHog (e-mails envoyés) | http://localhost:8025 | - |
 | Kafka | `localhost:9092` (hôte), `kafka:29092` (conteneurs) | `docker exec cse-kafka-1 kafka-topics.sh --bootstrap-server localhost:29092 --list` |
 | PostgreSQL | `localhost:5433`, base `cse` | `ms_<service>` / `CSE_DB_PASSWORD` |
 
@@ -161,6 +161,5 @@ docs/                documentation, adr/, http/ (collections de requêtes), imag
 | [DECISIONS.md](DECISIONS.md) · [docs/adr/](docs/adr/) | décisions d'architecture |
 | [docs/http/](docs/http/) | collections de requêtes `.http` par service |
 | [tests/perf/README.md](tests/perf/README.md) | test de charge |
-| [PROGRESS.md](PROGRESS.md) · [CHANGELOG.md](CHANGELOG.md) | état d'avancement, versions |
-| [docs/SPEC_IMPLEMENTATION.md](docs/SPEC_IMPLEMENTATION.md) · `docs/inputs/` | spécification d'implémentation, cahier des charges, annexe UML |
-| [AGENTS.md](AGENTS.md) | règles permanentes du projet |
+| [CHANGELOG.md](CHANGELOG.md) | versions |
+| `docs/inputs/` | cahier des charges, spécifications techniques, annexe UML |

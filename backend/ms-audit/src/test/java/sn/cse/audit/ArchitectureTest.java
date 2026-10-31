@@ -7,8 +7,8 @@ import org.junit.jupiter.api.TestFactory;
 import sn.cse.common.archunit.HexagonalArchitectureRules;
 
 /**
- * Règles d'architecture hexagonale communes (AGENTS.md A.4), une règle par test dynamique (forme
- * exécutée par Surefire, voir docs/BACKEND_CONVENTIONS.md §5).
+ * Règles d'architecture hexagonale communes, une règle par test dynamique (forme exécutée par
+ * Surefire, voir docs/BACKEND_CONVENTIONS.md §5).
  */
 class ArchitectureTest {
 

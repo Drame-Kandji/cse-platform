@@ -50,7 +50,7 @@ cse:
       Profils utilisateurs de la plateforme CSE (hiérarchie Utilisateur) et administration des
       comptes Keycloak : création, rôles, statut, réinitialisation du mot de passe.
   auth:
-    # Rôles soumis à l'authentification forte (TOTP) — décision D6.
+    # Rôles soumis à l'authentification forte (TOTP), décision D6.
     otp-obligatoire: ${AUTH_OTP_OBLIGATOIRE:DAF,DIRECTION_GENERALE,RESPONSABLE_ACHATS,ADMIN_SYSTEME}
     synchronisation:
       au-demarrage: ${AUTH_SYNC_AU_DEMARRAGE:true}

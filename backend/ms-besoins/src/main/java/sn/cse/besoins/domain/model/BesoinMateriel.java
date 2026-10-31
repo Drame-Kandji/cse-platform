@@ -23,7 +23,7 @@ import sn.cse.common.exception.ForbiddenOperationException;
  * StatutBesoin}, les règles R01, R05 et R08, l'historique complet des actions et les événements de
  * domaine à publier.
  *
- * <p>Invariant : un besoin {@code VALIDE} est toujours {@code orientationEnAttente} — il attend
+ * <p>Invariant : un besoin {@code VALIDE} est toujours {@code orientationEnAttente}, il attend
  * d'être affecté directement ou transmis aux achats ; une interruption entre validation et
  * orientation laisse donc le besoin relançable.
  */

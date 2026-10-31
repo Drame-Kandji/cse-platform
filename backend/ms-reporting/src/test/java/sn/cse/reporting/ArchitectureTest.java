@@ -7,9 +7,9 @@ import org.junit.jupiter.api.TestFactory;
 import sn.cse.common.archunit.HexagonalArchitectureRules;
 
 /**
- * Règles d'architecture hexagonale communes (AGENTS.md A.4), une règle par test dynamique (forme
- * exécutée par Surefire, voir docs/BACKEND_CONVENTIONS.md §5). Les vues de ms-reporting étant
- * persistées en JDBC (aucune entité JPA), les règles acceptent un ensemble vide.
+ * Règles d'architecture hexagonale communes, une règle par test dynamique (forme exécutée par
+ * Surefire, voir docs/BACKEND_CONVENTIONS.md §5). Les vues de ms-reporting étant persistées en JDBC
+ * (aucune entité JPA), les règles acceptent un ensemble vide.
  */
 class ArchitectureTest {
 

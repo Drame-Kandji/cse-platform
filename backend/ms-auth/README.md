@@ -1,4 +1,4 @@
-# ms-auth — Utilisateurs et rôles (port 8081)
+# ms-auth : Utilisateurs et rôles (port 8081)
 
 Profils métier des utilisateurs de la plateforme et pilotage de l'API d'administration Keycloak.
 Aucun mot de passe n'est stocké (ADR-0012) : Keycloak reste l'unique détenteur des secrets et des
@@ -17,8 +17,8 @@ rôle réécrit le discriminateur (ADR-0013). Fabrique : `Utilisateurs.creer(rol
 | GET | `/api/me` | tout utilisateur authentifié (profil provisionné depuis le JWT au premier appel) |
 | GET | `/api/admin/utilisateurs?role&actif&q&page&size&sort` | ADMIN_SYSTEME (tri : nom, prenom, email, role, createdAt) |
 | GET | `/api/admin/utilisateurs/{id}` | ADMIN_SYSTEME |
-| POST | `/api/admin/utilisateurs` | ADMIN_SYSTEME — compte Keycloak (mot de passe temporaire, `UPDATE_PASSWORD`, `CONFIGURE_TOTP` si rôle soumis à l'OTP) + rôle unique + profil |
-| PUT | `/api/admin/utilisateurs/{id}` | ADMIN_SYSTEME — identité, rôle, attributs |
+| POST | `/api/admin/utilisateurs` | ADMIN_SYSTEME : compte Keycloak (mot de passe temporaire, `UPDATE_PASSWORD`, `CONFIGURE_TOTP` si rôle soumis à l'OTP) + rôle unique + profil |
+| PUT | `/api/admin/utilisateurs/{id}` | ADMIN_SYSTEME : identité, rôle, attributs |
 | PATCH | `/api/admin/utilisateurs/{id}/statut` | ADMIN_SYSTEME |
 | POST | `/api/admin/utilisateurs/{id}/reinitialiser-mot-de-passe` | ADMIN_SYSTEME → 204 |
 | GET | `/api/admin/roles` | ADMIN_SYSTEME |
@@ -61,5 +61,5 @@ Tests : domaine et application (unitaires, JaCoCo ≥ 80 %), adaptateur Keycloak
 cache, renouvellement, création, rôle unique, préservation des attributs, erreurs), sécurité
 `@WebMvcTest` (401/403/400/409/503), une classe `@SpringBootTest` (Testcontainers PostgreSQL + WireMock :
 synchronisation idempotente, création + changement de rôle SINGLE_TABLE, compensation, `/api/me`,
-instantané OpenAPI `src/test/resources/openapi.json` — régénérer avec `-Dopenapi.snapshot.update=true`),
+instantané OpenAPI `src/test/resources/openapi.json` : régénérer avec `-Dopenapi.snapshot.update=true`),
 règles ArchUnit `HexagonalArchitectureRules`.

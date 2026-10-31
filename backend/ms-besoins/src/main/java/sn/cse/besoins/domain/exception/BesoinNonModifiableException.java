@@ -3,7 +3,7 @@ package sn.cse.besoins.domain.exception;
 import sn.cse.besoins.domain.model.StatutBesoin;
 import sn.cse.common.exception.ConflictException;
 
-/** Règle R05 : un besoin validé (ou au-delà) n'est plus modifiable — HTTP 409. */
+/** Règle R05 : un besoin validé (ou au-delà) n'est plus modifiable (HTTP 409). */
 public class BesoinNonModifiableException extends ConflictException {
 
   /**

@@ -1,5 +1,5 @@
 -- ms-besoins : besoins en matériel des chantiers, historique et matériels affectés.
--- Types ENUM natifs (AGENTS.md A.6) ; identifiants UUID générés par l'application.
+-- Types ENUM natifs ; identifiants UUID générés par l'application.
 
 CREATE TYPE categorie_materiel AS ENUM ('MATERIEL_ROULANT', 'OUTILLAGE', 'EQUIPEMENT_INFORMATIQUE', 'CONSOMMABLE');
 CREATE TYPE priorite_besoin AS ENUM ('NORMAL', 'URGENT', 'CRITIQUE');

@@ -15,7 +15,7 @@ import sn.cse.fournisseurs.application.query.FournisseurVue;
 import sn.cse.fournisseurs.domain.model.LigneCatalogue;
 
 /**
- * Portail fournisseur : contrôle d'accès « données » — un compte FOURNISSEUR n'agit que sur le
+ * Portail fournisseur : contrôle d'accès « données », un compte FOURNISSEUR n'agit que sur le
  * fournisseur de son claim {@code fournisseur_id}.
  */
 @Service

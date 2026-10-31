@@ -1,4 +1,4 @@
-# Architecture — plateforme CSE
+# Architecture : plateforme CSE
 
 > Public : équipe projet, encadrant, développeurs. Les choix structurants sont justifiés dans les
 > [ADR](../DECISIONS.md) ; le contrat d'API et d'événements fait foi : [API_CONTRACT.md](API_CONTRACT.md).
@@ -15,14 +15,14 @@
 - **Database per Service** : une base PostgreSQL 15, un schéma et un utilisateur par service, aucun accès
   croisé ([ADR-0004](adr/0004-database-per-service.md)).
 - **REST synchrone** pour les lectures et commandes qui exigent une réponse immédiate ; **Kafka asynchrone**
-  pour propager les faits métier (outbox transactionnelle, consommateurs idempotents —
+  pour propager les faits métier (outbox transactionnelle, consommateurs idempotents,
   [ADR-0007](adr/0007-outbox-et-audit.md), [events.md](events.md)). Pas d'annuaire de services : URL par
   configuration / DNS Docker (D4).
 - **Keycloak** comme unique fournisseur d'identité ; JWT vérifié à la passerelle **et** dans chaque service
   ([SECURITY.md](SECURITY.md)).
 - **CQRS** pour le pilotage : ms-reporting ne lit que ses vues alimentées par les événements (D3).
 
-## 2. C4 — niveau 1 : contexte
+## 2. C4, niveau 1 : contexte
 
 ```mermaid
 flowchart TB
@@ -46,7 +46,7 @@ flowchart TB
   cse -->|fond de carte| osm
 ```
 
-## 3. C4 — niveau 2 : conteneurs
+## 3. C4, niveau 2 : conteneurs
 
 ```mermaid
 flowchart LR
@@ -93,16 +93,16 @@ flowchart LR
 
 | Service | Port | Schéma / utilisateur | Responsabilités | Produit (topic) | Consomme |
 |---|---|---|---|---|---|
-| ms-gateway | 8080 | — | point d'entrée unique, validation JWT, RBAC portail/plateforme, limitation de débit Redis, CORS, corrélation, coupe-circuits, Swagger agrégé, `GET /api/plateforme/etat` | — | — |
-| ms-auth | 8081 | `auth` / `ms_auth` | profils métier (hiérarchie `Utilisateur` SINGLE_TABLE), administration des comptes via l'API Keycloak, synchronisation Keycloak → profils, `/api/me` | `UTILISATEUR_*` (`cse.auth.events`) | — |
+| ms-gateway | 8080 | - | point d'entrée unique, validation JWT, RBAC portail/plateforme, limitation de débit Redis, CORS, corrélation, coupe-circuits, Swagger agrégé, `GET /api/plateforme/etat` | - | - |
+| ms-auth | 8081 | `auth` / `ms_auth` | profils métier (hiérarchie `Utilisateur` SINGLE_TABLE), administration des comptes via l'API Keycloak, synchronisation Keycloak → profils, `/api/me` | `UTILISATEUR_*` (`cse.auth.events`) | - |
 | ms-besoins | 8082 | `besoins` / `ms_besoins` | expression des besoins, chaîne de validation (R01), orientation parc/achat, historique, consolidation | `BESOIN_*` (`cse.besoins.events`) | `MATERIEL_AFFECTE` |
 | ms-achats | 8083 | `achats` / `ms_achats` | besoins à acheter, appels d'offres, offres anonymisées, évaluation multicritère, attribution co-validée, contrats, engagements DAF, livraisons, factures, synthèse financière, PV PDF, portail (offres, factures) | `AO_*`, `OFFRE_DEPOSEE`, `ATTRIBUTION_*`, `MARCHE_ATTRIBUE`, `CONTRAT_*`, `ENGAGEMENT_*`, `LIVRAISON_*`, `ALERTE_RETARD_LIVRAISON`, `FACTURE_*` (`cse.achats.events`) | `BESOIN_EN_ACHAT`, `FOURNISSEUR_*`, `SCORE_RECALCULE`, `DOCUMENT_EXPIRE` |
 | ms-fournisseurs | 8084 | `fournisseurs` / `ms_fournisseurs` | référentiel, cycle de vie et blacklistage (R09), documents, évaluations et score (R07), catalogue et historique des prix, comparaison, litiges, portail (profil, catalogue) | `FOURNISSEUR_*`, `SCORE_RECALCULE`, `DOCUMENT_EXPIRE`, `LITIGE_*` (`cse.fournisseurs.events`) | `LIVRAISON_EFFECTUEE`, `RECEPTION_CONFIRMEE` |
 | ms-suivi | 8085 | `suivi` / `ms_suivi` | chantiers, parc et états, affectations anti-conflit (R04), réceptions, compteurs, maintenance, pannes, réforme (R13), carte GeoJSON, planning, types d'engins, alertes planifiées | `CHANTIER_*`, `MATERIEL_*`, `RECEPTION_CONFIRMEE`, `AFFECTATION_TERMINEE`, `FIN_AFFECTATION_PROCHAINE`, `MAINTENANCE_*`, `PANNE_SIGNALEE`, `ALERTE_MAINTENANCE` (`cse.suivi.events`) | `LIVRAISON_EFFECTUEE` |
-| ms-reporting | 8086 | `reporting` / `ms_reporting` | vues CQRS, KPI par profil, séries temporelles, exports PDF/Excel | — | tous les types de `besoins`, `suivi`, `fournisseurs`, `achats` |
-| ms-chatbot | 8087 | `chatbot` / `ms_chatbot` | assistant : intentions, lecture des services avec le JWT de l'utilisateur, filtre par rôle, LLM optionnel ou mode dégradé, historique | — | — |
-| ms-notification | 8088 | `notification` / `ms_notification` | notifications in-app (liste, compteur, SSE) et e-mails selon des règles YAML, annuaire local | — | `besoins`, `suivi`, `fournisseurs`, `achats`, `auth` |
-| ms-audit | 8089 | `audit` / `ms_audit` | journal d'audit immuable, recherche, statistiques | — | `AUDIT` (`cse.audit.events`) |
+| ms-reporting | 8086 | `reporting` / `ms_reporting` | vues CQRS, KPI par profil, séries temporelles, exports PDF/Excel | - | tous les types de `besoins`, `suivi`, `fournisseurs`, `achats` |
+| ms-chatbot | 8087 | `chatbot` / `ms_chatbot` | assistant : intentions, lecture des services avec le JWT de l'utilisateur, filtre par rôle, LLM optionnel ou mode dégradé, historique | - | - |
+| ms-notification | 8088 | `notification` / `ms_notification` | notifications in-app (liste, compteur, SSE) et e-mails selon des règles YAML, annuaire local | - | `besoins`, `suivi`, `fournisseurs`, `achats`, `auth` |
+| ms-audit | 8089 | `audit` / `ms_audit` | journal d'audit immuable, recherche, statistiques | - | `AUDIT` (`cse.audit.events`) |
 
 Chaque service a son README : `backend/ms-*/README.md` (règles, configuration, tests).
 
@@ -114,7 +114,7 @@ Chaque service a son README : `backend/ms-*/README.md` (règles, configuration, 
   `PostgresTestConfiguration`). Détails : [BACKEND_CONVENTIONS.md](BACKEND_CONVENTIONS.md) §1.
 - `backend/cse-events` : contrats d'événements (enveloppe, topics, types, payloads), voir [events.md](events.md).
 
-## 5. C4 — niveau 3 : composants de ms-besoins
+## 5. C4, niveau 3 : composants de ms-besoins
 
 Tous les services suivent ce découpage ; ms-besoins est représentatif (règles, appel synchrone, événements).
 
@@ -163,9 +163,9 @@ domaine) a ses 2 règles propres, dont l'interdiction de Spring MVC.
 | Besoins et historique | ms-besoins | `besoin_a_acheter` (ms-achats), vues ms-reporting |
 | Fournisseurs, scores, catalogue, litiges | ms-fournisseurs | `fournisseur_projection` (ms-achats, statut R14), vues ms-reporting |
 | AO, offres, contrats, engagements, factures | ms-achats | vues ms-reporting ; matériels créés par ms-suivi à la livraison |
-| Notifications | ms-notification | — |
-| Conversations de l'assistant | ms-chatbot | — |
-| Journal d'audit | ms-audit | — |
+| Notifications | ms-notification | - |
+| Conversations de l'assistant | ms-chatbot | - |
+| Journal d'audit | ms-audit | - |
 
 Aucun service ne lit le schéma d'un autre (permissions PostgreSQL). Les identifiants sont des UUID
 générés par l'application ; les références lisibles (`BES-2026-0001`, `AO-2026-001`, `CTR-2026-001`,
@@ -356,17 +356,17 @@ sequenceDiagram
 |---|---|---|
 | `Utilisateur.motDePasseHash` et `authentifier()` absents | l'authentification est entièrement déléguée à Keycloak | [ADR-0012](adr/0012-pas-de-mot-de-passe-local.md) |
 | `ResponsableAchats.seuilDelegation` non lu depuis le profil | seuil global configurable `cse.achats.seuil-delegation` (150 M FCFA) | [ADR-0011](adr/0011-seuil-delegation.md) |
-| Validation des besoins par chaîne de responsabilité configurable (au lieu d'un `valider()` direct du RM) | R01 aujourd'hui, extension « Directeur de projet » sans code | [ADR-0010](adr/ADR-0010-chaine-validation-besoins.md) |
+| Validation des besoins par chaîne de responsabilité configurable (au lieu d'un `valider()` direct du RM) | R01 aujourd'hui, extension « Directeur de projet » sans code | [ADR-0010](adr/0010-chaine-validation-besoins.md) |
 | Orientation automatique après validation, relance manuelle si ms-suivi est indisponible | jamais d'achat dû à une panne technique, aucun compte de service privilégié | [ADR-0009](adr/0009-orientation-des-besoins.md) |
 | `ChefDeChantier.chantierAttribue` (un chantier) → `chantierIds` (plusieurs) | les comptes de démonstration couvrent deux chantiers ; claim `chantier_ids` | [API_CONTRACT.md](API_CONTRACT.md) §0 |
 | `Fournisseur` à la fois compte utilisateur (ms-auth) et agrégat métier (ms-fournisseurs) | l'identité et le référentiel ont des cycles de vie distincts ; lien par `fournisseur_id` | D2, D7 |
-| Classes ajoutées : `Affectation`, `Maintenance`, `Panne`, `TypeEngin`, `Mouvement`, `Facture`, `Engagement`, `Litige`, `Evaluation`, `LigneCatalogue`, `DocumentAdministratif` | exigées par le cahier de spécifications (B.4–B.10), absentes du diagramme de classes | `SPEC_IMPLEMENTATION.md` |
-| Rôle du discriminateur `role` en `VARCHAR` + `CHECK` (pas `ENUM`) | contrainte Hibernate sur les discriminateurs | [ADR-0013](adr/ADR-0013-ms-auth-synchronisation-keycloak.md) |
+| Classes ajoutées : `Affectation`, `Maintenance`, `Panne`, `TypeEngin`, `Mouvement`, `Facture`, `Engagement`, `Litige`, `Evaluation`, `LigneCatalogue`, `DocumentAdministratif` | exigées par le cahier de spécifications (B.4-B.10), absentes du diagramme de classes | cahier de spécifications techniques |
+| Rôle du discriminateur `role` en `VARCHAR` + `CHECK` (pas `ENUM`) | contrainte Hibernate sur les discriminateurs | [ADR-0013](adr/0013-ms-auth-synchronisation-keycloak.md) |
 | Diagramme de composants : bases « Besoins & Achats » et « Fournisseurs & Suivi » partagées | un schéma + un utilisateur par service, aucun accès croisé | [ADR-0004](adr/0004-database-per-service.md) |
 | Diagramme de composants : liaisons directes achats → suivi (« contrat signé ») et suivi → fournisseurs (« évalue ») | réalisées par événements (`LIVRAISON_EFFECTUEE`, `RECEPTION_CONFIRMEE`) : pas de couplage temporel | [ADR-0007](adr/0007-outbox-et-audit.md) |
-| Services ms-auth, ms-notification, ms-audit absents des diagrammes | exigés par la spécification technique (D1) | `SPEC_IMPLEMENTATION.md` B.1 |
+| Services ms-auth, ms-notification, ms-audit absents des diagrammes | exigés par la spécification technique | [DECISIONS.md](../DECISIONS.md) D1 |
 | Diagramme de déploiement : « API Gateway + Keycloak » sur un même nœud | conteneurs séparés (Keycloak a sa base `keycloak`) ; même nœud possible en production | `infra/docker-compose.yml` |
-| Pas d'Eureka | URL par configuration / DNS Docker (D4) | `SPEC_IMPLEMENTATION.md` B.1 |
+| Pas d'Eureka | URL par configuration / DNS Docker | [DECISIONS.md](../DECISIONS.md) D4 |
 | Spring Boot 3.5 / Spring Cloud 2025.0 / Spring AI 1.0 | compatibilité Spring AI GA et Docker 29 | [ADR-0005](adr/0005-versions-socle.md) |
 
 ## 10. Déploiement

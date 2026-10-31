@@ -5,7 +5,7 @@
 @aoId = 8380a79a-77e8-4763-a553-a5f52dce4f13
 @contratId = REMPLACER_PAR_UN_ID_DE_CONTRAT
 
-### Besoins à acheter (RA, RM) — projection de BESOIN_EN_ACHAT
+### Besoins à acheter (RA, RM) : projection de BESOIN_EN_ACHAT
 GET {{gw}}/api/besoins-a-acheter?page=0&size=20
 Authorization: Bearer {{token}}
 
@@ -13,7 +13,7 @@ Authorization: Bearer {{token}}
 GET {{gw}}/api/appels-offres?statut=PUBLIE&page=0&size=20&sort=datePublication,desc
 Authorization: Bearer {{token}}
 
-### Publier un appel d'offres (RA) — invités ACTIF vérifiés (R14), poids sommés à 100
+### Publier un appel d'offres (RA) : invités ACTIF vérifiés (R14), poids sommés à 100
 POST {{gw}}/api/appels-offres
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -35,7 +35,7 @@ Content-Type: application/json
   "fournisseurIdsInvites": ["f0000000-0000-0000-0000-000000000001", "f0000000-0000-0000-0000-000000000002"]
 }
 
-### Saisir une offre reçue hors portail (RA) — avant dateLimite (R02)
+### Saisir une offre reçue hors portail (RA) : avant dateLimite (R02)
 POST {{gw}}/api/appels-offres/{{aoId}}/offres
 Authorization: Bearer {{token}}
 Content-Type: application/json

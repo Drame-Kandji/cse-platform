@@ -1,4 +1,4 @@
-# Contrat d'API et d'événements — Plateforme CSE (v2)
+# Contrat d'API et d'événements : Plateforme CSE (v2)
 
 Ce document est **la référence unique** partagée par les microservices et le frontend `web-interne`.
 Tout écart doit être corrigé ici d'abord. Notation des DTO : pseudo-TypeScript (`?` = optionnel / nullable).
@@ -58,7 +58,7 @@ Tout écart doit être corrigé ici d'abord. Notation des DTO : pseudo-TypeScrip
 | `NiveauNotification` | `INFO`, `SUCCES`, `ALERTE`, `CRITIQUE` |
 | `TypeProcesVerbal` | `OUVERTURE`, `EVALUATION` |
 
-## 2. ms-suivi (port 8085) — chantiers, parc, affectations, maintenance
+## 2. ms-suivi (port 8085) : chantiers, parc, affectations, maintenance
 
 ```ts
 Chantier { id, code, nom, localisation, region, latitude, longitude, statut: StatutChantier,
@@ -178,7 +178,7 @@ StatistiquesFournisseurs { total, actifs, enAttente, suspendus, blacklistes, sco
 | PATCH | `/api/fournisseurs/{id}/valider-inscription` | RA | `EN_ATTENTE_VALIDATION → ACTIF` |
 | PATCH | `/api/fournisseurs/{id}/suspendre` | RA | `{motif}` |
 | PATCH | `/api/fournisseurs/{id}/reactiver` | RA | `SUSPENDU → ACTIF` |
-| POST | `/api/fournisseurs/{id}/blacklistage/demande` | RA | `{motif}` (étape 1, R09) — **uniquement sur un fournisseur `SUSPENDU`** (machine à états §B.3 ; sinon 409) ; refusée si une demande est déjà en cours |
+| POST | `/api/fournisseurs/{id}/blacklistage/demande` | RA | `{motif}` (étape 1, R09), **uniquement sur un fournisseur `SUSPENDU`** (machine à états §B.3 ; sinon 409) ; refusée si une demande est déjà en cours |
 | PATCH | `/api/fournisseurs/{id}/blacklister` | DG | `{approuve, commentaire?}` (étape 2, R09) |
 | POST | `/api/fournisseurs/{id}/documents` | RA | `{type,libelle,dateExpiration?}` → `DocumentAdministratif` |
 | POST | `/api/fournisseurs/{id}/evaluer` | RA, RM | `{contratId?,qualite,delais,conformite,sav,prix,commentaire?}` → 201 `Evaluation` (score recalculé, R07) |
@@ -197,7 +197,7 @@ R14 : `GET /api/fournisseurs?statut=ACTIF&specialite=X` sert à ms-achats pour v
 Consomme : `LIVRAISON_EFFECTUEE` (ponctualité), `RECEPTION_CONFIRMEE` (déclenche recalcul R07).
 Job quotidien : documents expirés, score < seuil (`cse.fournisseurs.seuil-alerte-score`).
 
-## 5. ms-achats (port 8083) — appels d'offres, contrats, engagements, factures
+## 5. ms-achats (port 8083) : appels d'offres, contrats, engagements, factures
 
 ```ts
 CriterePondere { code: CritereEvaluation, poids /* somme = 100 */ }
@@ -262,9 +262,9 @@ SyntheseFinance { montantEngage, montantEngagementsEnAttente, montantFacture, mo
 | POST | `/api/factures/{id}/payer` | DAF | → `PAYEE` |
 | POST | `/api/factures/{id}/rejeter` | DAF | `{motif}` → `REJETEE` |
 | GET | `/api/finance/synthese` | DAF, DG | → `SyntheseFinance` |
-| — | `/api/portail/**` | FOURN | portail externe (hors périmètre du front interne) : `GET appels-offres`, `POST appels-offres/{id}/offres`, `GET offres/mes-offres`, `GET attributions`, `GET|POST factures` filtrés par `fournisseur_id` |
+| - | `/api/portail/**` | FOURN | portail externe (hors périmètre du front interne) : `GET appels-offres`, `POST appels-offres/{id}/offres`, `GET offres/mes-offres`, `GET attributions`, `GET|POST factures` filtrés par `fournisseur_id` |
 
-## 6. ms-reporting (port 8086) — CQRS alimenté par Kafka
+## 6. ms-reporting (port 8086) : CQRS alimenté par Kafka
 
 Codes de profil : `DG` (alias accepté `DIRECTION_GENERALE`), `DAF`, `RESPONSABLE_ACHATS`, `RESPONSABLE_MATERIEL`, `CHEF_CHANTIER` ; profil par défaut selon la priorité DG > DAF > RA > RM > CHEF. Séries : indicateur autorisé si l'un des profils de l'appelant affiche la section correspondante (sinon 403 `INDICATEUR_NON_AUTORISE`). Profils autorisés : DG → tous ; RM → `RESPONSABLE_MATERIEL` ; RA → `RESPONSABLE_ACHATS` ; DAF → `DAF` ; CHEF → `CHEF_CHANTIER` (filtré sur ses chantiers). Profil non autorisé → 403.
 
@@ -310,7 +310,7 @@ Notification { id, type /* type d'événement */, titre, message, niveau: Niveau
 
 Règles de routage configurables (YAML) : type d'événement → destinataires (rôles et/ou champ utilisateur du payload), niveau, titre, lien, e-mail oui/non.
 
-## 8. ms-audit (port 8089) — ADMIN uniquement
+## 8. ms-audit (port 8089) : ADMIN uniquement
 
 ```ts
 AuditLog { id, eventId, occurredAt, service, action, entite, entiteId, utilisateurId?, utilisateurNom?,
@@ -400,13 +400,13 @@ Utilisateurs Keycloak (mot de passe dev `Cse@2026`, voir `infra/keycloak/realm-c
 | `00000000-0000-0000-0000-000000000601` | admin@cse.sn | Cheikh Ndiaye | ADMIN | |
 | `00000000-0000-0000-0000-000000000701` | fournisseur@cse.sn | Moussa Kane | FOURN | fournisseur 1 |
 
-Chantiers (`ms-suivi`) — UUID `c0000000-0000-0000-0000-00000000000N` :
-1 `CH-DKR-01` Extension autoroute Dakar–AIBD, Dakar (14.7167, -17.4677) · 2 `CH-THS-01` Contournement de Thiès RN2 (14.7910, -16.9256) ·
-3 `CH-STL-01` Pont de la lagune, Saint-Louis (16.0326, -16.4818) · 4 `CH-KLK-01` Réhabilitation route Kaolack–Fatick (14.1652, -16.0758) ·
+Chantiers (`ms-suivi`), UUID `c0000000-0000-0000-0000-00000000000N` :
+1 `CH-DKR-01` Extension autoroute Dakar-AIBD, Dakar (14.7167, -17.4677) · 2 `CH-THS-01` Contournement de Thiès RN2 (14.7910, -16.9256) ·
+3 `CH-STL-01` Pont de la lagune, Saint-Louis (16.0326, -16.4818) · 4 `CH-KLK-01` Réhabilitation route Kaolack-Fatick (14.1652, -16.0758) ·
 5 `CH-ZIG-01` Bâtiment administratif, Ziguinchor (12.5681, -16.2719) · 6 `CH-TBA-01` Aménagement hydraulique, Touba (14.8500, -15.8833) ·
-7 `CH-MBR-01` Station d'épuration, Mbour (14.4199, -16.9658) — `TERMINE`.
+7 `CH-MBR-01` Station d'épuration, Mbour (14.4199, -16.9658), `TERMINE`.
 
-Fournisseurs (`ms-fournisseurs`) — UUID `f0000000-0000-0000-0000-00000000000N` (noms fictifs) :
+Fournisseurs (`ms-fournisseurs`), UUID `f0000000-0000-0000-0000-00000000000N` (noms fictifs) :
 1 Sahel Engins SA (MATERIEL_ROULANT) · 2 Teranga Équipements BTP (MATERIEL_ROULANT, OUTILLAGE) · 3 Dakar Outillage Pro (OUTILLAGE) ·
 4 Cap-Vert Informatique (EQUIPEMENT_INFORMATIQUE) · 5 Atlantique Consommables SARL (CONSOMMABLE) · 6 Ndiambour Matériaux (SUSPENDU) ·
 7 Baobab Logistique (EN_ATTENTE_VALIDATION).

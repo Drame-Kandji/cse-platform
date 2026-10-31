@@ -1,4 +1,4 @@
-# Conventions — Plateforme interne CSE (`@cse/web-interne`)
+# Conventions : Plateforme interne CSE (`@cse/web-interne`)
 
 Ce document fixe les règles que **toute** page ou fonctionnalité doit suivre. Le socle (coquille, auth,
 HTTP, design system) est stable : on l'utilise, on ne le contourne pas. En cas de doute, regarder la
@@ -228,7 +228,7 @@ Importer depuis `@/shared/ui` (barrel) ou le fichier direct ; les composants lou
   Classes de ton prêtes : `softToneClasses`, `dotToneClasses`, `textToneClasses` (`shared/ui/tone.ts`).
 - Cartes : `Card` / `CardHeader` / `CardContent` / `CardFooter`, coins `rounded-xl`, bordure fine.
 - Chiffres : `tabular-nums` ; montants `formatMoney` (FCFA, fr-SN, sans décimales) ; dates
-  `formatDate`/`formatDateTime`/`formatRelative` (date-fns, fr) — `shared/lib/format.ts`.
+  `formatDate`/`formatDateTime`/`formatRelative` (date-fns, fr) : `shared/lib/format.ts`.
 - Pages : `PageHeader` en tête, puis contenu ; états `Skeleton`, `EmptyState`, `ErrorState` ; KPI
   `StatCard` ; compteurs de liste `CountTabs` ; historique `Timeline` ; workflow `Stepper` ; détail latéral `Sheet` ;
   modales `Dialog` ; menus `DropdownMenu` ; `Tabs`, `Tooltip`, `Avatar`, `Badge`.

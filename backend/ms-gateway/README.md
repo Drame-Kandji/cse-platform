@@ -1,4 +1,4 @@
-# ms-gateway — Passerelle d'API (port 8080)
+# ms-gateway : Passerelle d'API (port 8080)
 
 Point d'entrée unique de la plateforme : Spring Cloud Gateway **WebFlux** (`spring-cloud-starter-gateway-server-webflux`,
 Spring Cloud 2025.0). Spring MVC est interdit sur le classpath (règle `maven-enforcer` + test ArchUnit).

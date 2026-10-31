@@ -1,4 +1,4 @@
-# ADR 0013 : ms-auth — Keycloak source de vérité, synchronisation et changement de rôle SINGLE_TABLE
+# ADR 0013 : ms-auth, Keycloak source de vérité, synchronisation et changement de rôle SINGLE_TABLE
 
 Date : 2026-10-30
 Statut : Accepté

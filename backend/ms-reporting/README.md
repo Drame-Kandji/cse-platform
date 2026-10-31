@@ -1,4 +1,4 @@
-# ms-reporting — Tableaux de bord CQRS
+# ms-reporting : Tableaux de bord CQRS
 
 Port **8086** · schéma PostgreSQL `reporting` · utilisateur `ms_reporting` · contrat : `docs/API_CONTRACT.md` §6.
 
@@ -73,7 +73,7 @@ Montants FCFA entiers ; taux en % à une décimale ; un taux de dénominateur nu
 
 - **Parc** (état courant du périmètre) : `operationnels = total − enMaintenance − réformés` (disponibles ou
   affectés ; aussi par catégorie) ; **disponibilité opérationnelle**
-  `tauxDisponibilite = (total − enMaintenance − réformés) / (total − réformés)` — un matériel affecté reste
+  `tauxDisponibilite = (total − enMaintenance − réformés) / (total − réformés)`, un matériel affecté reste
   disponible pour l'exploitation (un chef dont les 12 engins sont affectés et aucun en panne voit 100 %).
 - **Taux d'utilisation** = Σ jours affectés / Σ jours opérationnels, jour par jour et matériel par matériel sur
   la période écoulée : jours opérationnels = jours écoulés − jours d'immobilisation en maintenance (début → fin,
@@ -146,7 +146,7 @@ Section parc : « Opérationnels » et « Disponibilité opérationnelle » (aus
 
 ## Tests
 
-`cd backend && mvn -o -q -pl ms-reporting spotless:apply verify` — domaine (calculs sur un jeu construit à la
+`cd backend && mvn -o -q -pl ms-reporting spotless:apply verify`, domaine (calculs sur un jeu construit à la
 main, fusions, période, ISO, politique d'accès), application (séquences d'événements, rejeu, désordre, fausse
 persistance en mémoire), `@WebMvcTest` (401, 403 rôle / profil / chantier / indicateur, 400 ProblemDetail,
 exports), une intégration Testcontainers (listeners appelés avec des enveloppes JSON, SQL réel, API, instantané

@@ -3,7 +3,7 @@
 Notifications in-app (liste, compteur, lecture, flux SSE) et e-mails, produites à partir des
 événements Kafka selon des **règles de routage déclarées en YAML** (`cse.notification.regles`).
 
-## API (contrat §7) — tous les rôles internes
+## API (contrat §7) : tous les rôles internes
 | Méthode | Route | Détail |
 |---|---|---|
 | GET | `/api/notifications?lue&page&size` | `Page<Notification>` (destinataire = l'utilisateur ou l'un de ses rôles), plus récentes d'abord |

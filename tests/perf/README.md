@@ -35,7 +35,7 @@ virtuels partagent le même compte et donc le même seau (ex. 200 VU → ~70 VU 
 sur un seul compte), ce qui déclenche des réponses **429** qui ne reflètent pas un usage réel (un humain ne
 dépasse pas quelques requêtes par seconde). Le compteur `cse_reponses_429` les isole dans le résumé.
 
-Pour une campagne à 100–200 utilisateurs, **ne pas désactiver la limitation** (`GATEWAY_RATE_LIMIT_ENABLED`
+Pour une campagne à 100-200 utilisateurs, **ne pas désactiver la limitation** (`GATEWAY_RATE_LIMIT_ENABLED`
 doit rester `true`, elle fait partie du système mesuré) ; deux options :
 
 1. *Recommandé* : créer N comptes de test par rôle dans un realm de recette et répartir les VU dessus
@@ -50,5 +50,5 @@ doit rester `true`, elle fait partie du système mesuré) ; deux options :
 |---|---|---|---|---|---|
 | 2026-10-31 | Poste de dev 12 Go, 10 services sur l'hôte (JVM 256 Mo, profil dev), accès direct passerelle :8080 | 50 VU, 10 s + 30 s + 5 s, 2 404 requêtes API | **23 ms** (p99 33 ms, max 126 ms) | 0 % | 0 |
 
-La campagne complète (150–200 VU, 5–10 min) est à exécuter sur l'environnement de recette, pas sur un poste
+La campagne complète (150-200 VU, 5-10 min) est à exécuter sur l'environnement de recette, pas sur un poste
 de développement partagé (mémoire limitée).

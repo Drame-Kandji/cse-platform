@@ -1,4 +1,4 @@
-# ms-suivi — Suivi du parc matériel
+# ms-suivi : Suivi du parc matériel
 
 Microservice de la plateforme CSE (port **8085**, schéma PostgreSQL **`suivi`**, utilisateur `ms_suivi`).
 Il gère les **chantiers**, le **parc de matériels** (cycle de vie `EtatMateriel`), les **affectations**
@@ -24,10 +24,10 @@ sn.cse.suivi
 
 | Règle | Mise en œuvre |
 |---|---|
-| R04 — seul un matériel `DISPONIBLE` est affectable | `Materiel.affecter`, `PolitiqueAffectation` → 422 `MATERIEL_NON_DISPONIBLE` |
+| R04 : seul un matériel `DISPONIBLE` est affectable | `Materiel.affecter`, `PolitiqueAffectation` → 422 `MATERIEL_NON_DISPONIBLE` |
 | Chevauchement de périodes | `PolitiqueAffectation` → 409 `CONFLIT_AFFECTATION` ; index unique partiel `ux_affectations_materiel_active` (une affectation active par matériel) + `@Version` : la seconde de deux demandes simultanées reçoit 409 `CONFLIT_AFFECTATION` |
-| R12 — DG en lecture seule | `@PreAuthorize` : aucune écriture pour `DIRECTION_GENERALE` sauf la décision de réforme |
-| R13 — réforme demandée par le RM, validée par la DG | `POST …/reforme/demande` puis `PATCH …/reforme/valider` ; `REFORME` est terminal, le matériel doit être libéré et hors maintenance |
+| R12 : DG en lecture seule | `@PreAuthorize` : aucune écriture pour `DIRECTION_GENERALE` sauf la décision de réforme |
+| R13 : réforme demandée par le RM, validée par la DG | `POST …/reforme/demande` puis `PATCH …/reforme/valider` ; `REFORME` est terminal, le matériel doit être libéré et hors maintenance |
 | Chef de chantier limité à ses `chantier_ids` | `Perimetre` (listes filtrées, 403 `CHANTIER_NON_AUTORISE` sur un chantier hors périmètre) |
 
 `EtatMateriel` : `DISPONIBLE → AFFECTE | EN_MAINTENANCE | REFORME` ; `AFFECTE → DISPONIBLE | EN_MAINTENANCE | REFORME` ;
@@ -63,7 +63,7 @@ Les numéros d'ordre de travail `OT-AAAA-NNNN` proviennent d'une séquence Postg
 | POST / PUT | `/api/referentiels/types-engins[/{id}]` | ADMIN |
 
 Erreurs au format RFC 7807 (`application/problem+json`, champs `code`, `traceId`, `errors`).
-Swagger UI : `http://localhost:8085/swagger-ui.html` — contrat figé dans `src/test/resources/openapi.json`.
+Swagger UI : `http://localhost:8085/swagger-ui.html`, contrat figé dans `src/test/resources/openapi.json`.
 
 ## Événements
 
@@ -122,5 +122,5 @@ cd backend && flock /tmp/cse-maven.lock env MAVEN_OPTS=-Xmx768m mvn -o -q -pl ms
 
 Tests : domaine et cas d'utilisation (ports en mémoire), `@WebMvcTest` sécurité/ProblemDetail, ArchUnit
 (`HexagonalArchitectureRules`), deux classes d'intégration Testcontainers partageant un contexte (parcours
-complet, concurrence, consommateur Kafka, jobs, R12/R13, snapshot OpenAPI — régénération : `-Dopenapi.regenerer=true`).
+complet, concurrence, consommateur Kafka, jobs, R12/R13, snapshot OpenAPI, régénération : `-Dopenapi.regenerer=true`).
 JaCoCo impose 80 % de couverture des lignes sur `domain` + `application`.

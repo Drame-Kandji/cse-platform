@@ -43,7 +43,7 @@ Authorization: Bearer {{token}}
 GET {{gw}}/api/materiels/carte?etat=AFFECTE
 Authorization: Bearer {{token}}
 
-### Affecter (RM — R04 ; chevauchement → 409 CONFLIT_AFFECTATION)
+### Affecter (RM, R04 ; chevauchement → 409 CONFLIT_AFFECTATION)
 POST {{gw}}/api/materiels/{{materielId}}/affecter
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -71,14 +71,14 @@ Content-Type: application/json
 
 { "dateFinReelle": "2026-12-08", "commentaire": "Fin des terrassements" }
 
-### Demander la réforme (RM — R13 étape 1)
+### Demander la réforme (RM, R13 étape 1)
 POST {{gw}}/api/materiels/{{materielId}}/reforme/demande
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 { "motif": "Coût de réparation supérieur à la valeur résiduelle" }
 
-### Valider la réforme (DG — R13 étape 2)
+### Valider la réforme (DG, R13 étape 2)
 PATCH {{gw}}/api/materiels/{{materielId}}/reforme/valider
 Authorization: Bearer {{token}}
 Content-Type: application/json

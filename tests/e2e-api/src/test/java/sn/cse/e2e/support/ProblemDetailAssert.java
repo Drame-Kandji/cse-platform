@@ -29,7 +29,7 @@ public final class ProblemDetailAssert {
     assertThat(corps.getString("detail")).isNotBlank();
     assertThat(corps.getString("traceId")).isNotBlank();
     assertThat(corps.getString("timestamp")).isNotBlank();
-    // Jamais de trace technique exposée au client (AGENTS.md A.2).
+    // Jamais de trace technique exposée au client.
     assertThat(reponse.asString()).doesNotContain("Exception").doesNotContain("at sn.cse.");
     return corps;
   }

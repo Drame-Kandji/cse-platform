@@ -36,7 +36,7 @@ export function affectationEnCours(materiel: Pick<MaterielDetail, 'affectations'
 
 /**
  * Actions autorisees sur une fiche engin selon le role et l'etat (ergonomie ; l'API fait foi).
- * - RM : cycle de vie complet (affecter si DISPONIBLE — R04, liberer, etat, demande de reforme) ;
+ * - RM : cycle de vie complet (affecter si DISPONIBLE (R04), liberer, etat, demande de reforme) ;
  * - CHEF : reception, releve d'heures et panne uniquement sur ses chantiers ;
  * - DG : lecture seule (R12), sauf la decision sur une reforme demandee (R13) ;
  * - REFORME est terminal : plus aucune action.

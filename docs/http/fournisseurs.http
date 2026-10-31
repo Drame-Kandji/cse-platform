@@ -33,7 +33,7 @@ Content-Type: application/json
   "coordonneesBancaires": { "banque": "Banque fictive", "iban": "SN08SN0100152000000000000000" }
 }
 
-### Évaluer (RA, RM — score recalculé, R07)
+### Évaluer (RA, RM, score recalculé, R07)
 POST {{gw}}/api/fournisseurs/{{fournisseurId}}/evaluer
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -59,14 +59,14 @@ Content-Type: application/json
 
 { "motif": "Documents administratifs expirés" }
 
-### Demander le blacklistage d'un fournisseur SUSPENDU (RA — R09 étape 1)
+### Demander le blacklistage d'un fournisseur SUSPENDU (RA, R09 étape 1)
 POST {{gw}}/api/fournisseurs/f0000000-0000-0000-0000-000000000006/blacklistage/demande
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 { "motif": "Fraude documentaire avérée" }
 
-### Statuer (DG — R09 étape 2)
+### Statuer (DG, R09 étape 2)
 PATCH {{gw}}/api/fournisseurs/f0000000-0000-0000-0000-000000000006/blacklister
 Authorization: Bearer {{token}}
 Content-Type: application/json

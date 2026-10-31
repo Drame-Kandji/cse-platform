@@ -3,7 +3,7 @@
 > Pour qui rejoint le projet. Lire d'abord : [README](../README.md) (démarrage), [architecture.md](architecture.md),
 > puis les conventions détaillées : [BACKEND_CONVENTIONS.md](BACKEND_CONVENTIONS.md) (back) et
 > [`frontend/apps/web-interne/CONVENTIONS.md`](../frontend/apps/web-interne/CONVENTIONS.md) (front).
-> Règles permanentes du projet : [AGENTS.md](../AGENTS.md). Le contrat [API_CONTRACT.md](API_CONTRACT.md) fait foi.
+> Le contrat [API_CONTRACT.md](API_CONTRACT.md) fait foi.
 
 ## 1. Poste de travail
 
@@ -49,7 +49,7 @@ docs/                 documentation, ADR, collections .http, captures
   colonnes d'audit, index, séquences annuelles pour les références lisibles.
 - **API** : chemins du contrat, pagination `PageResponse<T>` (20 par défaut, 50 max, tri en liste blanche),
   erreurs RFC 7807 avec `code` stable, Swagger complet (`@Operation`, `@ApiResponse`, `@Schema(example)` en français).
-- **Interdits** (A.2) : `-DskipTests`, `@Disabled`, `catch` vide, `@SuppressWarnings` de complaisance, TODO sans
+- **Interdits** : `-DskipTests`, `@Disabled`, `catch` vide, `@SuppressWarnings` de complaisance, TODO sans
   ticket, `System.out`, `printStackTrace`, données factices en production, `e.getMessage()` renvoyé au client,
   désactivation de la sécurité.
 - **Front** : feature-sliced, TanStack Query, react-hook-form + zod, jetons de couleur uniquement, pas de `any`,
@@ -128,7 +128,7 @@ Pour repartir d'un jeu propre : `scripts/cse.sh reset` ([OPERATIONS.md](OPERATIO
 
 | Niveau | Outils | Où |
 |---|---|---|
-| Domaine | JUnit 5 + AssertJ, sans Spring | `src/test/java/.../domain` — au moins un test par règle (`*_R0X`) |
+| Domaine | JUnit 5 + AssertJ, sans Spring | `src/test/java/.../domain` : au moins un test par règle (`*_R0X`) |
 | Application | Mockito ou fakes en mémoire | `.../application` |
 | API / sécurité | `@WebMvcTest` + `spring-security-test` + `CseJwt` | 401/403/400/409/422 en ProblemDetail |
 | Adaptateurs HTTP | WireMock (avec les vrais aspects Resilience4j) | ms-besoins, ms-achats, ms-auth, ms-gateway |
@@ -200,7 +200,7 @@ Relire le diff de `openapi.json` dans la revue : c'est le contrat publié.
 - La CI (`.github/workflows/ci.yml`) doit être verte : backend `mvn -B verify`, frontend typecheck/lint/test/build,
   images sur `main`. `make verify` en local avant de pousser.
 - Toute décision structurante → ADR dans `docs/adr/` + ligne dans [DECISIONS.md](../DECISIONS.md).
-- Mettre à jour `PROGRESS.md`, le README du service et `CHANGELOG.md` à chaque lot (DoD A.9).
+- Mettre à jour le README du service et `CHANGELOG.md` à chaque lot.
 
 ## 8. Collections HTTP
 

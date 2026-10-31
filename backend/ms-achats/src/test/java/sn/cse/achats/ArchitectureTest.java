@@ -6,7 +6,7 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 import sn.cse.common.archunit.HexagonalArchitectureRules;
 
-/** Règles d'architecture hexagonale communes (AGENTS.md A.4), exécutées par Surefire. */
+/** Règles d'architecture hexagonale communes, exécutées par Surefire. */
 class ArchitectureTest {
 
   @TestFactory

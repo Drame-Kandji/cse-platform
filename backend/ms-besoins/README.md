@@ -1,4 +1,4 @@
-# ms-besoins — Besoins en matériel
+# ms-besoins : Besoins en matériel
 
 Microservice (port **8082**, schéma PostgreSQL `besoins`, utilisateur `ms_besoins`) qui gère l'expression
 des besoins en matériel par les chantiers, leur validation par le Responsable Matériel (R01), puis leur
@@ -59,10 +59,10 @@ de soumission ; tri autorisé : `createdAt` (défaut, desc), `updatedAt`, `dateB
   `suivi` : délai (`cse.clients.read-timeout`), rejeu ×3 avec attente exponentielle sur erreurs réseau/5xx,
   disjoncteur ; les refus métier 4xx ne sont ni rejoués ni comptés comme pannes (409/422/404 sur une
   affectation → matériel suivant).
-- **Kafka (outbox)** — produit sur `cse.besoins.events` (`BesoinPayload`) : `BESOIN_SOUMIS`,
+- **Kafka (outbox)** : produit sur `cse.besoins.events` (`BesoinPayload`) : `BESOIN_SOUMIS`,
   `BESOIN_MODIFIE`, `BESOIN_VALIDE`, `BESOIN_REJETE`, `BESOIN_AFFECTE_DIRECT`, `BESOIN_EN_ACHAT`
   (+ `AUDIT` automatique sur `cse.audit.events`).
-- **Kafka (consommation)** — `cse.suivi.events` : `MATERIEL_AFFECTE` portant un `besoinId` → entrée
+- **Kafka (consommation)** : `cse.suivi.events` : `MATERIEL_AFFECTE` portant un `besoinId` → entrée
   d'historique `MATERIEL_AFFECTE` (idempotent via `processed_event`, rejeu + DLT communs).
 
 ## Configuration (`cse.besoins.*`)
@@ -80,8 +80,8 @@ de soumission ; tri autorisé : `createdAt` (défaut, desc), `updatedAt`, `dateB
 ## Données de démonstration (profil `dev`)
 
 `DevDataSeeder` crée 40 besoins (identifiants fixes `b0000000-0000-0000-0000-0000000000NN`) sur les
-9 derniers mois, chantiers 1 à 6 du référentiel partagé : demandeurs Mamadou Diop (chantiers 1–2),
-Awa Ndiaye (3–4) et Ibrahima Fall, RM (5–6, sans chef) ; décisions par le RM ; tous statuts et priorités ;
+9 derniers mois, chantiers 1 à 6 du référentiel partagé : demandeurs Mamadou Diop (chantiers 1-2),
+Awa Ndiaye (3-4) et Ibrahima Fall, RM (5-6, sans chef) ; décisions par le RM ; tous statuts et priorités ;
 6 rejets motivés ; achats majoritairement `MATERIEL_ROULANT` ; doublon potentiel (bétonnières du
 chantier 1) et regroupement multi-chantiers (pelles 20 t). Les événements passent par l'agrégat et
 l'outbox, datés de l'action simulée et attribués à leur auteur. ms-suivi n'est jamais appelé : les

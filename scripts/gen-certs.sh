@@ -2,8 +2,8 @@
 # Génère une PKI de DÉVELOPPEMENT dans infra/certs/ (répertoire ignoré par Git) :
 #   ca.crt / ca.key           autorité de certification auto-signée « CSE Dev CA » (10 ans)
 #   localhost.crt / .key      certificat serveur du frontal Nginx (SAN : localhost, 127.0.0.1, web-interne)
-#   services.crt / .key       certificat serveur commun aux microservices (SAN : ms-*, localhost) — profil tls
-#   truststore.p12            magasin de confiance PKCS12 contenant la CA (pour les JVM clientes) — si keytool présent
+#   services.crt / .key       certificat serveur commun aux microservices (SAN : ms-*, localhost), profil tls
+#   truststore.p12            magasin de confiance PKCS12 contenant la CA (pour les JVM clientes), si keytool présent
 # Usage : scripts/gen-certs.sh [--force]
 # En production, ces fichiers sont remplacés par des certificats émis par la PKI de l'entreprise.
 set -euo pipefail
@@ -66,7 +66,7 @@ fi
 
 # La clé de la CA reste privée. Les clés serveurs sont lues par des conteneurs non-root (UID 101 pour
 # nginx-unprivileged, utilisateur « cse » des microservices) : lecture ouverte, acceptable pour une PKI
-# de développement seulement — en production, utiliser un secret Docker/Kubernetes avec le bon propriétaire.
+# de développement seulement : en production, utiliser un secret Docker/Kubernetes avec le bon propriétaire.
 chmod 600 "$DEST/ca.key"
 chmod 644 "$DEST"/*.crt "$DEST/localhost.key" "$DEST/services.key"
 rm -f "$DEST/ca.srl"

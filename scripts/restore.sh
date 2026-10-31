@@ -10,8 +10,8 @@
 #   --hote <h>            serveur cible (défaut : localhost)        --port <p>  (défaut : 5433)
 #   --utilisateur <u>     superutilisateur cible (défaut : POSTGRES_USER de .env)
 #                         mot de passe : PGPASSWORD, sinon POSTGRES_PASSWORD de .env
-#   --globals             rejoue d'abord globals.sql.gz (rôles ms_*, keycloak) — serveur neuf
-#   --sans-proprietaires  ignore propriétaires et droits (--no-owner --no-acl) — base d'analyse
+#   --globals             rejoue d'abord globals.sql.gz (rôles ms_*, keycloak) : serveur neuf
+#   --sans-proprietaires  ignore propriétaires et droits (--no-owner --no-acl) : base d'analyse
 #   --yes                 pas de confirmation interactive (automatisation, test de restauration)
 # La restauration est atomique (--single-transaction) : en cas d'erreur, la base cible reste inchangée.
 set -euo pipefail

@@ -47,7 +47,7 @@
         <poi.version>5.4.1</poi.version>
         <resilience4j.version>2.3.0</resilience4j.version>
         <wiremock.version>3.13.1</wiremock.version>
-        <!-- Seuil de couverture JaCoCo imposé sur domain + application (AGENTS.md A.6-14). -->
+        <!-- Seuil de couverture JaCoCo imposé sur domain + application. -->
         <jacoco.minimum.coverage>0.80</jacoco.minimum.coverage>
         <!-- Les modules sans logique métier (gateway, bibliothèques) désactivent la porte de couverture. -->
         <jacoco.check.skip>false</jacoco.check.skip>

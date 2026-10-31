@@ -1,4 +1,4 @@
-# Rapport qualité — plateforme CSE v2.0.0
+# Rapport qualité : plateforme CSE v2.0.0
 
 Mesures du **31 octobre 2026** sur le poste de développement (12 Go), à partir du code de la branche
 principale. Méthode : `mvn -o -pl <module> test jacoco:report` pour chaque module (rapports Surefire et
@@ -15,7 +15,7 @@ La couverture « domaine + application » est le ratio de lignes couvertes des p
 | Règles ArchUnit exécutées | 5 par service métier (45) + 2 pour la passerelle | vertes | ✅ |
 | Opérations REST documentées (OpenAPI, figées par instantané) | **123** sur 9 services + 1 passerelle = 124 | 100 % | ✅ |
 | Opérations protégées par `@PreAuthorize` | 124 / 124 | 100 % | ✅ |
-| Tests frontend (Vitest) | **183** dans 45 fichiers, tous verts | verts | ✅ |
+| Tests frontend (Vitest) | **186** dans 45 fichiers, tous verts | verts | ✅ |
 | Couverture frontend (lignes, tout `src/`) | **63,2 %** (branches 79 %) | ≥ 80 % sur logique/hooks | ⚠️ |
 | Performance (k6, 50 utilisateurs) | p95 **23 ms**, p99 33 ms, 0 % d'erreur | p95 < 2 s, erreurs < 1 % | ✅ (campagne 150 VU à faire en recette) |
 | Restauration de sauvegarde | testée : 74 tables identiques, base `cse` restaurée en 4 s | RTO < 4 h | ✅ |
@@ -24,8 +24,8 @@ La couverture « domaine + application » est le ratio de lignes couvertes des p
 
 | Module | Tests | Échecs | Couverture domaine + application | Couverture totale (lignes) | ArchUnit | Instantané OpenAPI |
 |---|---|---|---|---|---|---|
-| cse-common | 17 | 0 | n/a (socle) | 42,3 % | — | — |
-| cse-events | 5 | 0 | n/a (contrats) | 48,6 % | — | — |
+| cse-common | 17 | 0 | n/a (socle) | 42,3 % | - | - |
+| cse-events | 5 | 0 | n/a (contrats) | 48,6 % | - | - |
 | ms-auth | 81 | 0 | 99,5 % (373/375) | 93,3 % | 5 ✅ | ✅ 8 opérations |
 | ms-gateway | 18 | 0 | n/a (porte désactivée : pas de domaine) | 93,1 % | 2 ✅ | agrégation testée |
 | ms-besoins | 94 | 0 | 99,5 % (652/655) | 97,6 % | 5 ✅ | ✅ 10 |
@@ -55,20 +55,20 @@ l'administrateur). ms-auth, ms-chatbot, ms-notification et ms-reporting n'ont pa
 
 ## 3. Frontend (`@cse/web-interne`)
 
-- 183 tests Vitest + Testing Library + MSW (hooks, schémas zod, mapping d'erreurs ProblemDetail, gardes de
+- 186 tests Vitest + Testing Library + MSW (hooks, schémas zod, mapping d'erreurs ProblemDetail, gardes de
   rôle, pages principales : besoins, validation, matériels, chantiers, maintenances, fournisseurs, contrats,
   finance, audit, tableau de bord).
 - `typecheck` (TypeScript strict) et `lint` (`strictTypeChecked`, jsx-a11y, 0 avertissement toléré) dans
   `make front-verify` et la CI ; scripts de garde `check-palette.mjs` et `check-no-emoji.mjs`.
 - Couverture globale 63,2 % des lignes : les pages et composants visuels tirent la moyenne vers le bas ;
-  l'objectif de 80 % « sur la logique et les hooks » (A.8) n'est pas mesuré séparément (pas de seuil
+  l'objectif de 80 % « sur la logique et les hooks » n'est pas mesuré séparément (pas de seuil
   configuré dans Vitest) : **écart à résorber**.
-- Tests de bout en bout (Playwright pour web-interne, scénarios API via la passerelle) : en cours d'ajout
-  (`make e2e`, `tests/README.md`).
+- Tests de bout en bout : Playwright pour web-interne (4/4, dont les 3 scénarios critiques) et scénarios
+  API via la passerelle avec RestAssured (14/14) ; `make e2e`, voir `tests/README.md`.
 
-## 4. Définition de terminé (A.9) par service
+## 4. Définition de terminé par service
 
-Légende : ✅ conforme et vérifié ; ⚠️ partiel ou non vérifiable automatiquement ; — sans objet.
+Légende : ✅ conforme et vérifié ; ⚠️ partiel ou non vérifiable automatiquement ; - sans objet.
 
 | Critère | auth | gateway | besoins | achats | fournisseurs | suivi | reporting | chatbot | notification | audit |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -77,8 +77,8 @@ Légende : ✅ conforme et vérifié ; ⚠️ partiel ou non vérifiable automat
 | Javadoc FR sur l'API publique | ⚠️¹ | ⚠️¹ | ⚠️¹ | ⚠️¹ | ⚠️¹ | ⚠️¹ | ⚠️¹ | ⚠️¹ | ⚠️¹ | ⚠️¹ |
 | Swagger complet + exemples FR | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Tests verts, couverture ≥ 80 % | ✅ | ✅² | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Migration Flyway (`ddl-auto=validate`) | ✅ | — | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Événements / outbox / audit | ✅ | — | ✅ | ✅ | ✅ | ✅ | ✅³ | ⚠️⁴ | ✅³ | ✅³ |
+| Migration Flyway (`ddl-auto=validate`) | ✅ | - | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Événements / outbox / audit | ✅ | - | ✅ | ✅ | ✅ | ✅ | ✅³ | ⚠️⁴ | ✅³ | ✅³ |
 | Sécurité par rôle testée (401/403) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | README du service à jour | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `make verify` vert | ✅⁵ | ✅⁵ | ✅⁵ | ✅⁵ | ✅⁵ | ✅⁵ | ✅⁵ | ✅⁵ | ✅⁵ | ✅⁵ |
@@ -90,7 +90,7 @@ Légende : ✅ conforme et vérifié ; ⚠️ partiel ou non vérifiable automat
 4. ms-chatbot ne publie aucun événement : la création/suppression de conversations n'est donc pas auditée
    (données personnelles de l'utilisateur, non métier).
 5. Tests et couverture ré-exécutés le 31/10/2026 ; `spotless:check` et le contrôle JaCoCo s'exécutent dans
-   `mvn verify` (CI). `PROGRESS.md` et les commits conventionnels tenus à jour.
+   `mvn verify` (CI).
 
 ## 5. Portes de qualité outillées
 
@@ -103,12 +103,12 @@ Légende : ✅ conforme et vérifié ; ⚠️ partiel ou non vérifiable automat
 | Instantanés OpenAPI | tests d'intégration | ✅ |
 | ESLint strict + TypeScript strict + garde palette/emoji | `make front-verify` | ✅ |
 | OWASP dependency-check (CVSS ≥ 7) + `pnpm audit` | CI hebdomadaire | ✅ (hors `make verify`) |
-| Checkstyle | — | ⚠️ non branché (exigé par A.3/A.6) |
-| Journaux JSON structurés | — | ⚠️ format texte avec corrélation (A.6) |
+| Checkstyle | - | ⚠️ non branché (exigé par la spécification) |
+| Journaux JSON structurés | - | ⚠️ format texte avec corrélation |
 
 ## 6. Dette connue
 
-Reprise de `PROGRESS.md` et des constats de la documentation :
+Écarts connus, repris des différents documents :
 
 - Jobs planifiés sans verrou distribué (ShedLock à ajouter pour du multi-instance).
 - Registre SSE et limiteur de débit de l'assistant en mémoire (mono-instance).
@@ -120,4 +120,4 @@ Reprise de `PROGRESS.md` et des constats de la documentation :
 - Couverture frontend 63 % < 80 % ; Checkstyle absent ; journaux non JSON.
 - Portail fournisseur : API backend présentes, application front hors périmètre (sources vides).
 - Écran Finance réservé DAF/DG alors que l'API autorise le RA à saisir des factures (pas d'écran RA).
-- Campagne de charge 150–200 utilisateurs à exécuter sur l'environnement de recette.
+- Campagne de charge 150-200 utilisateurs à exécuter sur l'environnement de recette.

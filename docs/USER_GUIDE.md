@@ -1,4 +1,4 @@
-# Guide utilisateur — Plateforme interne CSE
+# Guide utilisateur : Plateforme interne CSE
 
 Ce guide explique, rôle par rôle, comment réaliser les tâches courantes dans l'application web interne de
 la Compagnie Sahélienne d'Entreprises. Les captures proviennent de l'environnement de démonstration
@@ -290,7 +290,7 @@ catalogue).
 **Nouveau fournisseur** pour l'enregistrer. Dans la fiche : informations légales, contact, coordonnées
 bancaires (visibles du RA et de la DAF seulement), documents administratifs (alerte si expirés),
 évaluations, catalogue, litiges ; actions **Valider l'inscription**, **Suspendre**, réactiver,
-**Demander le blacklistage** (fournisseur suspendu uniquement, décision de la Direction Générale — R09).
+**Demander le blacklistage** (fournisseur suspendu uniquement, décision de la Direction Générale, R09).
 
 ![Fournisseurs](images/ra-fournisseurs.png)
 
@@ -349,7 +349,7 @@ décisions.
   livraisons en retard), le graphique de disponibilité et d'utilisation du parc et la liste **À traiter**
   (attributions en cours, engagements en attente, besoins critiques). **Voir l'analyse détaillée** ouvre les
   Rapports.
-- **Rapports** : l'analyse complète — graphiques (parc par catégorie, besoins par priorité, exécution
+- **Rapports** : l'analyse complète, graphiques (parc par catégorie, besoins par priorité, exécution
   budgétaire, meilleurs fournisseurs) puis synthèse chiffrée par section (parc, besoins, achats,
   fournisseurs, finances, chantiers), filtrable par vue, période et chantier ; **Exporter en PDF** ou
   **Exporter en Excel**.

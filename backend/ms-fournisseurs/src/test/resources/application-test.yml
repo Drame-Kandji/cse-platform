@@ -13,7 +13,7 @@ spring:
           jwk-set-uri: http://localhost:1/certs
 cse:
   crypto:
-    # Clé AES-256 fixe réservée aux tests (32 octets en Base64) — jamais utilisée hors tests.
+    # Clé AES-256 fixe réservée aux tests (32 octets en Base64) : jamais utilisée hors tests.
     key: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
   outbox:
     relay-enabled: false

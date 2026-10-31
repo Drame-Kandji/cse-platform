@@ -1,4 +1,4 @@
-# ms-audit — Journal d'audit immuable
+# ms-audit : Journal d'audit immuable
 
 Port **8089** · schéma PostgreSQL `audit` · utilisateur `ms_audit` · contrat : `docs/API_CONTRACT.md` §8.
 

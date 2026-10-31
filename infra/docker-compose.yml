@@ -1,4 +1,4 @@
-# Plateforme CSE — orchestration Docker Compose.
+# Plateforme CSE : orchestration Docker Compose.
 #   Infrastructure seule (développement local) : docker compose -f infra/docker-compose.yml up -d
 #   Plateforme complète                        : docker compose -f infra/docker-compose.yml --profile apps up -d --build
 #   Sauvegardes seules                         : docker compose -f infra/docker-compose.yml --profile backup up -d backup

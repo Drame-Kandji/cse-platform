@@ -4,7 +4,7 @@ import sn.cse.common.exception.BusinessRuleException;
 import sn.cse.fournisseurs.domain.exception.CodesErreur;
 
 /**
- * Coordonnées bancaires d'un fournisseur — donnée sensible, chiffrée au repos (AES-256-GCM) et
+ * Coordonnées bancaires d'un fournisseur, donnée sensible, chiffrée au repos (AES-256-GCM) et
  * visible uniquement du Responsable des Achats et de la DAF.
  *
  * @param banque nom de la banque

@@ -1,6 +1,6 @@
 # Analyse des vulnérabilités des dépendances (OWASP dependency-check) : séparée de la CI car lente
 # (téléchargement de la base NVD). Hebdomadaire et à la demande.
-# Secret recommandé : NVD_API_KEY (https://nvd.nist.gov/developers/request-an-api-key) — sans clé,
+# Secret recommandé : NVD_API_KEY (https://nvd.nist.gov/developers/request-an-api-key), sans clé,
 # la mise à jour de la base NVD est fortement limitée en débit.
 name: Vulnérabilités des dépendances
 

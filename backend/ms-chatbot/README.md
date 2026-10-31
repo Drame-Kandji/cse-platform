@@ -4,7 +4,7 @@ Assistant matériel et logistique. Pipeline du diagramme de séquence (Annexe UM
 `ChatbotController` → `ChatbotService` (**verifierRole** → **analyseIntention** → **getContexteData** →
 **appliquerFiltreRole** → **genererReponse**) → `HistoriqueService` (conversation + messages + sources).
 
-## API (contrat §10) — tous les rôles internes
+## API (contrat §10) : tous les rôles internes
 | Méthode | Route | Détail |
 |---|---|---|
 | POST | `/api/chatbot/query` | `{question, conversationId?}` → `Reponse` ; 400 vide / > 1000 car., 404 conversation d'autrui, 429 débit |

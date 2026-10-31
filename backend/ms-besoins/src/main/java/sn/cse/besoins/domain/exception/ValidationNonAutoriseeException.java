@@ -2,7 +2,7 @@ package sn.cse.besoins.domain.exception;
 
 import sn.cse.common.exception.ForbiddenOperationException;
 
-/** Règle R01 : seul le détenteur du rôle de l'étape courante valide ou rejette — HTTP 403. */
+/** Règle R01 : seul le détenteur du rôle de l'étape courante valide ou rejette (HTTP 403). */
 public class ValidationNonAutoriseeException extends ForbiddenOperationException {
 
   /**

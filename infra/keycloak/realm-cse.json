@@ -1,6 +1,6 @@
 {
   "realm": "cse",
-  "displayName": "CSE — Gestion du matériel",
+  "displayName": "CSE · Gestion du matériel",
   "enabled": true,
   "internationalizationEnabled": true,
   "supportedLocales": [
@@ -233,7 +233,7 @@
     },
     {
       "clientId": "cse-tests-e2e",
-      "name": "Tests E2E et scripts (DEV UNIQUEMENT — à supprimer du realm de production)",
+      "name": "Tests E2E et scripts (DEV UNIQUEMENT, à supprimer du realm de production)",
       "enabled": true,
       "publicClient": true,
       "standardFlowEnabled": false,

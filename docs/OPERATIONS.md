@@ -1,4 +1,4 @@
-# Opérations — plateforme CSE
+# Opérations : plateforme CSE
 
 Ce document décrit l'exploitation : déploiement, frontal HTTPS, sauvegardes et restauration (RTO/RPO),
 chiffrement des flux internes, intégration continue, tests de charge et supervision.
@@ -57,7 +57,7 @@ Configuration `infra/nginx/web-interne.conf` (modèle `envsubst`) :
 - Cartes de sources (`*.map`) retirées de l'image.
 
 Ports : le conteneur écoute 8443/8080 (non privilégiés), publiés sur l'hôte en **8443** (HTTPS) et **8000**
-(HTTP → 301) — `WEB_HTTPS_PORT` / `WEB_HTTP_PORT`. Les URI `https://localhost:8443/*` sont déclarées dans le
+(HTTP → 301) : `WEB_HTTPS_PORT` / `WEB_HTTP_PORT`. Les URI `https://localhost:8443/*` sont déclarées dans le
 client Keycloak `cse-web-interne` (`infra/keycloak/realm-cse.json`). Le realm n'étant importé qu'à la première
 création, sur un Keycloak existant il faut ajouter l'URI de redirection et l'origine dans la console
 d'administration (Clients → cse-web-interne).
@@ -76,7 +76,7 @@ Service Compose `backup` (image `postgres:15-alpine`, script `infra/backup/backu
 profil `apps` ou seul : `docker compose --env-file .env -f infra/docker-compose.yml --profile backup up -d backup`.
 
 - Chaque jour à `BACKUP_HEURE` (UTC, défaut 02:00), dans le volume `backups` :
-  `AAAAMMJJ-HHMMSS/{globals.sql.gz, cse.dump, keycloak.dump, SHA256SUMS}` — base `cse` complète (les neuf
+  `AAAAMMJJ-HHMMSS/{globals.sql.gz, cse.dump, keycloak.dump, SHA256SUMS}`, base `cse` complète (les neuf
   schémas), base `keycloak`, rôles globaux (`ms_*`, `keycloak`), au format custom compressé (`pg_dump -Fc`,
   restauration sélective possible par schéma ou table).
 - Écriture dans un répertoire temporaire puis renommage atomique : un répertoire daté est toujours complet.
@@ -113,7 +113,7 @@ Keycloak `user_entity` 10) ; schémas restaurés avec leurs propriétaires `ms_*
 restauration `cse` 4 s, `keycloak` 3 s (volume de recette ≈ 0,8 Mo). Ce test est à rejouer **chaque
 trimestre** et après toute évolution majeure du schéma.
 
-### 3.4 Procédure de reprise — objectif RTO < 4 h
+### 3.4 Procédure de reprise : objectif RTO < 4 h
 
 | Étape | Action | Durée cible |
 |---|---|---|
@@ -169,7 +169,7 @@ Le profil Compose `tls` n'existe donc pas encore. Procédure prévue pour la pro
 
 ## 6. Tests de charge
 
-`make perf` (k6 en conteneur, aucune installation) — scénario, seuils (p95 < 2 s, erreurs < 1 %) et réglage
+`make perf` (k6 en conteneur, aucune installation), scénario, seuils (p95 < 2 s, erreurs < 1 %) et réglage
 de la limitation de débit pour les campagnes : `tests/perf/README.md`. Mesure de référence sur poste de
 développement : 50 utilisateurs, p95 API = 23 ms, 0 % d'erreur.
 
@@ -198,7 +198,7 @@ Aucun Prometheus/Grafana n'est déployé par le compose : à brancher en product
 - Format texte Spring Boot avec le motif `NIVEAU [service,correlationId]` : rechercher un incident par son
   `traceId` (renvoyé dans chaque ProblemDetail = identifiant de corrélation) :
   `grep 'a1b2c3d4e5' logs/*.log`. Le même identifiant figure dans les événements (`correlationId`) et dans
-  le journal d'audit. Les journaux ne sont **pas** au format JSON (écart à la spécification A.6 : activer
+  le journal d'audit. Les journaux ne sont **pas** au format JSON (écart à la spécification : activer
   `logging.structured.format.console=ecs` de Spring Boot 3.4+ pour une collecte centralisée).
 
 ## 8. Variables d'environnement par service
@@ -245,7 +245,7 @@ Spécifiques (liste complète et défauts dans chaque `backend/ms-*/README.md` e
 | ms-achats ou ms-fournisseurs refuse de démarrer : `cse.crypto.key est obligatoire` | `CSE_CRYPTO_KEY` vide ou mal encodée | `head -c32 /dev/urandom \| base64` dans `.env` ; **ne jamais changer la clé** sur des données existantes |
 | Besoins validés restant `VALIDE` avec « orientation en attente » | ms-suivi indisponible pendant la validation (circuit ouvert) | redémarrer ms-suivi puis « Relancer l'orientation » (`POST /api/besoins/{id}/orienter`) |
 | Tableaux de bord vides ou figés | ms-reporting arrêté ou événements en DLT | `make status` ; outbox non publiée ; topics `.DLT` (§7) |
-| 429 `TROP_DE_REQUETES` | limiteur de la passerelle (20 req/s par utilisateur) — fréquent en test de charge avec un seul compte | voir `tests/perf/README.md` ; ne pas désactiver en production |
+| 429 `TROP_DE_REQUETES` | limiteur de la passerelle (20 req/s par utilisateur), fréquent en test de charge avec un seul compte | voir `tests/perf/README.md` ; ne pas désactiver en production |
 | `permission denied for schema` | requête d'un service vers le schéma d'un autre | comportement attendu (ADR-0004) |
 | Front : boucle de connexion ou « Invalid redirect uri » | origine non déclarée dans le client `cse-web-interne` | ajouter l'URI dans la console Keycloak (Clients → `cse-web-interne`) |
 | Kafka refuse de démarrer après un arrêt brutal | métadonnées KRaft incohérentes | `docker compose ... rm -sf kafka && docker volume rm cse_kafka_data` puis `make infra` (les outbox republieront les événements non publiés ; les consommateurs sont idempotents) |
@@ -274,7 +274,7 @@ groupes de consommateurs Kafka, puis relance les services : Flyway recrée les t
 sont réalimentés par de vrais événements. Les comptes Keycloak (base `keycloak`) sont conservés. Compter
 2 à 3 minutes avant que les tableaux de bord soient complets.
 
-## 11. Mise en production — liste de contrôle
+## 11. Mise en production : liste de contrôle
 
 - [ ] `SPRING_PROFILES_ACTIVE=prod` (aucune donnée de démonstration).
 - [ ] Mots de passe et secrets régénérés (`.env` ou gestionnaire de secrets), `CSE_CRYPTO_KEY` sauvegardée à part.
@@ -284,4 +284,4 @@ sont réalimentés par de vrais événements. Les comptes Keycloak (base `keyclo
 - [ ] Certificats de la PKI d'entreprise montés dans le frontal ; TLS interne (§4).
 - [ ] Volume `backups` sur stockage distinct + copie hors site ; test de restauration trimestriel (§3).
 - [ ] `/actuator/prometheus` accessible au seul réseau de supervision ; collecte des journaux.
-- [ ] Une seule instance des services à jobs planifiés (pas de verrou distribué, voir `PROGRESS.md`).
+- [ ] Une seule instance des services à jobs planifiés (pas de verrou distribué, voir `docs/QUALITY_REPORT.md` §6).

@@ -1,6 +1,6 @@
-# Conventions backend (v2) — à suivre pour chaque microservice
+# Conventions backend (v2) : à suivre pour chaque microservice
 
-Complète `AGENTS.md` (règles) et `docs/API_CONTRACT.md` (contrat). En cas de doute : le contrat fait foi.
+Complète `docs/API_CONTRACT.md` (contrat). En cas de doute : le contrat fait foi.
 
 ## 1. Socle fourni par `cse-common` (ne pas réimplémenter)
 
@@ -8,7 +8,7 @@ Complète `AGENTS.md` (règles) et `docs/API_CONTRACT.md` (contrat). En cas de d
 |---|---|---|
 | Sécurité JWT Keycloak + RBAC | `CseSecurityAutoConfiguration` (auto) | `@PreAuthorize("hasRole('RESPONSABLE_MATERIEL')")` sur les **contrôleurs** ; constantes dans `Roles` |
 | Utilisateur courant | `CurrentUserProvider.require()` → `CurrentUser` (record pur) | Le contrôleur le passe dans la commande du cas d'utilisation (`CurrentUser` est autorisé dans le domaine) |
-| Erreurs RFC 7807 | `GlobalExceptionHandler` (auto) | Lever `BusinessRuleException` (422), `ConflictException` (409), `ResourceNotFoundException` (404), `ForbiddenOperationException` (403), `InvalidRequestException` (400) — exceptions pures, utilisables dans le domaine. Sous-classer dans `domain.exception` si utile. |
+| Erreurs RFC 7807 | `GlobalExceptionHandler` (auto) | Lever `BusinessRuleException` (422), `ConflictException` (409), `ResourceNotFoundException` (404), `ForbiddenOperationException` (403), `InvalidRequestException` (400), exceptions pures, utilisables dans le domaine. Sous-classer dans `domain.exception` si utile. |
 | Pagination | `PageableFactory.query(page,size,sort,TRIABLES,"champ,desc")` → `PageQuery` ; `PageableFactory.toPageable(q)` ; `PageResponse.of(...)` / `.map(...)` | Taille bornée à 50, tri en liste blanche |
 | Événements | `OutboxWriter.publier(topic, type, aggregateType, aggregateId, payload, resumeAudit)` | **Dans la transaction** (sinon exception). Topics : `Topics.*`, types : `EventTypes.*`, payloads : `sn.cse.events.payload.*`. L'entrée d'audit est générée automatiquement. Appelé depuis un adaptateur `infrastructure.messaging` implémentant un port `application.port.out.*EventPublisher`. |
 | Consommation Kafka | `EventEnvelopeReader.lire(String)`, `.payload(env, Xxx.class)` ; `IdempotentEventHandler.traiterUneFois(eventId, "consommateur", () -> ...)` | `@KafkaListener(topics = Topics.ACHATS, groupId = "${spring.application.name}")` sur un `String` ; rejeu + DLT automatiques |
@@ -62,7 +62,7 @@ spring:
           issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/cse}
 cse:
   openapi:
-    title: ms-xxx — <libellé>
+    title: ms-xxx : <libellé>
     description: <description FR>
   crypto:
     key: ${CSE_CRYPTO_KEY:}        # seulement si le service chiffre des colonnes

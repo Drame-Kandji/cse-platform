@@ -44,7 +44,7 @@ sauvegarder() {
     if pg_dump --format=custom --compress="$BACKUP_COMPRESSION" --dbname="$base" --file="$temp/$base.dump"; then
       log "  $base : $(du -h "$temp/$base.dump" | cut -f1)"
     else
-      log "ERREUR : échec du pg_dump de la base $base — sauvegarde $horodatage abandonnée"
+      log "ERREUR : échec du pg_dump de la base $base, sauvegarde $horodatage abandonnée"
       rm -rf "$temp"
       return 1
     fi
