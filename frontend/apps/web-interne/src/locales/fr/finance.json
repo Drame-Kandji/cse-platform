@@ -1,0 +1,99 @@
+{
+  "page": {
+    "title": "Finance",
+    "description": "Engagements budgétaires, factures fournisseurs, mandatements et paiements.",
+    "readOnly": "Consultation seule : les décisions financières relèvent de la DAF."
+  },
+  "kpi": {
+    "engage": "Montant engagé",
+    "engageHint": "Engagements validés",
+    "enAttente": "Engagements en attente",
+    "enAttenteHint_one": "{{count}} engagement à valider",
+    "enAttenteHint_other": "{{count}} engagements à valider",
+    "facture": "Montant facturé",
+    "mandate": "Montant mandaté",
+    "paye": "Montant payé",
+    "retard": "Factures en retard",
+    "retardHint": "Échéance dépassée, non payées"
+  },
+  "chart": {
+    "title": "Exécution budgétaire",
+    "description": "Engagé, facturé, mandaté et payé, en FCFA",
+    "label": "Comparaison des montants engagés, facturés, mandatés et payés en francs CFA",
+    "engage": "Engagé",
+    "facture": "Facturé",
+    "mandate": "Mandaté",
+    "paye": "Payé"
+  },
+  "tabs": {
+    "engagements": "Engagements à valider",
+    "factures": "Factures"
+  },
+  "engagements": {
+    "label": "Engagements budgétaires",
+    "statut": "Statut",
+    "empty": "Aucun engagement",
+    "emptyDescription": "Aucun engagement ne correspond à ce filtre. Les contrats signés génèrent un engagement à valider.",
+    "approve": "Valider",
+    "refuse": "Refuser",
+    "approveTitle": "Valider l'engagement {{numero}}",
+    "refuseTitle": "Refuser l'engagement {{numero}}",
+    "approveDescription": "La validation autorise le démarrage de la livraison du contrat (R06).",
+    "refuseDescription": "Le refus renvoie le contrat de Signé à Brouillon : le service Achats devra le corriger et le signer à nouveau avant toute livraison.",
+    "comment": "Commentaire",
+    "refuseComment": "Motif du refus",
+    "approved": "Engagement validé",
+    "refused": "Engagement refusé",
+    "all": "Tous les statuts"
+  },
+  "factures": {
+    "label": "Factures fournisseurs",
+    "statut": "Statut",
+    "enRetard": "En retard uniquement",
+    "overdue": "En retard",
+    "empty": "Aucune facture",
+    "emptyDescription": "Aucune facture ne correspond aux filtres.",
+    "create": "Enregistrer une facture",
+    "mandater": "Mandater",
+    "payer": "Payer",
+    "rejeter": "Rejeter",
+    "actions": "Actions sur la facture {{numero}}",
+    "mandaterTitle": "Mandater la facture {{numero}}",
+    "mandaterDescription": "Saisissez la référence du mandat de paiement émis pour {{montant}}.",
+    "referenceMandat": "Référence du mandat",
+    "payerTitle": "Confirmer le paiement",
+    "payerDescription": "La facture {{numero}} de {{montant}} sera marquée comme payée. Cette action est définitive.",
+    "rejeterTitle": "Rejeter la facture {{numero}}",
+    "rejeterDescription": "Le fournisseur sera informé du motif du rejet.",
+    "motif": "Motif du rejet",
+    "noAccess": "Les factures sont gérées par la DAF et le service Achats.",
+    "noAccessDescription": "La Direction Générale suit l'exécution via la synthèse et les engagements."
+  },
+  "form": {
+    "title": "Enregistrer une facture",
+    "description": "Facture reçue d'un fournisseur au titre d'un contrat.",
+    "contrat": "Contrat",
+    "contratPlaceholder": "Choisir un contrat",
+    "numero": "Numéro de facture",
+    "montantHt": "Montant HT (FCFA)",
+    "tva": "Montant de TVA (FCFA)",
+    "tvaAuto": "Appliquer 18 %",
+    "dateEmission": "Date d'émission",
+    "dateEcheance": "Date d'échéance",
+    "ttc": "Montant TTC"
+  },
+  "columns": {
+    "contrat": "Contrat",
+    "numero": "Numéro",
+    "fournisseur": "Fournisseur",
+    "objet": "Objet",
+    "montant": "Montant",
+    "montantTtc": "Montant TTC",
+    "dateDemande": "Demandé le",
+    "decision": "Décision",
+    "echeance": "Échéance",
+    "statut": "Statut",
+    "mandat": "Mandat",
+    "actions": "Actions"
+  }
+}

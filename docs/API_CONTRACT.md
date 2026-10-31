@@ -104,7 +104,7 @@ Disponibilite { disponible: boolean, quantiteDemandee, quantiteDisponible, mater
 | PATCH | `/api/materiels/{id}/etat` | RM | `{etat: DISPONIBLE|EN_MAINTENANCE, motif}` (jamais REFORME ici) → `Materiel` |
 | POST | `/api/materiels/{id}/reforme/demande` | RM | `{motif}` → `Materiel` |
 | PATCH | `/api/materiels/{id}/reforme/valider` | DG | `{approuve, commentaire?}` → `Materiel` (R13) |
-| GET | `/api/materiels/carte` | internes | `?categorie&etat` → GeoJSON `FeatureCollection` ; `properties: {kind:'CHANTIER'|'MATERIEL', id, code, libelle, categorie?, etat?, statut?, chantierNom?, nombreMateriels?}` |
+| GET | `/api/materiels/carte` | internes | `?categorie&etat` → GeoJSON `FeatureCollection` ; `properties: {kind:'CHANTIER'|'MATERIEL', id, code, libelle, categorie?, etat?, statut?, chantierId?, chantierNom?, nombreMateriels?}` |
 | GET | `/api/affectations` | internes (CHEF : ses chantiers) | `?chantierId&materielId&statut&page&size` → `Page<Affectation>` |
 | GET | `/api/affectations/planning` | internes | `?chantierId&categorie&du&au` (≤ 366 j) → `Affectation[]` |
 | GET | `/api/maintenances` | internes | `?statut&type&materielId&page&size&sort` → `Page<Maintenance>` |
@@ -205,7 +205,7 @@ AppelOffre { id, reference /* AO-2026-001 */, objet, description?, type: TypeApp
   besoinReference?, chantierId?, chantierNom?, categorie, quantite, specifications?, budgetEstime?,
   datePublication, dateLimite /* instant */, statut: StatutAO, criteres: CriterePondere[],
   fournisseursInvites: { id, raisonSociale }[], nombreOffres, offreRetenueId?, montantAttribue?,
-  attribution?: Attribution, creeParNom, version }
+  attribution?: Attribution, contratId? /* contrat généré une fois ATTRIBUE */, creeParNom, version }
 Attribution { offreId, codeAnonyme, fournisseurNom, montant, justification, proposeeParNom, dateProposition,
   coValidationMateriel: Approbation, approbationDg?: Approbation /* présent si montant > seuil (R11) */ }
 Approbation { statut: StatutApprobation, parNom?, date?, commentaire? }
@@ -245,7 +245,7 @@ SyntheseFinance { montantEngage, montantEngagementsEnAttente, montantFacture, mo
 | POST | `/api/appels-offres/{id}/attribution/approuver` | DG | `{approuve, commentaire?}` (R11, si montant > `cse.achats.seuil-delegation`) |
 |  |  |  | Toutes approbations OK → `ATTRIBUE` + contrat `BROUILLON` généré (R03). Refus → attribution supprimée. |
 | GET | `/api/appels-offres/{id}/proces-verbaux/{type}` | RA, RM, DG | PDF (`application/pdf`) ; `OUVERTURE` après clôture, `EVALUATION` après attribution |
-| GET | `/api/contrats` | RA, RM, DAF, DG | `?statut&fournisseurId&q&page&size&sort` → `Page<Contrat>` |
+| GET | `/api/contrats` | RA, RM, DAF, DG | `?statut&fournisseurId&appelOffreId&q&page&size&sort` → `Page<Contrat>` |
 | GET | `/api/contrats/{id}` | idem | → `Contrat` |
 | POST | `/api/contrats` | RA | `{appelOffreId}` → 201 (si absent ; R03) |
 | PUT | `/api/contrats/{id}/clauses` | RA | `{garantieMois?,conditionsMaintenance?,conditionsLivraison?,penaliteRetardPctParJour?,delaiLivraisonJours,jalons:{libelle,datePrevue}[]}` (BROUILLON) |
@@ -270,7 +270,9 @@ Codes de profil : `DG` (alias accepté `DIRECTION_GENERALE`), `DAF`, `RESPONSABL
 
 ```ts
 Tableau { profil, du, au, genereLe,
-  parc?: { total, disponibles, affectes, enMaintenance, reformes, tauxDisponibilite, tauxUtilisation,
+  // tauxDisponibilite = disponibilité OPÉRATIONNELLE : (total − enMaintenance − réformés) / (total − réformés) ;
+  // tauxUtilisation = jours affectés / jours opérationnels.
+  parc?: { total, disponibles, affectes, enMaintenance, reformes, operationnels, tauxDisponibilite, tauxUtilisation,
            maintenancesEnCours, pannesOuvertes, alertesMaintenance,
            parCategorie: { categorie, total, disponibles, affectes, enMaintenance, tauxUtilisation }[] },
   besoins?: { total, enAttente, valides, rejetes, affectesDirect, enAchat, delaiMoyenTraitementHeures?,
@@ -377,7 +379,7 @@ Payloads « instantané » (un record par agrégat, le `type` distingue l'évén
 | `LitigePayload {litigeId, reference, fournisseurId, raisonSociale, contratId?, objet, gravite, statut}` | `LITIGE_OUVERT`, `LITIGE_RESOLU` | ms-fournisseurs | reporting, notification |
 | `AppelOffrePayload {appelOffreId, reference, objet, type, besoinId?, chantierId?, categorie, quantite, dateLimite, statut, nombreOffres, fournisseurIdsInvites[], offreRetenueId?, fournisseurRetenuId?, montantAttribue?, approbationDgRequise}` | `AO_PUBLIE`, `OFFRE_DEPOSEE`, `AO_CLOTURE`, `ATTRIBUTION_PROPOSEE`, `ATTRIBUTION_REFUSEE`, `MARCHE_ATTRIBUE` | ms-achats | reporting, notification |
 | `ContratPayload {contratId, numero, appelOffreId, besoinId?, chantierId?, chantierNom?, fournisseurId, fournisseurNom, designation, categorie, quantite, montant, statut, dateSignature?, dateLivraisonPrevue?, dateLivraisonReelle?, tarifJournalierEstime?}` | `CONTRAT_GENERE`, `CONTRAT_SIGNE`, `ENGAGEMENT_DEMANDE`, `ENGAGEMENT_VALIDE`, `ENGAGEMENT_REJETE`, `LIVRAISON_DEMARREE`, `LIVRAISON_EFFECTUEE`, `ALERTE_RETARD_LIVRAISON`, `CONTRAT_CLOTURE` | ms-achats | suivi (LIVRAISON_EFFECTUEE), fournisseurs, reporting, notification |
-| `FacturePayload {factureId, numero, contratId, fournisseurId, montantTtc, statut, dateEcheance}` | `FACTURE_RECUE`, `FACTURE_MANDATEE`, `FACTURE_PAYEE`, `FACTURE_REJETEE` | ms-achats | reporting, notification |
+| `FacturePayload {factureId, numero, contratId, fournisseurId, montantTtc, statut, dateEmission, dateEcheance, dateMandatement?, datePaiement?}` | `FACTURE_RECUE`, `FACTURE_MANDATEE`, `FACTURE_PAYEE`, `FACTURE_REJETEE` | ms-achats | reporting, notification |
 | `UtilisateurPayload {utilisateurId, email, prenom, nom, role, actif, chantierIds[]}` | `UTILISATEUR_CREE`, `UTILISATEUR_MODIFIE`, `UTILISATEUR_SYNCHRONISE` | ms-auth | notification (annuaire e-mails) |
 | `AuditPayload {service, action, entite, entiteId, resume?}` | `AUDIT` | tous (via outbox) | ms-audit |
 

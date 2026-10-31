@@ -1,0 +1,132 @@
+{
+  "app": {
+    "name": "CSE",
+    "fullName": "Compagnie Sahélienne d'Entreprises",
+    "product": "Plateforme interne",
+    "tagline": "Matériel, achats et chantiers"
+  },
+  "actions": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "close": "Fermer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "retry": "Réessayer",
+    "reset": "Réinitialiser",
+    "back": "Retour",
+    "search": "Rechercher",
+    "export": "Exporter",
+    "clear": "Effacer",
+    "apply": "Appliquer",
+    "seeAll": "Tout voir",
+    "copy": "Copier",
+    "copied": "Copié",
+    "reload": "Recharger la page",
+    "goHome": "Retour au tableau de bord"
+  },
+  "states": {
+    "loading": "Chargement…",
+    "empty": "Aucun résultat",
+    "emptyDescription": "Aucun élément ne correspond à vos critères.",
+    "error": "Une erreur est survenue",
+    "unknownError": "Une erreur inattendue est survenue.",
+    "required": "Champ obligatoire",
+    "optional": "Facultatif"
+  },
+  "table": {
+    "rowsPerPage": "Lignes par page",
+    "range": "{{from}}–{{to}} sur {{total}}",
+    "pageOf": "Page {{page}} sur {{total}}",
+    "firstPage": "Première page",
+    "previousPage": "Page précédente",
+    "nextPage": "Page suivante",
+    "lastPage": "Dernière page",
+    "columns": "Colonnes",
+    "toggleColumns": "Afficher ou masquer des colonnes",
+    "sortAsc": "Tri croissant",
+    "sortDesc": "Tri décroissant",
+    "noResults": "Aucun résultat",
+    "noResultsDescription": "Modifiez les filtres ou la recherche pour élargir les résultats."
+  },
+  "filters": {
+    "search": "Rechercher…",
+    "reset": "Réinitialiser",
+    "selected": "{{count}} sélectionné(s)",
+    "noOption": "Aucune option",
+    "clearFilter": "Retirer le filtre"
+  },
+  "select": {
+    "placeholder": "Sélectionner…",
+    "search": "Rechercher…",
+    "empty": "Aucun élément trouvé"
+  },
+  "date": {
+    "placeholder": "Choisir une date",
+    "rangePlaceholder": "Choisir une période",
+    "today": "Aujourd'hui",
+    "previousMonth": "Mois précédent",
+    "nextMonth": "Mois suivant"
+  },
+  "error": {
+    "code": "Code",
+    "trace": "Référence",
+    "fields": "Champs à corriger",
+    "chunkTitle": "Nouvelle version disponible",
+    "chunkDescription": "L'application a été mise à jour. Rechargez la page pour continuer.",
+    "boundaryTitle": "Cet écran a rencontré un problème",
+    "boundaryDescription": "L'incident a été isolé. Vous pouvez réessayer ou revenir au tableau de bord."
+  },
+  "theme": {
+    "label": "Thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système"
+  },
+  "shell": {
+    "mainNav": "Navigation principale",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "collapse": "Réduire la barre latérale",
+    "expand": "Déployer la barre latérale",
+    "skipToContent": "Aller au contenu principal",
+    "searchButton": "Rechercher…",
+    "notifications": "Notifications",
+    "noNotifications": "Aucune notification",
+    "noNotificationsDescription": "Les alertes de validation, de maintenance et de livraison apparaîtront ici.",
+    "userMenu": "Menu utilisateur",
+    "profile": "Mon profil",
+    "logout": "Se déconnecter",
+    "breadcrumb": "Fil d'Ariane",
+    "devMode": "Mode développement"
+  },
+  "palette": {
+    "placeholder": "Rechercher une page ou une action…",
+    "empty": "Aucun résultat pour cette recherche.",
+    "navigation": "Navigation",
+    "actions": "Actions rapides",
+    "preferences": "Préférences",
+    "newBesoin": "Exprimer un nouveau besoin",
+    "openAssistant": "Ouvrir l'assistant IA",
+    "toggleTheme": "Basculer le thème clair / sombre",
+    "designSystem": "Ouvrir le design system",
+    "hint": "Naviguer",
+    "select": "Ouvrir"
+  },
+  "assistant": {
+    "open": "Assistant IA",
+    "title": "Assistant IA CSE",
+    "subtitle": "Posez vos questions sur le parc, les besoins et les achats.",
+    "placeholder": "Écrivez votre question…",
+    "comingSoon": "L'assistant sera bientôt connecté aux référentiels CSE.",
+    "send": "Envoyer",
+    "suggestions": "Exemples de questions"
+  },
+  "comingSoon": {
+    "badge": "En construction",
+    "title": "Ce module arrive bientôt",
+    "description": "L'écran est réservé et sécurisé par rôle. Les fonctionnalités ci-dessous seront livrées dans les prochaines itérations.",
+    "planned": "Fonctionnalités prévues"
+  }
+}

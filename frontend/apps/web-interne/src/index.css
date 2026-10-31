@@ -1,110 +1,171 @@
+/*
+ * Jetons de design de la plateforme interne CSE.
+ * Chaque couleur est exprimee en canaux RGB (ex. "29 78 216") pour permettre
+ * l'opacite Tailwind : `bg-primary/10`. Ne jamais utiliser de couleur brute
+ * dans les composants : passer par ces jetons (voir CONVENTIONS.md).
+ * Contrastes verifies WCAG AA (texte >= 4.5:1) en clair et en sombre.
+ * Couleurs chart-1..6 : ordre categoriel valide daltonisme (ne pas reordonner).
+ */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: 248 250 252; /* #f8fafc */
+    --surface: 255 255 255; /* #ffffff */
+    --surface-raised: 255 255 255; /* #ffffff */
+    --surface-sunken: 241 245 249; /* #f1f5f9 */
+    --foreground: 15 23 42; /* #0f172a */
+    --muted: 241 245 249; /* #f1f5f9 */
+    --muted-foreground: 86 101 124; /* #56657c */
+    --border: 226 232 240; /* #e2e8f0 */
+    --border-strong: 203 213 225; /* #cbd5e1 */
+    --input: 203 213 225; /* #cbd5e1 */
+    --ring: 29 78 216; /* #1d4ed8 */
+    --primary: 29 78 216; /* #1d4ed8 */
+    --primary-foreground: 255 255 255; /* #ffffff */
+    --primary-emphasis: 30 64 175; /* #1e40af */
+    --accent: 245 158 11; /* #f59e0b */
+    --accent-foreground: 15 23 42; /* #0f172a */
+    --accent-emphasis: 161 74 7; /* #a14a07 */
+    --success: 21 128 61; /* #15803d */
+    --success-foreground: 255 255 255; /* #ffffff */
+    --success-emphasis: 22 101 52; /* #166534 */
+    --warning: 180 83 9; /* #b45309 */
+    --warning-foreground: 255 255 255; /* #ffffff */
+    --warning-emphasis: 146 64 14; /* #92400e */
+    --danger: 220 38 38; /* #dc2626 */
+    --danger-foreground: 255 255 255; /* #ffffff */
+    --danger-emphasis: 185 28 28; /* #b91c1c */
+    --info: 3 105 161; /* #0369a1 */
+    --info-foreground: 255 255 255; /* #ffffff */
+    --info-emphasis: 7 89 133; /* #075985 */
+    --chart-1: 42 120 214; /* #2a78d6 */
+    --chart-2: 235 104 52; /* #eb6834 */
+    --chart-3: 27 175 122; /* #1baf7a */
+    --chart-4: 237 161 0; /* #eda100 */
+    --chart-5: 232 123 164; /* #e87ba4 */
+    --chart-6: 0 131 0; /* #008300 */
+  }
+
+  .dark {
+    --background: 10 15 28; /* #0a0f1c */
+    --surface: 15 22 38; /* #0f1626 */
+    --surface-raised: 21 29 48; /* #151d30 */
+    --surface-sunken: 12 19 34; /* #0c1322 */
+    --foreground: 238 242 247; /* #eef2f7 */
+    --muted: 24 33 53; /* #182135 */
+    --muted-foreground: 150 163 184; /* #96a3b8 */
+    --border: 30 41 61; /* #1e293d */
+    --border-strong: 44 58 82; /* #2c3a52 */
+    --input: 44 58 82; /* #2c3a52 */
+    --ring: 122 162 255; /* #7aa2ff */
+    --primary: 37 99 235; /* #2563eb */
+    --primary-foreground: 255 255 255; /* #ffffff */
+    --primary-emphasis: 143 176 255; /* #8fb0ff */
+    --accent: 245 158 11; /* #f59e0b */
+    --accent-foreground: 10 15 28; /* #0a0f1c */
+    --accent-emphasis: 251 191 36; /* #fbbf24 */
+    --success: 21 128 61; /* #15803d */
+    --success-foreground: 255 255 255; /* #ffffff */
+    --success-emphasis: 74 222 128; /* #4ade80 */
+    --warning: 180 83 9; /* #b45309 */
+    --warning-foreground: 255 255 255; /* #ffffff */
+    --warning-emphasis: 253 186 116; /* #fdba74 */
+    --danger: 220 38 38; /* #dc2626 */
+    --danger-foreground: 255 255 255; /* #ffffff */
+    --danger-emphasis: 248 113 113; /* #f87171 */
+    --info: 3 105 161; /* #0369a1 */
+    --info-foreground: 255 255 255; /* #ffffff */
+    --info-emphasis: 56 189 248; /* #38bdf8 */
+    --chart-1: 57 135 229; /* #3987e5 */
+    --chart-2: 217 89 38; /* #d95926 */
+    --chart-3: 25 158 112; /* #199e70 */
+    --chart-4: 201 133 0; /* #c98500 */
+    --chart-5: 213 81 129; /* #d55181 */
+    --chart-6: 0 131 0; /* #008300 */
+  }
+
+  :root {
+    color-scheme: light;
+    --radius: 0.75rem;
+    --sidebar-width: 16rem;
+    --sidebar-collapsed-width: 4.25rem;
+    --topbar-height: 3.5rem;
+    --shadow-color: 15 23 42;
+    --hero: 9 18 44;
+  }
+
+  .dark {
+    color-scheme: dark;
+    --shadow-color: 0 0 0;
+  }
+
+  * {
+    @apply border-border;
+  }
+
   html {
-    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-background font-sans text-sm text-foreground antialiased;
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
     text-rendering: optimizeLegibility;
   }
-  body {
-    @apply bg-surface font-sans text-ink-900;
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
-  * {
+
+  ::selection {
+    @apply bg-primary/20;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-semibold tracking-tight;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: #cbd5e1 transparent;
+    scrollbar-color: rgb(var(--border-strong)) transparent;
   }
-  *::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+  /* Panneau de marque (connexion) : identique dans les deux themes. */
+  .bg-hero {
+    background-color: rgb(var(--hero));
+    background-image:
+      radial-gradient(60rem 40rem at 110% -10%, rgb(var(--primary) / 0.55), transparent 60%),
+      radial-gradient(40rem 30rem at -20% 120%, rgb(var(--accent) / 0.16), transparent 60%);
   }
-  *::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 999px;
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.06) 1px, transparent 1px);
+    background-size: 32px 32px;
   }
-}
-
-@layer components {
-  .card {
-    @apply rounded-panel border border-ink-200 bg-white shadow-card;
-  }
-  .card-pad {
-    @apply rounded-panel border border-ink-200 bg-white p-5 shadow-card;
-  }
-  .label {
-    @apply mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-500;
-  }
-  .input {
-    @apply h-10 w-full rounded-lg border border-ink-200 bg-white px-3 text-sm text-ink-900 outline-none transition placeholder:text-ink-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-ink-100;
-  }
-  .textarea {
-    @apply min-h-[96px] w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm text-ink-900 outline-none transition placeholder:text-ink-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-100;
-  }
-  .btn {
-    @apply inline-flex h-10 items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50;
-  }
-  .btn-primary {
-    @apply btn bg-brand-900 text-white hover:bg-brand-800 focus:ring-brand-300;
-  }
-  .btn-accent {
-    @apply btn bg-accent-500 text-brand-950 hover:bg-accent-400 focus:ring-accent-200;
-  }
-  .btn-success {
-    @apply btn bg-success-600 text-white hover:bg-success-700 focus:ring-success-200;
-  }
-  .btn-danger {
-    @apply btn bg-danger-600 text-white hover:bg-danger-700 focus:ring-danger-200;
-  }
-  .btn-outline {
-    @apply btn border border-ink-200 bg-white text-ink-700 hover:border-brand-300 hover:bg-brand-50 focus:ring-brand-200;
-  }
-  .btn-ghost {
-    @apply btn bg-transparent text-ink-600 hover:bg-ink-100 focus:ring-ink-200;
-  }
-  .btn-sm {
-    @apply h-8 px-3 text-xs;
-  }
-  .badge {
-    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide;
-  }
-  .table-wrap {
-    @apply overflow-x-auto;
-  }
-  .data-table {
-    @apply min-w-full text-left text-sm;
-  }
-  .data-table thead th {
-    @apply border-b border-ink-200 bg-ink-100/70 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-ink-500;
-  }
-  .data-table tbody td {
-    @apply border-b border-ink-100 px-4 py-3 align-middle text-ink-700;
-  }
-  .data-table tbody tr:hover {
-    @apply bg-brand-50/50;
-  }
-  .section-title {
-    @apply text-lg font-semibold text-brand-950;
-  }
-  .muted {
-    @apply text-sm text-ink-500;
-  }
-}
-
-.leaflet-container {
-  font-family: inherit;
-  z-index: 0;
-}
-
-.leaflet-control-attribution {
-  font-size: 10px;
-}
-
-.map-shell .leaflet-popup-content-wrapper {
-  border-radius: 10px;
-  box-shadow: 0 12px 30px rgba(10, 31, 68, 0.18);
-}
-
-.map-shell .leaflet-popup-content {
-  margin: 12px 14px;
-  min-width: 190px;
 }

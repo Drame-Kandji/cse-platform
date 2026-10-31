@@ -1,0 +1,113 @@
+{
+  "list": {
+    "title": "Fournisseurs",
+    "description": "Référentiel des fournisseurs agréés, performance, classement et comparaison des prix.",
+    "create": "Nouveau fournisseur",
+    "search": "Raison sociale, NINEA, ville…",
+    "tableLabel": "Liste des fournisseurs",
+    "empty": "Aucun fournisseur",
+    "emptyDescription": "Aucun fournisseur ne correspond à ces critères."
+  },
+  "tabs": {
+    "liste": "Liste",
+    "classement": "Classement",
+    "comparaison": "Comparaison de prix"
+  },
+  "stats": {
+    "actifs": "Fournisseurs actifs",
+    "enAttente": "Inscriptions à valider",
+    "scoreMoyen": "Score moyen",
+    "litiges": "Litiges ouverts",
+    "documentsExpires": "{{count}} document(s) expiré(s)"
+  },
+  "columns": {
+    "raisonSociale": "Raison sociale",
+    "ville": "Ville",
+    "specialites": "Spécialités",
+    "statut": "Statut",
+    "score": "Score",
+    "evaluations": "Évaluations",
+    "litiges": "Litiges",
+    "rang": "Rang",
+    "ponctualite": "Livraison à l'heure"
+  },
+  "filters": {
+    "statut": "Statut",
+    "specialite": "Spécialité",
+    "categorie": "Catégorie"
+  },
+  "classement": {
+    "tableLabel": "Classement des fournisseurs actifs",
+    "description": "Fournisseurs actifs classés par score de performance (R07).",
+    "empty": "Aucun fournisseur classé",
+    "emptyDescription": "Aucun fournisseur actif évalué dans cette catégorie."
+  },
+  "comparaison": {
+    "search": "Désignation ou référence…",
+    "empty": "Aucun article comparable",
+    "emptyDescription": "Aucun article du catalogue ne correspond à ces critères.",
+    "min": "Prix min.",
+    "moyen": "Prix moyen",
+    "max": "Prix max.",
+    "meilleurPrix": "Meilleur prix",
+    "delai": "{{count}} j"
+  },
+  "detail": {
+    "tabs": {
+      "informations": "Informations",
+      "evaluations": "Évaluations",
+      "catalogue": "Catalogue",
+      "litiges": "Litiges"
+    },
+    "legal": "Informations légales",
+    "contact": "Contact",
+    "banque": "Coordonnées bancaires",
+    "banqueHint": "Visibles uniquement par le Responsable Achats et la DAF.",
+    "documents": "Documents administratifs",
+    "documentsEmpty": "Aucun document enregistré",
+    "addDocument": "Ajouter un document",
+    "expire": "Expiré",
+    "certifications": "Certifications",
+    "blacklistPending": "Demande de blacklistage en attente de la Direction Générale",
+    "notFound": "Fournisseur introuvable"
+  },
+  "evaluations": {
+    "title": "Historique des évaluations",
+    "chart": "Évolution de la note globale",
+    "chartLabel": "Évolution de la note globale des évaluations du fournisseur, sur 100",
+    "empty": "Aucune évaluation",
+    "emptyDescription": "Ce fournisseur n'a pas encore été évalué.",
+    "evaluer": "Évaluer",
+    "dialogTitle": "Évaluer le fournisseur",
+    "dialogDescription": "Notez chaque critère de 0 à 10. Le score de performance est recalculé automatiquement.",
+    "commentaire": "Commentaire"
+  },
+  "catalogue": {
+    "title": "Catalogue",
+    "tableLabel": "Catalogue du fournisseur",
+    "empty": "Catalogue vide",
+    "emptyDescription": "Aucun article n'est référencé pour ce fournisseur.",
+    "add": "Ajouter un article",
+    "historique": "Historique des prix",
+    "historiqueHint": "Sélectionnez un article du catalogue pour afficher l'évolution de son prix.",
+    "historiqueLabel": "Évolution du prix unitaire de l'article en francs CFA"
+  },
+  "litiges": {
+    "title": "Litiges",
+    "empty": "Aucun litige",
+    "emptyDescription": "Aucun litige n'a été ouvert avec ce fournisseur.",
+    "ouvrir": "Ouvrir un litige",
+    "action": "Ajouter une action",
+    "resoudre": "Résoudre",
+    "classer": "Classer"
+  },
+  "statut": {
+    "valider": "Valider l'inscription",
+    "suspendre": "Suspendre",
+    "reactiver": "Réactiver",
+    "demanderBlacklistage": "Demander le blacklistage",
+    "approuverBlacklistage": "Approuver le blacklistage",
+    "refuserBlacklistage": "Refuser le blacklistage",
+    "motif": "Motif"
+  }
+}

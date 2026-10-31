@@ -1,0 +1,91 @@
+{
+  "list": {
+    "title": "Contrats & commandes",
+    "description": "Suivi des contrats issus des attributions : signature, engagement budgétaire, livraison et clôture.",
+    "tableLabel": "Liste des contrats",
+    "search": "Numéro, objet, fournisseur…",
+    "statut": "Statut",
+    "fournisseur": "Tous les fournisseurs",
+    "emptyTitle": "Aucun contrat",
+    "emptyDescription": "Les contrats sont générés automatiquement lorsqu'une attribution d'appel d'offres est entièrement approuvée."
+  },
+  "columns": {
+    "numero": "Numéro",
+    "objet": "Objet",
+    "fournisseur": "Fournisseur",
+    "montant": "Montant",
+    "statut": "Statut",
+    "livraison": "Livraison prévue"
+  },
+  "detail": {
+    "notFound": "Contrat introuvable",
+    "back": "Retour aux contrats",
+    "lifecycle": "Cycle de vie du contrat",
+    "summary": "Synthèse",
+    "readOnly": "Consultation seule : les actions sur le contrat sont réservées au Responsable des Achats.",
+    "late": "Livraison en retard",
+    "penalties": "Pénalités de retard",
+    "penaltiesHint": "Calculées selon le taux contractuel de {{taux}} % par jour de retard."
+  },
+  "fields": {
+    "fournisseur": "Fournisseur",
+    "appelOffre": "Appel d'offres",
+    "chantier": "Chantier",
+    "designation": "Désignation",
+    "quantite": "Quantité",
+    "montant": "Montant",
+    "dateSignature": "Date de signature",
+    "delai": "Délai de livraison",
+    "datePrevue": "Livraison prévue",
+    "dateReelle": "Livraison effective",
+    "bonLivraison": "Bon de livraison"
+  },
+  "engagement": {
+    "title": "Engagement budgétaire",
+    "description": "Validé par la Direction Administrative et Financière avant toute livraison (R06).",
+    "none": "L'engagement sera créé à la signature du contrat.",
+    "demande": "Demandé le",
+    "decision": "Décision le",
+    "par": "Par",
+    "refuse": "Engagement refusé par le DAF : modifiez les clauses puis signez à nouveau."
+  },
+  "clauses": {
+    "title": "Clauses contractuelles",
+    "edit": "Modifier les clauses",
+    "garantie": "Garantie (mois)",
+    "maintenance": "Conditions de maintenance",
+    "livraison": "Conditions de livraison",
+    "penalite": "Pénalité de retard (% par jour)",
+    "delai": "Délai de livraison (jours)",
+    "jalons": "Jalons de livraison",
+    "addJalon": "Ajouter un jalon",
+    "removeJalon": "Retirer le jalon",
+    "libelle": "Libellé",
+    "datePrevue": "Date prévue",
+    "noJalon": "Aucun jalon défini."
+  },
+  "jalons": {
+    "title": "Jalons",
+    "empty": "Aucun jalon défini pour ce contrat.",
+    "prevu": "Prévu le {{date}}",
+    "atteint": "Atteint le {{date}}",
+    "marquer": "Marquer atteint",
+    "marquerTitle": "Marquer le jalon « {{libelle}} » comme atteint ?",
+    "marquerDescription": "La date du jour sera enregistrée comme date réelle."
+  },
+  "actions": {
+    "signer": "Signer le contrat",
+    "signerTitle": "Signer le contrat {{numero}} ?",
+    "signerDescription": "Les clauses ne seront plus modifiables. Un engagement de {{montant}} sera soumis à la validation du DAF.",
+    "demarrer": "Démarrer la livraison",
+    "demarrerTitle": "Démarrer la livraison ?",
+    "demarrerDescription": "Le fournisseur sera notifié et le suivi des jalons commencera.",
+    "demarrerBloque": "Engagement DAF requis (R06) : la livraison ne peut démarrer qu'après validation de l'engagement budgétaire.",
+    "confirmer": "Confirmer la livraison",
+    "confirmerDescription": "Enregistrez la date de réception effective et le bon de livraison.",
+    "observations": "Observations",
+    "cloturer": "Clôturer le contrat",
+    "cloturerTitle": "Clôturer le contrat {{numero}} ?",
+    "cloturerDescription": "Le contrat passera à l'état Clôturé. Cette action est définitive."
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "page": {
+    "title": "Maintenance & pannes",
+    "description": "Ordres de travail préventifs et correctifs, et signalements de pannes du parc.",
+    "tabMaintenances": "Maintenances",
+    "tabPannes": "Pannes",
+    "planifier": "Planifier une maintenance",
+    "signaler": "Signaler une panne"
+  },
+  "maintenances": {
+    "tableLabel": "Ordres de travail",
+    "statut": "Statut",
+    "type": "Type",
+    "tous": "Tous",
+    "emptyTitle": "Aucun ordre de travail",
+    "emptyDescription": "Planifiez une maintenance préventive ou corrective sur un matériel du parc.",
+    "emptyFilteredTitle": "Aucun ordre de travail pour ce filtre",
+    "resetFilters": "Réinitialiser les filtres",
+    "compteurs": "{{count}} ordre(s) de travail"
+  },
+  "columns": {
+    "numeroOt": "N° OT",
+    "materiel": "Matériel",
+    "type": "Type",
+    "statut": "Statut",
+    "datePlanifiee": "Planifiée le",
+    "technicien": "Technicien",
+    "cout": "Coût",
+    "actions": "Actions",
+    "gravite": "Gravité",
+    "description": "Description",
+    "chantier": "Chantier",
+    "signalePar": "Signalée par",
+    "dateSignalement": "Signalée"
+  },
+  "actions": {
+    "demarrer": "Démarrer",
+    "cloturer": "Clôturer",
+    "creerOt": "Créer un OT",
+    "otLie": "OT lié",
+    "voirMateriel": "Voir le matériel"
+  },
+  "demarrer": {
+    "title": "Démarrer l'OT {{numero}} ?",
+    "description": "Le matériel {{materiel}} passera à l'état En maintenance et ne sera plus affectable jusqu'à la clôture.",
+    "confirmer": "Démarrer"
+  },
+  "planifier": {
+    "title": "Planifier une maintenance",
+    "titlePanne": "Créer un ordre de travail",
+    "description": "L'ordre de travail est créé au statut Planifiée.",
+    "descriptionPanne": "Ordre de travail correctif lié à la panne signalée sur {{materiel}}.",
+    "materiel": "Matériel",
+    "materielPlaceholder": "Rechercher un matériel (code, désignation)",
+    "type": "Type de maintenance",
+    "datePlanifiee": "Date prévue",
+    "technicien": "Technicien",
+    "technicienPlaceholder": "Nom du technicien ou de l'atelier",
+    "descriptionChamp": "Travaux à réaliser",
+    "descriptionPlaceholder": "Vidange, remplacement des filtres, contrôle du circuit hydraulique…",
+    "submit": "Planifier"
+  },
+  "cloturer": {
+    "title": "Clôturer l'OT {{numero}}",
+    "description": "Le matériel {{materiel}} redeviendra disponible (ou affecté s'il a une affectation en cours).",
+    "cout": "Coût total (FCFA)",
+    "heuresCompteur": "Relevé du compteur (heures)",
+    "observations": "Observations",
+    "observationsPlaceholder": "Pièces remplacées, recommandations…",
+    "submit": "Clôturer l'OT",
+    "cancel": "Annuler"
+  },
+  "pannes": {
+    "tableLabel": "Pannes signalées",
+    "statut": "Statut",
+    "emptyTitle": "Aucune panne signalée",
+    "emptyDescription": "Signalez une panne dès qu'un matériel est défaillant : le Responsable Matériel sera alerté.",
+    "emptyFilteredTitle": "Aucune panne pour ce filtre"
+  },
+  "signaler": {
+    "title": "Signaler une panne",
+    "description": "Le Responsable Matériel est notifié immédiatement. Une panne bloquante immobilise le matériel.",
+    "materiel": "Matériel concerné",
+    "gravite": "Gravité",
+    "descriptionChamp": "Description de la panne",
+    "descriptionPlaceholder": "Symptômes, circonstances, localisation du matériel…",
+    "submit": "Signaler la panne",
+    "graviteMineure": "Le matériel reste utilisable",
+    "graviteMajeure": "Fonctionnement dégradé",
+    "graviteBloquante": "Matériel immobilisé"
+  },
+  "materielPicker": {
+    "empty": "Aucun matériel trouvé",
+    "search": "Code, désignation…"
+  }
+}

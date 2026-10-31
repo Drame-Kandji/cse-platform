@@ -1,0 +1,79 @@
+import { useTranslation } from 'react-i18next'
+import { NavLink } from 'react-router-dom'
+import { useAuth } from '@/shared/auth/context'
+import { cn } from '@/shared/lib/cn'
+import { Tooltip } from '@/shared/ui/tooltip'
+import { navigationFor } from '../navigation'
+
+export interface SidebarNavProps {
+  collapsed?: boolean
+  /** Appele apres navigation (fermeture du tiroir mobile). */
+  onNavigate?: () => void
+}
+
+/** Liste des liens de navigation groupes, filtres par role. */
+export function SidebarNav({ collapsed = false, onNavigate }: SidebarNavProps) {
+  const { t } = useTranslation('navigation')
+  const { t: tc } = useTranslation()
+  const { hasAnyRole } = useAuth()
+  const groups = navigationFor(hasAnyRole)
+  return (
+    <nav aria-label={tc('shell.mainNav')} className="grid gap-5 px-3 py-4">
+      {groups.map((group) => (
+        <div key={group.key} className="grid gap-0.5">
+          {collapsed ? (
+            <span className="mx-auto mb-1 h-px w-6 bg-border" aria-hidden />
+          ) : (
+            <p className="mb-1 px-2.5 text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground/80">
+              {t(`groups.${group.key}`)}
+            </p>
+          )}
+          {group.items.map((item) => {
+            const label = t(`items.${item.key}`)
+            const Icon = item.icon
+            return (
+              <Tooltip key={item.key} content={label} side="right" disabled={!collapsed}>
+                <NavLink
+                  to={item.path}
+                  end={item.end}
+                  onClick={onNavigate}
+                  aria-label={collapsed ? label : undefined}
+                  className={({ isActive }) =>
+                    cn(
+                      'group relative flex h-10 items-center gap-3 rounded-lg px-2.5 text-sm font-medium transition-colors lg:h-9',
+                      collapsed && 'mx-auto w-10 justify-center px-0',
+                      isActive
+                        ? 'bg-primary/10 text-primary-emphasis'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                    )
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      {isActive && !collapsed && (
+                        <span
+                          className="absolute -left-3 top-2 h-5 w-[3px] rounded-r-full bg-primary"
+                          aria-hidden
+                        />
+                      )}
+                      <Icon
+                        className={cn(
+                          'size-[18px] shrink-0',
+                          isActive
+                            ? 'text-primary-emphasis'
+                            : 'text-muted-foreground group-hover:text-foreground',
+                        )}
+                        aria-hidden
+                      />
+                      {!collapsed && <span className="truncate">{label}</span>}
+                    </>
+                  )}
+                </NavLink>
+              </Tooltip>
+            )
+          })}
+        </div>
+      ))}
+    </nav>
+  )
+}

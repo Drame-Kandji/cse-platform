@@ -1,0 +1,38 @@
+{
+  "groups": {
+    "pilotage": "Pilotage",
+    "besoins": "Besoins",
+    "parc": "Parc & chantiers",
+    "achats": "Achats",
+    "finance": "Finance",
+    "admin": "Administration"
+  },
+  "items": {
+    "dashboard": "Tableau de bord",
+    "rapports": "Rapports",
+    "besoins": "Besoins",
+    "besoinNouveau": "Nouveau besoin",
+    "validation": "Validation",
+    "materiels": "Parc matériel",
+    "carte": "Carte",
+    "planning": "Planning des affectations",
+    "chantiers": "Chantiers",
+    "maintenances": "Maintenance & pannes",
+    "appelsOffres": "Appels d'offres",
+    "contrats": "Contrats & commandes",
+    "fournisseurs": "Fournisseurs",
+    "finance": "Finance",
+    "utilisateurs": "Utilisateurs",
+    "referentiels": "Référentiels",
+    "audit": "Journal d'audit",
+    "plateforme": "État de la plateforme",
+    "notifications": "Notifications",
+    "profil": "Mon profil",
+    "design": "Design system"
+  },
+  "crumbs": {
+    "detail": "Détail",
+    "modifier": "Modifier",
+    "admin": "Administration"
+  }
+}

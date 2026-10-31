@@ -1,0 +1,17 @@
+{
+  "liste": {
+    "titre": "Appels d'offres",
+    "description": "Consultez les fournisseurs agréés, comparez les offres et attribuez les marchés.",
+    "lancer": "Lancer un appel d'offres"
+  },
+  "detail": {
+    "onglets": "Sections de l'appel d'offres",
+    "tabs": {
+      "offres": "Offres",
+      "evaluation": "Évaluation",
+      "comparatif": "Comparatif",
+      "attribution": "Attribution",
+      "pv": "Procès-verbaux"
+    }
+  }
+}

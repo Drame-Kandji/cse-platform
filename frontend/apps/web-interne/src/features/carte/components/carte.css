@@ -1,0 +1,50 @@
+/* Habillage Leaflet aligne sur les jetons du theme (clair / sombre). */
+.cse-carte .leaflet-container {
+  background: rgb(var(--surface-sunken));
+  font-family: inherit;
+}
+
+.cse-carte .leaflet-popup-content-wrapper,
+.cse-carte .leaflet-popup-tip {
+  background: rgb(var(--surface-raised));
+  color: rgb(var(--foreground));
+  box-shadow: 0 10px 38px -10px rgb(var(--shadow-color) / 0.28);
+}
+
+.cse-carte .leaflet-popup-content-wrapper {
+  border: 1px solid rgb(var(--border));
+  border-radius: calc(var(--radius) - 2px);
+}
+
+.cse-carte .leaflet-popup-content {
+  margin: 0.75rem 0.875rem;
+}
+
+.cse-carte .leaflet-container a.leaflet-popup-close-button {
+  color: rgb(var(--muted-foreground));
+}
+
+.cse-carte .leaflet-control-attribution {
+  background: rgb(var(--surface) / 0.8);
+  color: rgb(var(--muted-foreground));
+}
+
+.cse-carte .leaflet-control-attribution a {
+  color: rgb(var(--primary-emphasis));
+}
+
+.cse-carte .leaflet-bar a {
+  background: rgb(var(--surface-raised));
+  color: rgb(var(--foreground));
+  border-color: rgb(var(--border));
+}
+
+.cse-carte .leaflet-bar a:hover {
+  background: rgb(var(--muted));
+}
+
+.cse-carte .cse-map-marker:focus-visible {
+  outline: 2px solid rgb(var(--ring));
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
