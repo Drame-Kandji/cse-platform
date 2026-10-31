@@ -9,7 +9,6 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -160,11 +159,7 @@ public class DevDataSeeder implements ApplicationRunner {
       case AFFECTE_DIRECT -> {
         valider(besoin, rm, decision);
         besoin.affecterDirectement(
-            IntStream.rangeClosed(1, s.quantite())
-                .mapToObj(i -> JeuDeDonneesBesoins.materielId(s.numero() * 10 + i))
-                .toList(),
-            rm,
-            orientation);
+            JeuDeDonneesBesoins.materielsAffectes(s.numero()), rm, orientation);
         publier(besoin, rm);
       }
       case EN_ACHAT -> {

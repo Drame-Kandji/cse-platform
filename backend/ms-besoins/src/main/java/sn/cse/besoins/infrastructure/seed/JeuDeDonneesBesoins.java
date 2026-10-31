@@ -69,6 +69,36 @@ final class JeuDeDonneesBesoins {
     return UUID.fromString(String.format("a1000000-0000-0000-0000-%012d", numero));
   }
 
+  // Numéros des engins réellement créés par le seed de ms-suivi (a1000000-…-0000000000NN, NN de 01
+  // à
+  // 36) : même catégorie, de préférence sur le chantier du besoin. Les besoins AFFECTE_DIRECT
+  // référencent
+  // ainsi des matériels existants (cohérence inter-services des données de démonstration).
+  private static final Map<Integer, List<Integer>> MATERIELS_AFFECTES =
+      Map.ofEntries(
+          Map.entry(1, List.of(1, 5)),
+          Map.entry(2, List.of(9)),
+          Map.entry(3, List.of(26, 27)),
+          Map.entry(4, List.of(13)),
+          Map.entry(5, List.of(28, 26, 27)),
+          Map.entry(6, List.of(30)),
+          Map.entry(7, List.of(26, 27)),
+          Map.entry(8, List.of(9, 14, 2)),
+          Map.entry(9, List.of(26, 27, 25, 28)),
+          Map.entry(10, List.of(6)),
+          Map.entry(11, List.of(28, 26)),
+          Map.entry(12, List.of(30, 31)));
+
+  /**
+   * @param numeroBesoin numéro du besoin de démonstration orienté en affectation directe
+   * @return identifiants des engins du seed de ms-suivi qui lui sont affectés
+   */
+  static List<UUID> materielsAffectes(int numeroBesoin) {
+    return MATERIELS_AFFECTES.getOrDefault(numeroBesoin, List.of()).stream()
+        .map(JeuDeDonneesBesoins::materielId)
+        .toList();
+  }
+
   static Acteur demandeur(int chantier) {
     return switch (chantier) {
       case 1, 2 -> MAMADOU_DIOP;
