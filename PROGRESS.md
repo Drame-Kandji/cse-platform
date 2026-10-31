@@ -25,19 +25,18 @@ L'implémentation précédente a été auditée puis reconstruite (voir ADR-0003
 | ms-auth + ms-gateway | ✅ | 81 + 18 tests |
 | ms-reporting + ms-audit | ✅ | 65 + 28 tests |
 | ms-notification + ms-chatbot | ✅ | 65 + 101 tests |
-| Frontend `web-interne` (tous les modules) | ✅ | 174 tests, typecheck/lint stricts |
-| Documentation complète (README, architecture C4, événements, sécurité, exploitation, guides développeur et utilisateur avec captures, rapport qualité, DECISIONS.md, CHANGELOG 2.0.0, collections `.http`) | ✅ | `docs/`, `docs/QUALITY_REPORT.md` (mesures du 31/10/2026) |
+| Frontend `web-interne` (tous les modules), refonte visuelle épurée bleu/blanc | ✅ | 185 tests, typecheck/lint stricts, build |
+| Documentation complète (README, architecture C4, événements, sécurité, exploitation, guides développeur et utilisateur avec captures, rapport qualité, DECISIONS.md, CHANGELOG 2.0.0, collections `.http`) | ✅ | `docs/`, `docs/QUALITY_REPORT.md` (mesures du 31/10/2026) ; 43 captures régénérées avec le nouveau design |
 | Intégration réelle (10 services + Keycloak + Kafka) | ✅ | `scripts/smoke.sh` : 6 rôles, RBAC conforme ; QA navigateur sans erreur API |
+| Corrections QA (disponibilité opérationnelle, dates de paiement, lien AO → contrat, tuiles OSM, cohérence des données de démonstration) | ✅ | vérifié en conditions réelles |
+| Exploitation : image frontend + Nginx HTTPS, sauvegardes 90 jours + restauration, CI, test de charge k6 | ✅ | `make up`, `make backup/restore`, `make perf` |
+| Tests de bout en bout | ✅ | Playwright 4/4 (3 scénarios critiques + navigation), RestAssured 14/14 |
 
-## En cours
-
-- Corrections issues de la QA en conditions réelles : disponibilité opérationnelle, dates de paiement dans `FacturePayload`,
-  lien AO → contrat, tuiles cartographiques, densité des tableaux, passage mobile.
-- Exploitation : image frontend + Nginx HTTPS, sauvegardes 90 jours + restauration testée, CI, test de charge.
+Total backend : 894 tests, 0 échec (12 modules).
 
 ## Reste à faire
 
-- Tests Playwright des 3 scénarios critiques (soumission/validation d'un besoin, cycle d'achat, réception + clôture de maintenance).
+- Rien pour la plateforme interne ; voir « Dette connue ».
 
 ## Hors périmètre (décision utilisateur)
 

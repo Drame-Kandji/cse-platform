@@ -24,22 +24,26 @@ la Compagnie Sahélienne d'Entreprises. Les captures proviennent de l'environnem
 
 ![Page de connexion](images/login.png)
 
-La session expire après une heure d'inactivité. Le bouton avec vos initiales (en haut à droite) donne accès
-à **Mon profil** et à la **déconnexion**.
+La session expire après une heure d'inactivité. Le bouton portant vos initiales et votre nom (en haut à
+droite) donne accès à **Mon profil** et à la **déconnexion**.
 
 ### 1.2 L'écran principal
 
 ![Tableau de bord du chef de chantier](images/chef-dashboard.png)
 
 - **Menu de gauche** : seuls les écrans autorisés pour votre rôle apparaissent, regroupés par thème
-  (Pilotage, Besoins, Parc & chantiers, Achats, Finance, Administration). Le bouton en bas réduit le menu.
+  (pilotage, besoins, parc & chantiers, achats, finance, administration) et séparés par un trait fin. Le
+  bouton en bas réduit le menu.
 - **Recherche** (`Ctrl` + `K`, ou la barre « Rechercher… ») : ouvre une palette pour aller à un écran ou
   lancer une action rapide.
 - **Cloche** : notifications non lues (mise à jour en temps réel). **Soleil/lune** : thème clair ou sombre.
 - **Assistant IA** (bouton bleu en bas à droite) : poser une question en français sur le parc, les
   besoins, les chantiers ou les achats.
-- **Tableau de bord** : indicateurs de votre périmètre sur 30 jours, 90 jours, 12 mois ou une plage
-  personnalisée, et une liste **À traiter** des actions qui vous attendent.
+- **Tableau de bord** : volontairement épuré, il présente **4 indicateurs clés** de votre rôle, **un
+  graphique** et la liste **À traiter** (actions qui vous attendent, avec leur nombre ; un clic ouvre la
+  liste correspondante). La période se choisit en haut à droite : 30 jours, 90 jours (par défaut), 12 mois
+  ou une plage personnalisée. Le lien **Voir l'analyse détaillée** ouvre la page **Rapports** pour
+  l'ensemble des graphiques et tableaux.
 
 | Palette de commandes (`Ctrl` + `K`) | Assistant IA |
 |---|---|
@@ -47,9 +51,13 @@ La session expire après une heure d'inactivité. Le bouton avec vos initiales (
 
 ### 1.3 Listes, filtres et mobile
 
-Toutes les listes se filtrent (recherche, puces de filtre), se trient en cliquant sur l'en-tête des colonnes
-signalées par une flèche et se paginent (20 lignes par défaut, 50 au maximum). Le bouton **Colonnes**
-masque ou affiche des colonnes. Un clic sur une ligne ouvre la fiche détaillée.
+Les principales listes s'ouvrent sur des **onglets de statut** avec leur compteur (par exemple Tous / En
+attente / En achat / Affectés / Rejetés pour les besoins). La barre au-dessus du tableau garde la recherche
+et le filtre le plus utile ; les critères secondaires sont regroupés dans le bouton **Filtres**. Les listes se
+trient en cliquant sur l'en-tête des colonnes signalées par une flèche et se paginent (20 lignes par défaut,
+10 ou 50 au choix). Le bouton **Colonnes** masque ou affiche des colonnes. Un clic sur une ligne ouvre la
+fiche détaillée ; l'action principale y est un bouton en haut à droite, et les actions secondaires d'une
+fiche matériel (ou d'une ligne utilisateur) sont rangées dans le menu **« … »**.
 
 Sur téléphone, le menu s'ouvre par le bouton en haut à gauche et les tableaux deviennent des cartes :
 
@@ -85,8 +93,11 @@ Vous voyez uniquement **vos chantiers**, leurs matériels et vos besoins.
 
 ### 2.2 Suivre ses besoins
 
-Menu **Besoins** : la liste montre statut, priorité et chantier. La fiche affiche l'avancement
-(Soumis → Validation → Orientation), les matériels affectés et l'historique complet.
+Menu **Besoins** : les onglets **Tous**, **En attente**, **En achat**, **Affectés** et **Rejetés** (avec leur
+compteur) trient vos besoins ; la recherche et le filtre de priorité restent visibles, les autres critères
+(statut, catégorie, chantier, période de soumission) sont dans **Filtres**. La liste montre désignation,
+chantier, priorité, statut et date. La fiche affiche l'avancement (Soumis → Validation → Orientation), les
+informations du besoin, les matériels affectés et l'historique complet.
 
 ![Liste des besoins](images/chef-besoins.png)
 
@@ -113,7 +124,7 @@ dans **À traiter → Réceptions à confirmer** du tableau de bord.
 
 - **Parc matériel** : engins présents sur vos chantiers, état, prochaine maintenance. **Carte** et
   **Planning des affectations** montrent la localisation et l'occupation dans le temps.
-- Fiche d'un matériel → **Actions** → **Enregistrer le relevé** du compteur horaire.
+- Fiche d'un matériel → menu **« … »** → **Relevé d'heures** pour saisir le compteur horaire.
 - **Signaler une panne** : menu **Maintenance & pannes** → bouton **Signaler une panne** (ou depuis la
   fiche du matériel) ; choisir le matériel, la **gravité** (mineure, majeure, bloquante) et décrire le
   problème. Une panne bloquante alerte immédiatement le Responsable Matériel.
@@ -149,11 +160,13 @@ les commandes et signale les **doublons potentiels**.
 
 ### 3.2 Gérer le parc
 
-- **Parc matériel** : filtrer par état, catégorie, chantier, « maintenance due ». Bouton d'ajout d'un
-  matériel (code, désignation, catégorie, type d'engin, tarif journalier, valeur d'acquisition).
-- Fiche matériel : indicateurs (heures, maintenance, tarif), onglets **Affectations**, **Maintenances**,
-  **Pannes**, **Mouvements** ; bouton **Affecter** et menu **Actions** (libérer, changer l'état, relevé de
-  compteur, demander la réforme).
+- **Parc matériel** : onglets par état (**Tous**, **Disponible**, **Affecté**, **En maintenance**,
+  **Réformé**), bouton **Maintenance due**, autres critères dans **Filtres**. **Nouveau matériel** pour en
+  ajouter un (code, désignation, catégorie, type d'engin, tarif journalier, valeur d'acquisition).
+- Fiche matériel : synthèse (type, marque, immatriculation, heures, maintenance, tarif, valeur), onglets
+  **Affectations**, **Maintenances**, **Pannes**, **Mouvements** ; bouton **Affecter** et menu **« … »**
+  (Libérer, Relevé d'heures, Mettre en maintenance, Signaler une panne, Modifier la fiche, Demander la
+  réforme).
 
 ![Parc matériel](images/rm-materiels.png)
 
@@ -193,7 +206,7 @@ dans les notifications.
 
 ### 3.5 Réforme d'un matériel (R13)
 
-Fiche matériel → **Actions** → **Demander la réforme**, motif obligatoire. Le matériel doit être libéré et
+Fiche matériel → menu **« … »** → **Demander la réforme**, motif obligatoire. Le matériel doit être libéré et
 hors maintenance. La Direction Générale décide ; une fois réformé, l'engin ne peut plus être affecté.
 
 ### 3.6 Chantiers
@@ -217,7 +230,8 @@ est encore affecté.
 
 ### 4.1 Lancer un appel d'offres
 
-1. Menu **Appels d'offres** → **Lancer un AO** (ou depuis un « besoin à acheter »).
+1. Menu **Appels d'offres** → **Lancer un appel d'offres**, ou onglet **Besoins à lancer** (besoins passés
+   en achat sans appel d'offres, avec leur compteur) → **Lancer un AO** sur la ligne du besoin.
 2. Renseigner objet, type (appel d'offres ou demande de prix), catégorie, quantité, spécifications, budget
    estimé, **date et heure limite**.
 3. Pondérer les **critères** (prix, délai, qualité technique, garantie, SAV, références : total 100 %).
@@ -228,11 +242,14 @@ est encore affecté.
 
 ### 4.2 Recevoir et évaluer les offres
 
+La fiche d'un AO présente une synthèse (budget, quantité, chantier, date limite, offres reçues, besoin
+d'origine) ; **Détails** déplie la description, les critères pondérés et les fournisseurs invités.
+
 - Onglet **Offres** : **Saisir une offre reçue** (offres arrivées hors portail) avant la date limite (R02).
   Tant que l'AO est publié, les offres sont **anonymisées** (codes `OFR-…`, règle R10).
 - **Clôturer** l'AO (automatique à la date limite) : l'anonymat est levé.
-- Onglet **Évaluation** : saisir les notes ; prix et délai sont calculés automatiquement. L'onglet
-  **Comparatif** classe les offres par score pondéré.
+- Onglets **Évaluation** et **Comparatif** (visibles une fois l'AO clôturé) : saisir les notes ; prix et
+  délai sont calculés automatiquement. Le **Comparatif** classe les offres par score pondéré.
 
 ![AO publié, offres anonymisées](images/ra-ao-detail.png)
 
@@ -250,7 +267,8 @@ toutes les approbations obtenues, l'AO passe **Attribué** et un **contrat broui
 ### 4.4 Exécuter le contrat
 
 Menu **Contrats & commandes** → fiche du contrat ; la frise montre Brouillon → Signé → Engagement validé →
-En livraison → Livré → Clôturé.
+En livraison → Livré → Clôturé, l'action suivante est le bouton principal en haut de la fiche, et les onglets
+**Clauses contractuelles**, **Jalons** et **Engagement budgétaire** détaillent le contrat.
 
 1. Compléter les **clauses** (garantie, pénalité de retard, jalons) puis **Signer le contrat** : une demande
    d'engagement part à la DAF.
@@ -266,7 +284,9 @@ En livraison → Livré → Clôturé.
 
 ### 4.5 Fournisseurs
 
-Menu **Fournisseurs** : onglets **Liste**, **Classement** (score de performance), **Comparaison de prix**.
+Menu **Fournisseurs** : onglets **Liste** (sous-onglets Tous, Actifs, À valider, Suspendus, Blacklistés),
+**Classement** (score de performance), **Comparaison de prix** (prix min., moyen et max. par article du
+catalogue).
 **Nouveau fournisseur** pour l'enregistrer. Dans la fiche : informations légales, contact, coordonnées
 bancaires (visibles du RA et de la DAF seulement), documents administratifs (alerte si expirés),
 évaluations, catalogue, litiges ; actions **Valider l'inscription**, **Suspendre**, réactiver,
@@ -304,8 +324,14 @@ Onglet **Factures** : **Enregistrer une facture**, puis pour chaque facture **Ma
 
 ### 5.3 Pilotage financier
 
-Le tableau de bord DAF et la page **Finance** présentent : montant engagé, engagements en attente, facturé,
-mandaté, payé, factures en retard, exécution budgétaire. Les montants sont en FCFA.
+- **Tableau de bord DAF** (sur la période choisie) : montant engagé, montant payé (et mandaté), coût de
+  maintenance, livraisons en retard, graphique d'exécution budgétaire et **À traiter** (engagements à
+  valider, factures en retard).
+- **Finance** : les totaux **Engagé**, **Facturé**, **Payé** et **Factures en retard** sont des **cumuls
+  depuis le début** (mention « Cumul depuis le début »), indépendants de la période du tableau de bord, suivis
+  du graphique Engagé / Facturé / Mandaté / Payé.
+
+Les montants sont en FCFA.
 
 ![Tableau de bord DAF](images/daf-dashboard.png)
 
@@ -318,11 +344,15 @@ décisions.
 
 ### 6.1 Tableaux de bord et rapports
 
-- **Tableau de bord** : sélecteur de vue (Direction Générale, DAF, Achats, Matériel), période, indicateurs
-  (engagé, payé, coût de maintenance, disponibilité opérationnelle, utilisation, pannes, besoins, délai
-  d'approvisionnement), graphiques et liste **À traiter**.
-- **Rapports** : synthèse par section (parc, besoins, achats, fournisseurs, finances, chantiers), filtrable
-  par période et chantier ; **Exporter en PDF** ou **Exporter en Excel**.
+- **Tableau de bord** : sélecteur de vue (Direction Générale, DAF, Achats, Matériel) et période ; la vue
+  Direction Générale montre 4 indicateurs (montant engagé, disponibilité opérationnelle, besoins en attente,
+  livraisons en retard), le graphique de disponibilité et d'utilisation du parc et la liste **À traiter**
+  (attributions en cours, engagements en attente, besoins critiques). **Voir l'analyse détaillée** ouvre les
+  Rapports.
+- **Rapports** : l'analyse complète — graphiques (parc par catégorie, besoins par priorité, exécution
+  budgétaire, meilleurs fournisseurs) puis synthèse chiffrée par section (parc, besoins, achats,
+  fournisseurs, finances, chantiers), filtrable par vue, période et chantier ; **Exporter en PDF** ou
+  **Exporter en Excel**.
 
 ![Tableau de bord DG](images/dg-dashboard.png)
 
@@ -346,7 +376,8 @@ Ces demandes apparaissent dans **À traiter** et dans les notifications.
 
 ### 7.1 Utilisateurs
 
-Menu **Utilisateurs** : liste filtrable par rôle et statut.
+Menu **Utilisateurs** : onglets par rôle (avec compteur), filtre de statut ; les actions sur un compte sont
+dans le menu **« … »** de sa ligne.
 
 1. **Nouvel utilisateur** : prénom, nom, e-mail, téléphone, **rôle** (un seul) et attributs du rôle
    (chantiers rattachés pour un chef, périmètre du parc, budget géré…). Un **mot de passe temporaire** est
@@ -369,7 +400,8 @@ maintenance en heures et en jours, actif). Ces seuils déclenchent les alertes d
 ### 7.3 Journal d'audit
 
 Menu **Journal d'audit** : toutes les actions métier de la plateforme (qui, quoi, quand, sur quelle entité),
-filtrables par utilisateur, service, entité, action, période et texte. Le journal est **immuable**.
+avec trois compteurs (événements, aujourd'hui, 7 jours) ; recherche texte et filtre utilisateur visibles,
+le service et la période dans **Filtres**. Le journal est **immuable**.
 
 ![Journal d'audit](images/admin-audit.png)
 
