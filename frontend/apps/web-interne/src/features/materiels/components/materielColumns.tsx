@@ -1,13 +1,13 @@
-import { AlertTriangle, Clock } from 'lucide-react'
-import { labelOf } from '@/shared/domain/labels'
 import type { Materiel } from '@/shared/domain/types'
-import { EMPTY_VALUE, formatDate, formatMoney } from '@/shared/lib/format'
+import { EMPTY_VALUE, formatDate } from '@/shared/lib/format'
 import { Badge } from '@/shared/ui/badge'
 import type { ColumnDef } from '@/shared/ui/data-table'
 import { StatusBadge } from '@/shared/ui/status-badge'
-import { MaintenanceGauge } from './MaintenanceGauge'
 
-/** Colonnes du parc ; tri active uniquement sur les champs `TRIABLES` de MaterielController (ms-suivi). */
+/**
+ * Colonnes du parc (5) ; tri active uniquement sur les champs `TRIABLES` de MaterielController
+ * (ms-suivi). Categorie, compteur d'heures et tarif sont consultables dans la fiche du materiel.
+ */
 export const materielColumns: ColumnDef<Materiel>[] = [
   {
     accessorKey: 'code',
@@ -16,12 +16,7 @@ export const materielColumns: ColumnDef<Materiel>[] = [
     enableHiding: false,
     meta: { nowrap: true },
     cell: ({ row }) => (
-      <div className="grid">
-        <span className="font-mono text-xs font-medium text-foreground">{row.original.code}</span>
-        {row.original.immatriculation && (
-          <span className="text-xs text-muted-foreground">{row.original.immatriculation}</span>
-        )}
-      </div>
+      <span className="font-mono text-xs tabular-nums text-muted-foreground">{row.original.code}</span>
     ),
   },
   {
@@ -29,29 +24,7 @@ export const materielColumns: ColumnDef<Materiel>[] = [
     header: 'Désignation',
     enableSorting: true,
     meta: { mobilePrimary: true, minWidth: 240 },
-    cell: ({ row }) => {
-      const m = row.original
-      const sub = [m.marque, m.modele].filter(Boolean).join(' ') || m.typeEnginLibelle
-      return (
-        <div className="grid min-w-0">
-          <span className="line-clamp-2 font-medium text-foreground">{m.designation}</span>
-          <span className="line-clamp-1 text-xs text-muted-foreground">
-            {sub ?? labelOf('categorieMateriel', m.categorie)}
-          </span>
-        </div>
-      )
-    },
-  },
-  {
-    accessorKey: 'categorie',
-    header: 'Catégorie',
-    enableSorting: true,
-    meta: { hideOnMobile: true, nowrap: true, hideBelow: '2xl' },
-    cell: ({ row }) => (
-      <span className="text-sm text-muted-foreground">
-        {labelOf('categorieMateriel', row.original.categorie)}
-      </span>
-    ),
+    cell: ({ row }) => <span className="line-clamp-1 font-medium">{row.original.designation}</span>,
   },
   {
     accessorKey: 'etat',
@@ -62,7 +35,7 @@ export const materielColumns: ColumnDef<Materiel>[] = [
       <div className="flex flex-wrap items-center gap-1.5">
         <StatusBadge kind="etatMateriel" value={row.original.etat} />
         {row.original.reformeDemandee && row.original.etat !== 'REFORME' && (
-          <Badge tone="danger" variant="outline" size="sm">
+          <Badge tone="danger" size="sm">
             Réforme demandée
           </Badge>
         )}
@@ -74,40 +47,26 @@ export const materielColumns: ColumnDef<Materiel>[] = [
     header: 'Chantier',
     meta: { label: 'Chantier actuel', minWidth: 160 },
     cell: ({ row }) => (
-      <span className="line-clamp-2 text-sm">{row.original.chantierActuelNom ?? EMPTY_VALUE}</span>
+      <span className="line-clamp-1 text-muted-foreground">
+        {row.original.chantierActuelNom ?? EMPTY_VALUE}
+      </span>
     ),
-  },
-  {
-    id: 'utilisation',
-    header: 'Depuis maintenance',
-    meta: { label: 'Heures depuis maintenance', hideOnMobile: true, nowrap: true, hideBelow: '2xl' },
-    cell: ({ row }) => <MaintenanceGauge materiel={row.original} />,
   },
   {
     accessorKey: 'prochaineMaintenance',
     header: 'Prochaine maintenance',
     enableSorting: true,
-    meta: { hideOnMobile: true, nowrap: true },
+    meta: { nowrap: true },
+    // Rouge uniquement si la maintenance est due (le texte porte l'information, pas la couleur seule).
     cell: ({ row }) =>
       row.original.maintenanceDue ? (
-        <Badge tone="danger" size="sm">
-          <AlertTriangle aria-hidden />
-          Maintenance due
-        </Badge>
+        <span className="font-medium text-danger-emphasis">Maintenance due</span>
       ) : row.original.prochaineMaintenance ? (
-        <span className="inline-flex items-center gap-1.5 text-sm tabular-nums text-muted-foreground">
-          <Clock className="size-3.5" aria-hidden />
+        <span className="tabular-nums text-muted-foreground">
           {formatDate(row.original.prochaineMaintenance)}
         </span>
       ) : (
         EMPTY_VALUE
       ),
-  },
-  {
-    accessorKey: 'tarifJournalier',
-    header: 'Tarif / jour',
-    enableSorting: true,
-    meta: { align: 'right', hideOnMobile: true },
-    cell: ({ row }) => formatMoney(row.original.tarifJournalier),
   },
 ]

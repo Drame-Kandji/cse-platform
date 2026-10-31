@@ -29,7 +29,6 @@ export function Component() {
     <>
       <PageHeader
         title="État de la plateforme"
-        description="Disponibilité et temps de réponse des microservices, mesurés par la passerelle."
         actions={
           <>
             <Switch

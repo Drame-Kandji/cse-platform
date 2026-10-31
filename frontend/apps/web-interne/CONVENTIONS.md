@@ -53,7 +53,7 @@ TSDoc en français sur les hooks et utilitaires exportés.
 1. Créer `src/features/<module>/pages/XxxPage.tsx` qui **exporte `Component`** (chargé paresseusement) :
    ```tsx
    export function Component() {
-     return <><PageHeader title="Besoins" description="…" actions={<Button>…</Button>} />…</>
+     return <><PageHeader title="Besoins" actions={<Button>…</Button>} />…</>
    }
    ```
 2. Chemin dans `app/routes.ts` (`paths.xxx`, et `to.xxxDetail(id)` pour les liens paramétrés).
@@ -148,7 +148,8 @@ const query = useBesoins({ ...filtres, ...table.pageParams })
   `onRowClick`, ne pas mettre d'éléments interactifs dans les cellules.
 - `data` peut aussi être un tableau simple (tri et pagination locaux).
 - Filtres : `<FilterBar search onSearchChange (débouncé 300 ms) canReset onReset>` +
-  `<FilterChip label options={optionsOf('statutBesoin')} value onChange />`. Remettre la page à 0 quand
+  `<FilterChip label options={optionsOf('statutBesoin')} value onChange />` (1 ou 2 visibles), les autres
+  dans `moreFilters={…} moreCount={n}` (bouton « Filtres »). Remettre la page à 0 quand
   un filtre change (`table.onPaginationChange((p) => ({ ...p, pageIndex: 0 }))`).
 
 ## 6. Formulaires (react-hook-form + zod)
@@ -187,28 +188,54 @@ libellé français et leur ton. Ajouter un enum ou une valeur :
 2. entrée dans `STATUS_MAPS` : `statutX: { A: { label: 'Libellé', tone: 'success' }, … } satisfies DescriptorMap<StatutX>` ;
 3. utiliser `<StatusBadge kind="statutX" value={dto.statut} />`, `optionsOf('statutX')`, `labelOf(...)`.
 
-Tons : `neutral`, `primary`, `info`, `success`, `warning`, `danger`, `accent`. Une valeur inconnue
-s'affiche brute en neutre (pas de crash si le backend ajoute une valeur). Le test
-`status-badge.test.tsx` vérifie que chaque valeur a un libellé.
+Tons d'un état (`StatusTone`) : **`neutral`** par défaut (gris discret), **`primary`** (bleu) pour
+« actif / en cours / à traiter », **`danger`** (rouge) seulement pour erreur, rejet, critique, retard.
+Une valeur inconnue s'affiche brute en neutre. Le test `status-badge.test.tsx` vérifie que chaque valeur a
+un libellé et un ton parmi ces trois.
 
 ## 8. Design system (`src/shared/ui`)
+
+**Charte « simple et moderne » : bleu + blanc.** Règles visuelles, à respecter sur chaque écran :
+
+- **Couleurs** : surfaces blanches sur fond à peine teinté, texte quasi noir + un seul gris
+  (`muted-foreground`), bordures très claires. **Un seul bleu** (`primary`) pour l'action principale, le
+  lien, le focus, l'élément actif / sélectionné et **tous** les graphiques (`chart-1..5` = nuances de
+  bleu, `chart-6` = gris « autres »). **Rouge** (`danger`) uniquement pour erreur, destructif, critique,
+  retard. Ni vert, ni orange, ni jaune : `success`/`info`/`warning`/`accent` sont des alias du bleu
+  (gardés pour compatibilité, ne pas en ajouter). Sombre : même logique (bleu sur quasi noir).
+- **Moins de texte** : `PageHeader` = titre (+ action principale) ; plus de phrase d'accroche
+  (`subtitle` seulement pour une donnée courte : chantier, NINEA). Pas de lignes d'aide décoratives
+  (« Données consolidées… ») : une info secondaire va en infobulle (`title`) ou dans le détail.
+- **Moins d'information** : KPI (`StatCard`) = libellé + grand chiffre + au plus une ligne discrète ;
+  pas de tuile d'icône ni de sparkline (opt-in `showSparkline`) ni de delta coloré ; `alert` (rouge) pour
+  une vraie alerte. Tableau de bord : 4 KPI, un graphique, « À traiter », lien vers Rapports.
+- **Listes** : au-dessus du tableau, des compteurs texte `CountTabs` (pas de rangée de cartes) ;
+  tableau ≤ 5 colonnes (le `DataTable` masque au-delà de 6 par défaut, `maxVisibleColumns`), info
+  secondaire en 2ᵉ ligne grise ou dans le détail, pas de jauge colorée (texte, rouge seulement si dû).
+  Filtres : recherche + 1 ou 2 filtres visibles, le reste dans `FilterBar moreFilters` (bouton « Filtres »).
+- **Chrome calme** : plat (pas d'ombre sur les cartes), bordures fines, `rounded-xl`, grille de 8 px ;
+  sidebar sans intitulés de groupe (simples filets), icônes grises, élément actif bleu sur fond bleu pâle.
+- **Typographie** (Inter) : titre de page `text-2xl`, titre de carte `text-base`, corps `text-sm`,
+  petit `text-xs`. Badges = pastilles `rounded-full` sans point coloré.
 
 Importer depuis `@/shared/ui` (barrel) ou le fichier direct ; les composants lourds par leur chemin :
 `@/shared/ui/data-table`, `@/shared/ui/chart` + `@/shared/ui/chart-theme` (Recharts).
 
 - **Couleurs : uniquement les jetons** (`bg-surface`, `text-muted-foreground`, `border-border`,
-  `bg-primary`, `text-success-emphasis`, `bg-chart-3`…). Aucune couleur Tailwind brute (`bg-blue-500`) ni
-  hex : `scripts/check-palette.mjs` le refuse. `*-emphasis` = variante texte AA sur fond teinté.
+  `bg-primary`, `text-danger-emphasis`, `bg-chart-1`…). Aucune couleur Tailwind brute (`bg-blue-500`,
+  `text-slate-600`) ni hex dans les composants : `scripts/check-palette.mjs` le refuse. `*-emphasis` =
+  variante texte AA sur fond teinté.
   Classes de ton prêtes : `softToneClasses`, `dotToneClasses`, `textToneClasses` (`shared/ui/tone.ts`).
 - Cartes : `Card` / `CardHeader` / `CardContent` / `CardFooter`, coins `rounded-xl`, bordure fine.
 - Chiffres : `tabular-nums` ; montants `formatMoney` (FCFA, fr-SN, sans décimales) ; dates
   `formatDate`/`formatDateTime`/`formatRelative` (date-fns, fr) — `shared/lib/format.ts`.
 - Pages : `PageHeader` en tête, puis contenu ; états `Skeleton`, `EmptyState`, `ErrorState` ; KPI
-  `StatCard` (+ `Sparkline`) ; historique `Timeline` ; workflow `Stepper` ; détail latéral `Sheet` ;
+  `StatCard` ; compteurs de liste `CountTabs` ; historique `Timeline` ; workflow `Stepper` ; détail latéral `Sheet` ;
   modales `Dialog` ; menus `DropdownMenu` ; `Tabs`, `Tooltip`, `Avatar`, `Badge`.
 - Graphiques : `ChartContainer` (libellé accessible obligatoire), `axisProps`, `gridProps`,
   `cursorProps`, `<Tooltip content={<ChartTooltipContent valueFormatter={formatMoney} />} />`,
-  `ChartLegend` (≥ 2 séries), couleurs `chartColor(i)` dans l'ordre fixe (max 6 séries, jamais deux axes Y).
+  `ChartLegend` (≥ 2 séries), couleurs `chartColor(i)` dans l'ordre fixe (bleus puis gris ; max 6 séries,
+  jamais deux axes Y ; rouge `rgb(var(--danger))` seulement pour une valeur critique).
 - Cartes géographiques : react-leaflet + `CircleMarker` (pas d'icônes image) ; importer
   `leaflet/dist/leaflet.css` dans le composant carte uniquement.
 - Icônes : `lucide-react`, `aria-hidden` si décoratives ; bouton icône seul = `IconButton label="…"`.

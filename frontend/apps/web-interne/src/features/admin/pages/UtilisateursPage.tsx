@@ -202,7 +202,6 @@ export function Component() {
     <>
       <PageHeader
         title="Utilisateurs"
-        description="Comptes de la plateforme, rôles et attributs métier (synchronisés avec Keycloak)."
         actions={
           <Button
             leftIcon={<UserPlus />}

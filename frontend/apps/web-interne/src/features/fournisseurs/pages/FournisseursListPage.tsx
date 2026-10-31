@@ -28,7 +28,6 @@ export function Component() {
     <>
       <PageHeader
         title={t('list.title')}
-        description={t('list.description')}
         actions={
           <Can roles={access.achatsGestion}>
             <FournisseurFormDialog

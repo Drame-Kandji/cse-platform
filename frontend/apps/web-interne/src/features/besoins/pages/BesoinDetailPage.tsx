@@ -48,7 +48,7 @@ export function Component() {
             <StatusBadge kind="priorite" value={besoin.priorite} />
           </>
         }
-        description={`${besoin.chantierNom} · ${besoin.demandeurNom}`}
+        subtitle={`${besoin.chantierNom} · ${besoin.demandeurNom}`}
         actions={<BesoinActions besoin={besoin} />}
       />
 

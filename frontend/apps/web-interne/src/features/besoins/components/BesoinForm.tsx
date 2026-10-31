@@ -31,6 +31,8 @@ const CODE_VERS_CHAMP: Readonly<Record<string, 'justification' | 'chantierId'>> 
   CHANTIER_INTROUVABLE: 'chantierId',
   CHANTIER_INACTIF: 'chantierId',
   CHANTIER_NON_AUTORISE: 'chantierId',
+  /* Code reellement renvoye par ms-besoins (403) pour un chantier hors du perimetre du chef. */
+  CHANTIER_NON_ATTRIBUE: 'chantierId',
 }
 
 export interface BesoinFormProps {

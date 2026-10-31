@@ -11,11 +11,16 @@ import {
 import { StatusBadge } from './status-badge'
 
 describe('StatusBadge', () => {
-  it('affiche le libelle francais et le ton du referentiel', () => {
+  it('affiche le libelle francais et le ton du referentiel (bleu = en cours)', () => {
     render(<StatusBadge kind="statutBesoin" value="EN_ATTENTE" />)
     const badge = screen.getByText('En attente').parentElement
     expect(badge).toHaveAttribute('data-status', 'EN_ATTENTE')
-    expect(badge?.className).toContain('text-warning-emphasis')
+    expect(badge?.className).toContain('text-primary-emphasis')
+  })
+
+  it('reste neutre (gris) pour un etat termine', () => {
+    render(<StatusBadge kind="etatMateriel" value="DISPONIBLE" />)
+    expect(screen.getByText('Disponible').parentElement?.className).toContain('text-muted-foreground')
   })
 
   it('utilise un ton danger pour un fournisseur blackliste', () => {
@@ -33,7 +38,11 @@ describe('referentiel des libelles', () => {
   it('couvre chaque valeur de chaque enumeration', () => {
     expect(Object.keys(STATUS_MAPS.statutBesoin)).toEqual([...STATUT_BESOIN])
     for (const map of Object.values(STATUS_MAPS) as Readonly<Record<string, StatusDescriptor>>[]) {
-      for (const descriptor of Object.values(map)) expect(descriptor.label.length).toBeGreaterThan(0)
+      for (const descriptor of Object.values(map)) {
+        expect(descriptor.label.length).toBeGreaterThan(0)
+        // Charte bleu + blanc : neutre, bleu ou rouge uniquement.
+        expect(['neutral', 'primary', 'danger']).toContain(descriptor.tone)
+      }
     }
   })
   it('fournit options et libelles', () => {
@@ -43,6 +52,6 @@ describe('referentiel des libelles', () => {
       { value: 'CRITIQUE', label: 'Critique' },
     ])
     expect(labelOf('statutContrat', 'ENGAGEMENT_VALIDE')).toBe('Engagement validé')
-    expect(describeStatus('role', 'DAF').tone).toBe('success')
+    expect(describeStatus('role', 'DAF').tone).toBe('neutral')
   })
 })

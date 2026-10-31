@@ -10,7 +10,7 @@ import {
   gridProps,
   yAxisWidthFor,
 } from '@/shared/ui/chart-theme'
-import { compactMoney, formatTaux } from '../../lib/format'
+import { compactMoney } from '../../lib/format'
 import type { SectionFinances } from '../../types'
 
 /** Chaine budgetaire : budget, engage, mandate, paye (une seule serie, budget en reference grisee). */
@@ -25,7 +25,6 @@ export function FinanceChart({ finances }: { finances: SectionFinances }) {
     <Card className="flex h-full flex-col">
       <CardHeader
         title="Exécution budgétaire"
-        description={`${formatTaux(finances.tauxExecutionBudget)} du budget engagé · montants en FCFA`}
       />
       <CardContent className="flex-1">
         <ChartContainer height={260} label="Budget total, montants engagé, mandaté et payé en francs CFA">
@@ -46,7 +45,7 @@ export function FinanceChart({ finances }: { finances: SectionFinances }) {
             />
             <Bar dataKey="montant" name="Montant" radius={[4, 4, 0, 0]} maxBarSize={56}>
               {data.map((item) => (
-                <Cell key={item.etape} fill={item.reference ? 'rgb(var(--border-strong))' : chartColor(0)} />
+                <Cell key={item.etape} fill={item.reference ? chartColor(5) : chartColor(0)} />
               ))}
               <LabelList
                 dataKey="montant"

@@ -6,13 +6,14 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: 'bg-primary text-primary-foreground shadow-xs hover:bg-primary/90',
+        primary: 'bg-primary text-primary-foreground hover:bg-primary/90',
         secondary:
-          'border border-border-strong/70 bg-surface text-foreground shadow-xs hover:bg-muted hover:border-border-strong',
+          'border border-border-strong bg-surface text-foreground hover:bg-muted',
         ghost: 'text-foreground hover:bg-muted',
         subtle: 'bg-muted text-foreground hover:bg-muted/70',
-        danger: 'bg-danger text-danger-foreground shadow-xs hover:bg-danger/90',
-        accent: 'bg-accent text-accent-foreground shadow-xs hover:bg-accent/90',
+        danger: 'bg-danger text-danger-foreground hover:bg-danger/90',
+        /** Alias du bleu principal (charte bleu + blanc). */
+        accent: 'bg-primary text-primary-foreground hover:bg-primary/90',
         link: 'h-auto px-0 text-primary-emphasis underline-offset-4 hover:underline active:translate-y-0',
       },
       size: {

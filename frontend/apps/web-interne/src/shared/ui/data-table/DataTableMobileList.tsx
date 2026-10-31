@@ -27,7 +27,7 @@ function DefaultCard<T>({ row }: { row: Row<T> }) {
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2.5">
         {rest.map((cell) => (
           <div key={cell.id} className="min-w-0">
-            <dt className="text-2xs font-medium uppercase tracking-wide text-muted-foreground">
+            <dt className="text-xs text-muted-foreground">
               {columnLabel(cell.column)}
             </dt>
             <dd className="mt-0.5 truncate text-sm">

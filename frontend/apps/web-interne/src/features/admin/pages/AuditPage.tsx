@@ -99,7 +99,6 @@ export function Component() {
     <>
       <PageHeader
         title="Journal d'audit"
-        description="Traçabilité immuable des actions métier de tous les services (alimentée par les événements)."
       />
       <div className="grid gap-6">
         <AuditStats />

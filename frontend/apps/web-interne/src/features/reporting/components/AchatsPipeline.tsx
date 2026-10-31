@@ -1,7 +1,5 @@
-import { Gavel } from 'lucide-react'
 import { formatNumber } from '@/shared/lib/format'
 import { Card, CardContent, CardHeader } from '@/shared/ui/card'
-import { formatTaux } from '../lib/format'
 import type { SectionAchats } from '../types'
 
 /** Entonnoir des achats : AO publies, clotures, attribues, contrats en cours, retards. */
@@ -17,12 +15,6 @@ export function AchatsPipeline({ achats }: { achats: SectionAchats }) {
     <Card className="flex h-full flex-col">
       <CardHeader
         title="Cycle d'approvisionnement"
-        description={
-          achats.tauxLivraisonALHeure != null
-            ? `${formatTaux(achats.tauxLivraisonALHeure)} des livraisons à l'heure`
-            : 'Appels d’offres et contrats de la période'
-        }
-        icon={<Gavel />}
       />
       <CardContent className="grid flex-1 content-start gap-3">
         {steps.map((step) => (
@@ -40,7 +32,7 @@ export function AchatsPipeline({ achats }: { achats: SectionAchats }) {
             <span className="text-right font-semibold tabular-nums">{formatNumber(step.value)}</span>
           </div>
         ))}
-        <p className="mt-1 flex items-center justify-between rounded-lg bg-surface-sunken px-3 py-2 text-sm">
+        <p className="mt-1 flex items-center justify-between border-t border-border pt-3 text-sm">
           <span className="text-muted-foreground">Livraisons en retard</span>
           <span
             className={achats.livraisonsEnRetard > 0 ? 'font-semibold text-danger-emphasis' : 'font-semibold'}

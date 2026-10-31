@@ -4,14 +4,23 @@
  * exactement les enums Java des microservices : ne jamais les traduire cote API.
  */
 
-/** Tons visuels disponibles (mappes sur les jetons de couleur). */
+/**
+ * Tons visuels (mappes sur les jetons de couleur). Charte bleu + blanc : `info`, `warning` et
+ * `accent` s'affichent en bleu, `success` en neutre ; ils restent acceptes pour compatibilite.
+ */
 export type Tone = 'neutral' | 'primary' | 'info' | 'success' | 'warning' | 'danger' | 'accent'
+
+/**
+ * Tons autorises pour un etat metier : neutre par defaut, bleu pour "actif / en cours / a traiter",
+ * rouge uniquement pour erreur, rejet, critique ou retard.
+ */
+export type StatusTone = 'neutral' | 'primary' | 'danger'
 
 export interface StatusDescriptor {
   /** Libelle francais affiche a l'utilisateur. */
   readonly label: string
-  /** Ton visuel du badge. */
-  readonly tone: Tone
+  /** Ton visuel du badge (neutre, bleu ou rouge). */
+  readonly tone: StatusTone
   /** Description optionnelle (infobulle, aide). */
   readonly description?: string
 }
@@ -150,22 +159,22 @@ export type NiveauNotification = (typeof NIVEAU_NOTIFICATION)[number]
 export const ROLE_LABELS: DescriptorMap<Role> = {
   CHEF_CHANTIER: {
     label: 'Chef de chantier',
-    tone: 'accent',
+    tone: 'neutral',
     description: 'Exprime les besoins de son chantier',
   },
   RESPONSABLE_MATERIEL: {
     label: 'Responsable Matériel',
-    tone: 'primary',
+    tone: 'neutral',
     description: 'Gère le parc et les affectations',
   },
   RESPONSABLE_ACHATS: {
     label: 'Responsable Achats',
-    tone: 'info',
+    tone: 'neutral',
     description: "Pilote appels d'offres et contrats",
   },
   DAF: {
     label: 'Directeur administratif et financier',
-    tone: 'success',
+    tone: 'neutral',
     description: 'Engagements, factures et budget',
   },
   DIRECTION_GENERALE: {
@@ -175,7 +184,7 @@ export const ROLE_LABELS: DescriptorMap<Role> = {
   },
   ADMIN_SYSTEME: {
     label: 'Administrateur système',
-    tone: 'danger',
+    tone: 'neutral',
     description: 'Comptes, référentiels et audit',
   },
 }
@@ -193,38 +202,38 @@ export const ROLE_SHORT_LABELS: Readonly<Record<Role, string>> = {
 export const STATUS_MAPS = {
   role: ROLE_LABELS,
   statutBesoin: {
-    EN_ATTENTE: { label: 'En attente', tone: 'warning' },
-    VALIDE: { label: 'Validé', tone: 'success' },
+    EN_ATTENTE: { label: 'En attente', tone: 'primary' },
+    VALIDE: { label: 'Validé', tone: 'neutral' },
     REJETE: { label: 'Rejeté', tone: 'danger' },
-    AFFECTE_DIRECT: { label: 'Affecté directement', tone: 'info' },
+    AFFECTE_DIRECT: { label: 'Affecté directement', tone: 'neutral' },
     EN_ACHAT: { label: 'En achat', tone: 'primary' },
   } satisfies DescriptorMap<StatutBesoin>,
   actionHistoriqueBesoin: {
-    SOUMISSION: { label: 'Soumission', tone: 'info' },
+    SOUMISSION: { label: 'Soumission', tone: 'neutral' },
     MODIFICATION: { label: 'Modification', tone: 'neutral' },
-    APPROBATION_ETAPE: { label: "Approbation d'étape", tone: 'primary' },
-    VALIDATION: { label: 'Validation', tone: 'success' },
+    APPROBATION_ETAPE: { label: "Approbation d'étape", tone: 'neutral' },
+    VALIDATION: { label: 'Validation', tone: 'neutral' },
     REJET: { label: 'Rejet', tone: 'danger' },
-    ORIENTATION_EN_ATTENTE: { label: 'Orientation en attente', tone: 'warning' },
-    AFFECTATION_DIRECTE: { label: 'Affectation directe', tone: 'info' },
-    ORIENTATION_ACHAT: { label: 'Orientation vers les achats', tone: 'primary' },
-    MATERIEL_AFFECTE: { label: 'Matériel affecté', tone: 'success' },
+    ORIENTATION_EN_ATTENTE: { label: 'Orientation en attente', tone: 'neutral' },
+    AFFECTATION_DIRECTE: { label: 'Affectation directe', tone: 'neutral' },
+    ORIENTATION_ACHAT: { label: 'Orientation vers les achats', tone: 'neutral' },
+    MATERIEL_AFFECTE: { label: 'Matériel affecté', tone: 'neutral' },
   } satisfies DescriptorMap<ActionHistoriqueBesoin>,
   priorite: {
     NORMAL: { label: 'Normale', tone: 'neutral' },
-    URGENT: { label: 'Urgente', tone: 'warning' },
+    URGENT: { label: 'Urgente', tone: 'primary' },
     CRITIQUE: { label: 'Critique', tone: 'danger' },
   } satisfies DescriptorMap<Priorite>,
   etatMateriel: {
-    DISPONIBLE: { label: 'Disponible', tone: 'success' },
+    DISPONIBLE: { label: 'Disponible', tone: 'neutral' },
     AFFECTE: { label: 'Affecté', tone: 'primary' },
-    EN_MAINTENANCE: { label: 'En maintenance', tone: 'warning' },
+    EN_MAINTENANCE: { label: 'En maintenance', tone: 'primary' },
     REFORME: { label: 'Réformé', tone: 'neutral' },
   } satisfies DescriptorMap<EtatMateriel>,
   categorieMateriel: {
-    MATERIEL_ROULANT: { label: 'Matériel roulant', tone: 'primary' },
-    OUTILLAGE: { label: 'Outillage', tone: 'accent' },
-    EQUIPEMENT_INFORMATIQUE: { label: 'Équipement informatique', tone: 'info' },
+    MATERIEL_ROULANT: { label: 'Matériel roulant', tone: 'neutral' },
+    OUTILLAGE: { label: 'Outillage', tone: 'neutral' },
+    EQUIPEMENT_INFORMATIQUE: { label: 'Équipement informatique', tone: 'neutral' },
     CONSOMMABLE: { label: 'Consommable', tone: 'neutral' },
   } satisfies DescriptorMap<CategorieMateriel>,
   statutChantier: {
@@ -234,81 +243,81 @@ export const STATUS_MAPS = {
   statutAO: {
     PUBLIE: { label: 'Publié', tone: 'primary' },
     CLOTURE: { label: 'Clôturé', tone: 'neutral' },
-    ATTRIBUE: { label: 'Attribué', tone: 'success' },
+    ATTRIBUE: { label: 'Attribué', tone: 'neutral' },
   } satisfies DescriptorMap<StatutAO>,
   statutFournisseur: {
-    EN_ATTENTE_VALIDATION: { label: 'En attente de validation', tone: 'warning' },
-    ACTIF: { label: 'Actif', tone: 'success' },
-    SUSPENDU: { label: 'Suspendu', tone: 'accent' },
+    EN_ATTENTE_VALIDATION: { label: 'En attente de validation', tone: 'primary' },
+    ACTIF: { label: 'Actif', tone: 'neutral' },
+    SUSPENDU: { label: 'Suspendu', tone: 'neutral' },
     BLACKLISTE: { label: 'Blacklisté', tone: 'danger' },
   } satisfies DescriptorMap<StatutFournisseur>,
   statutContrat: {
     BROUILLON: { label: 'Brouillon', tone: 'neutral' },
-    SIGNE: { label: 'Signé', tone: 'info' },
+    SIGNE: { label: 'Signé', tone: 'neutral' },
     ENGAGEMENT_VALIDE: { label: 'Engagement validé', tone: 'primary' },
-    EN_LIVRAISON: { label: 'En livraison', tone: 'warning' },
-    LIVRE: { label: 'Livré', tone: 'success' },
+    EN_LIVRAISON: { label: 'En livraison', tone: 'primary' },
+    LIVRE: { label: 'Livré', tone: 'neutral' },
     CLOTURE: { label: 'Clôturé', tone: 'neutral' },
   } satisfies DescriptorMap<StatutContrat>,
   statutMaintenance: {
-    PLANIFIEE: { label: 'Planifiée', tone: 'info' },
-    EN_COURS: { label: 'En cours', tone: 'warning' },
-    CLOTUREE: { label: 'Clôturée', tone: 'success' },
+    PLANIFIEE: { label: 'Planifiée', tone: 'neutral' },
+    EN_COURS: { label: 'En cours', tone: 'primary' },
+    CLOTUREE: { label: 'Clôturée', tone: 'neutral' },
   } satisfies DescriptorMap<StatutMaintenance>,
   typeMaintenance: {
-    PREVENTIVE: { label: 'Préventive', tone: 'info' },
-    CORRECTIVE: { label: 'Corrective', tone: 'warning' },
-    LOURDE: { label: 'Lourde', tone: 'danger' },
+    PREVENTIVE: { label: 'Préventive', tone: 'neutral' },
+    CORRECTIVE: { label: 'Corrective', tone: 'neutral' },
+    LOURDE: { label: 'Lourde', tone: 'neutral' },
   } satisfies DescriptorMap<TypeMaintenance>,
   statutAffectation: {
-    EN_ATTENTE_RECEPTION: { label: 'En attente de réception', tone: 'warning' },
+    EN_ATTENTE_RECEPTION: { label: 'En attente de réception', tone: 'primary' },
     EN_COURS: { label: 'En cours', tone: 'primary' },
     TERMINEE: { label: 'Terminée', tone: 'neutral' },
   } satisfies DescriptorMap<StatutAffectation>,
   gravitePanne: {
-    MINEURE: { label: 'Mineure', tone: 'info' },
-    MAJEURE: { label: 'Majeure', tone: 'warning' },
+    MINEURE: { label: 'Mineure', tone: 'neutral' },
+    MAJEURE: { label: 'Majeure', tone: 'neutral' },
     BLOQUANTE: { label: 'Bloquante', tone: 'danger', description: 'Matériel immobilisé' },
   } satisfies DescriptorMap<GravitePanne>,
   statutPanne: {
-    SIGNALEE: { label: 'Signalée', tone: 'warning' },
+    SIGNALEE: { label: 'Signalée', tone: 'primary' },
     PRISE_EN_CHARGE: { label: 'Prise en charge', tone: 'primary' },
-    RESOLUE: { label: 'Résolue', tone: 'success' },
+    RESOLUE: { label: 'Résolue', tone: 'neutral' },
   } satisfies DescriptorMap<StatutPanne>,
   typeMouvement: {
-    AFFECTATION: { label: 'Affectation', tone: 'primary' },
-    RECEPTION: { label: 'Réception', tone: 'success' },
-    LIBERATION: { label: 'Libération', tone: 'info' },
-    MAINTENANCE: { label: 'Maintenance', tone: 'warning' },
-    REFORME: { label: 'Réforme', tone: 'danger' },
+    AFFECTATION: { label: 'Affectation', tone: 'neutral' },
+    RECEPTION: { label: 'Réception', tone: 'neutral' },
+    LIBERATION: { label: 'Libération', tone: 'neutral' },
+    MAINTENANCE: { label: 'Maintenance', tone: 'neutral' },
+    REFORME: { label: 'Réforme', tone: 'neutral' },
     ENREGISTREMENT: { label: 'Enregistrement', tone: 'neutral' },
   } satisfies DescriptorMap<TypeMouvement>,
   typeAppelOffre: {
-    APPEL_OFFRES: { label: "Appel d'offres", tone: 'primary' },
-    DEMANDE_PRIX: { label: 'Demande de prix', tone: 'info' },
+    APPEL_OFFRES: { label: "Appel d'offres", tone: 'neutral' },
+    DEMANDE_PRIX: { label: 'Demande de prix', tone: 'neutral' },
   } satisfies DescriptorMap<TypeAppelOffre>,
   critereEvaluation: {
-    PRIX: { label: 'Prix', tone: 'primary', description: 'Calculé à partir du montant proposé' },
-    DELAI: { label: 'Délai de livraison', tone: 'info', description: 'Calculé à partir du délai proposé' },
-    QUALITE_TECHNIQUE: { label: 'Qualité technique', tone: 'accent' },
-    GARANTIE: { label: 'Garantie', tone: 'success' },
-    SAV: { label: 'Service après-vente', tone: 'warning' },
+    PRIX: { label: 'Prix', tone: 'neutral', description: 'Calculé à partir du montant proposé' },
+    DELAI: { label: 'Délai de livraison', tone: 'neutral', description: 'Calculé à partir du délai proposé' },
+    QUALITE_TECHNIQUE: { label: 'Qualité technique', tone: 'neutral' },
+    GARANTIE: { label: 'Garantie', tone: 'neutral' },
+    SAV: { label: 'Service après-vente', tone: 'neutral' },
     REFERENCES: { label: 'Références', tone: 'neutral' },
   } satisfies DescriptorMap<CritereEvaluation>,
   statutApprobation: {
-    EN_ATTENTE: { label: 'En attente', tone: 'warning' },
-    APPROUVEE: { label: 'Approuvée', tone: 'success' },
+    EN_ATTENTE: { label: 'En attente', tone: 'primary' },
+    APPROUVEE: { label: 'Approuvée', tone: 'neutral' },
     REFUSEE: { label: 'Refusée', tone: 'danger' },
   } satisfies DescriptorMap<StatutApprobation>,
   statutJalon: {
-    A_VENIR: { label: 'À venir', tone: 'info' },
-    ATTEINT: { label: 'Atteint', tone: 'success' },
+    A_VENIR: { label: 'À venir', tone: 'neutral' },
+    ATTEINT: { label: 'Atteint', tone: 'neutral' },
     EN_RETARD: { label: 'En retard', tone: 'danger' },
   } satisfies DescriptorMap<StatutJalon>,
   statutFacture: {
-    RECUE: { label: 'Reçue', tone: 'info' },
+    RECUE: { label: 'Reçue', tone: 'primary' },
     MANDATEE: { label: 'Mandatée', tone: 'primary' },
-    PAYEE: { label: 'Payée', tone: 'success' },
+    PAYEE: { label: 'Payée', tone: 'neutral' },
     REJETEE: { label: 'Rejetée', tone: 'danger' },
   } satisfies DescriptorMap<StatutFacture>,
   typeDocument: {
@@ -320,14 +329,14 @@ export const STATUS_MAPS = {
     AUTRE: { label: 'Autre', tone: 'neutral' },
   } satisfies DescriptorMap<TypeDocument>,
   graviteLitige: {
-    FAIBLE: { label: 'Faible', tone: 'info' },
-    MOYENNE: { label: 'Moyenne', tone: 'warning' },
+    FAIBLE: { label: 'Faible', tone: 'neutral' },
+    MOYENNE: { label: 'Moyenne', tone: 'neutral' },
     ELEVEE: { label: 'Élevée', tone: 'danger' },
   } satisfies DescriptorMap<GraviteLitige>,
   statutLitige: {
-    OUVERT: { label: 'Ouvert', tone: 'danger' },
-    EN_COURS: { label: 'En cours', tone: 'warning' },
-    RESOLU: { label: 'Résolu', tone: 'success' },
+    OUVERT: { label: 'Ouvert', tone: 'primary' },
+    EN_COURS: { label: 'En cours', tone: 'primary' },
+    RESOLU: { label: 'Résolu', tone: 'neutral' },
     CLASSE: { label: 'Classé', tone: 'neutral' },
   } satisfies DescriptorMap<StatutLitige>,
   typeProcesVerbal: {
@@ -335,9 +344,9 @@ export const STATUS_MAPS = {
     EVALUATION: { label: "Procès-verbal d'évaluation", tone: 'neutral' },
   } satisfies DescriptorMap<TypeProcesVerbal>,
   niveauNotification: {
-    INFO: { label: 'Information', tone: 'info' },
-    SUCCES: { label: 'Succès', tone: 'success' },
-    ALERTE: { label: 'Alerte', tone: 'warning' },
+    INFO: { label: 'Information', tone: 'neutral' },
+    SUCCES: { label: 'Succès', tone: 'neutral' },
+    ALERTE: { label: 'Alerte', tone: 'primary' },
     CRITIQUE: { label: 'Critique', tone: 'danger' },
   } satisfies DescriptorMap<NiveauNotification>,
 } as const

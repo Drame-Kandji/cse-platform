@@ -9,13 +9,14 @@ export interface StatusBadgeProps<K extends StatusKind> extends Omit<BadgeProps,
 }
 
 /**
- * Badge d'etat pilote par le referentiel central `shared/domain/labels.ts`.
+ * Badge d'etat pilote par le referentiel central `shared/domain/labels.ts` : pastille discrete,
+ * grise par defaut, bleue si actif / en cours, rouge si erreur ou critique (sans point colore).
  * @example <StatusBadge kind="statutBesoin" value={besoin.statut} />
  */
 export function StatusBadge<K extends StatusKind>({
   kind,
   value,
-  dot = true,
+  dot = false,
   ...props
 }: StatusBadgeProps<K>) {
   const descriptor = describeStatus(kind, value)

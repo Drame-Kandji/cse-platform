@@ -19,9 +19,18 @@ export interface TimelineItem {
  * Historique chronologique (changements de statut, commentaires).
  * Les elements sont affiches dans l'ordre fourni (le plus recent en premier conseille).
  */
-export function Timeline({ items, className }: { items: readonly TimelineItem[]; className?: string }) {
+export function Timeline({
+  items,
+  className,
+  label,
+}: {
+  items: readonly TimelineItem[]
+  className?: string
+  /** Nom accessible de la liste (ex. « Historique »). */
+  label?: string
+}) {
   return (
-    <ol className={cn('relative grid gap-0', className)}>
+    <ol aria-label={label} className={cn('relative grid gap-0', className)}>
       {items.map((item, index) => (
         <li key={item.id} className="relative flex gap-3 pb-5 last:pb-0">
           {index < items.length - 1 && (

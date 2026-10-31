@@ -31,14 +31,11 @@
     "demandeur": "Demandeur"
   },
   "stats": {
-    "total": "Besoins exprimés",
-    "enAttente": "En attente de validation",
-    "satisfaits": "Validés / orientés",
+    "tous": "Tous",
+    "enAttente": "En attente",
+    "valides": "Validés",
     "rejetes": "Rejetés",
-    "critiques": "{{count}} critique(s)",
-    "delai": "Délai moyen de validation : {{value}}",
-    "delaiInconnu": "Délai moyen non disponible",
-    "parStatut": "Cliquez pour filtrer"
+    "parStatut": "Filtrer par statut"
   },
   "form": {
     "createTitle": "Nouveau besoin",

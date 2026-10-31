@@ -55,7 +55,9 @@
     "reset": "Réinitialiser",
     "selected": "{{count}} sélectionné(s)",
     "noOption": "Aucune option",
-    "clearFilter": "Retirer le filtre"
+    "clearFilter": "Retirer le filtre",
+    "more": "Filtres",
+    "moreActive": "Filtres ({{count}} actif(s))"
   },
   "select": {
     "placeholder": "Sélectionner…",

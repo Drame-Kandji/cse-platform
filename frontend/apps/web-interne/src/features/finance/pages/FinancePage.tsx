@@ -28,7 +28,6 @@ export function Component() {
     <>
       <PageHeader
         title={t('page.title')}
-        description={t('page.description')}
         meta={
           !gestion && (
             <Badge tone="neutral" title={t('page.readOnly')}>

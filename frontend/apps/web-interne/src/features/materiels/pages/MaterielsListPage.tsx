@@ -17,7 +17,7 @@ import { useEtatSummary } from '../hooks/useParcQueries'
 
 const DEFAULT_SORT = [{ id: 'code', desc: false }]
 
-/** Parc materiel : liste paginee serveur, filtres synchronises avec l'URL, synthese par etat. */
+/** Parc materiel : compteurs par etat, liste paginee serveur, filtres synchronises avec l'URL. */
 export function Component() {
   const navigate = useNavigate()
   const [creating, setCreating] = useState(false)
@@ -31,10 +31,9 @@ export function Component() {
     <>
       <PageHeader
         title="Parc matériel"
-        description="Engins, outillage, informatique et consommables : état, localisation et usure."
         actions={
           <>
-            <Button variant="secondary" leftIcon={<MapIcon />} asChild>
+            <Button variant="ghost" leftIcon={<MapIcon />} asChild>
               <Link to={paths.carte}>Voir sur la carte</Link>
             </Button>
             <Can roles={['RESPONSABLE_MATERIEL']}>
@@ -56,7 +55,7 @@ export function Component() {
         loading={summary.isPending}
         selected={filtres.state.etat}
         onToggle={(etat) => {
-          filtres.update({ etat: filtres.state.etat === etat ? null : etat })
+          filtres.update({ etat })
         }}
       />
       <DataTable

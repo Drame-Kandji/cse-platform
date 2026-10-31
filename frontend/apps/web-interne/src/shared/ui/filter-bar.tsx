@@ -1,5 +1,5 @@
 import { Command } from 'cmdk'
-import { Check, PlusCircle, Search, X } from 'lucide-react'
+import { Check, PlusCircle, Search, SlidersHorizontal, X } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/lib/cn'
@@ -14,8 +14,12 @@ export interface FilterBarProps {
   /** Appele apres 300 ms d'inactivite de saisie. */
   onSearchChange?: (value: string) => void
   searchPlaceholder?: string
-  /** Puces de filtres (<FilterChip>). */
+  /** Filtres essentiels, toujours visibles (1 ou 2 au plus). */
   children?: ReactNode
+  /** Filtres secondaires, regroupes dans le menu "Filtres". */
+  moreFilters?: ReactNode
+  /** Nombre de filtres secondaires actifs (affiche sur le bouton "Filtres"). */
+  moreCount?: number
   /** Affiche "Reinitialiser" si des filtres sont actifs. */
   onReset?: () => void
   canReset?: boolean
@@ -30,6 +34,8 @@ export function FilterBar({
   onSearchChange,
   searchPlaceholder,
   children,
+  moreFilters,
+  moreCount = 0,
   onReset,
   canReset,
   actions,
@@ -63,6 +69,7 @@ export function FilterBar({
           />
         )}
         {children}
+        {moreFilters && <FilterMore count={moreCount}>{moreFilters}</FilterMore>}
         {canReset && onReset && (
           <Button variant="ghost" size="sm" onClick={onReset} rightIcon={<X />}>
             {t('filters.reset')}
@@ -71,6 +78,38 @@ export function FilterBar({
       </div>
       {actions && <div className="flex items-center gap-2">{actions}</div>}
     </div>
+  )
+}
+
+/** Bouton "Filtres" ouvrant un panneau des filtres secondaires (empiles verticalement). */
+export function FilterMore({ count = 0, children }: { count?: number; children: ReactNode }) {
+  const { t } = useTranslation()
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label={count > 0 ? t('filters.moreActive', { count }) : t('filters.more')}
+          className={cn(
+            'inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm font-medium transition-colors sm:h-9',
+            count > 0
+              ? 'border-primary/30 bg-primary/5 text-primary-emphasis hover:bg-primary/10'
+              : 'border-border-strong bg-surface text-foreground hover:bg-muted',
+          )}
+        >
+          <SlidersHorizontal className="size-4" aria-hidden />
+          {t('filters.more')}
+          {count > 0 && (
+            <span className="grid min-w-5 place-items-center rounded-full bg-primary px-1.5 text-2xs font-semibold leading-5 text-primary-foreground">
+              {count}
+            </span>
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="grid w-[min(20rem,calc(100vw-2rem))] gap-3 p-4">
+        {children}
+      </PopoverContent>
+    </Popover>
   )
 }
 

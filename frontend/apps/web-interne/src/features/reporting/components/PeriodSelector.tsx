@@ -30,7 +30,7 @@ export function PeriodSelector({ value, onChange, className }: PeriodSelectorPro
       <div
         role="radiogroup"
         aria-label="Période d'analyse"
-        className="inline-flex rounded-lg border border-border bg-surface p-0.5 shadow-xs max-sm:w-full"
+        className="inline-flex rounded-lg bg-muted p-0.5 max-sm:w-full"
       >
         {PERIOD_PRESETS.map((preset) => {
           const active = value.preset === preset.value
@@ -46,8 +46,8 @@ export function PeriodSelector({ value, onChange, className }: PeriodSelectorPro
               className={cn(
                 'h-10 rounded-md px-3 text-sm font-medium transition-colors max-sm:flex-1 sm:h-8',
                 active
-                  ? 'bg-primary text-primary-foreground shadow-xs'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                  ? 'bg-surface text-primary-emphasis shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground',
               )}
             >
               {preset.label}
@@ -57,7 +57,7 @@ export function PeriodSelector({ value, onChange, className }: PeriodSelectorPro
       </div>
       <DateRangePicker
         className={cn(
-          'min-w-0 max-sm:flex-1 sm:w-auto sm:min-w-56',
+          'min-w-0 max-sm:flex-1 sm:w-auto sm:min-w-48',
           value.preset === 'custom' && '[&_button]:border-primary/40',
         )}
         placeholder="Plage personnalisée"

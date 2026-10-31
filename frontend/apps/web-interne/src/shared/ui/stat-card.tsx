@@ -1,18 +1,16 @@
-import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { Tone } from '@/shared/domain/labels'
 import { cn } from '@/shared/lib/cn'
 import { formatPercent } from '@/shared/lib/format'
 import { Card } from './card'
 import { Skeleton } from './skeleton'
-import { softToneClasses } from './tone'
 
 export interface StatDelta {
   /** Variation relative (0.12 = +12 %). */
   readonly value: number
   /** Periode de comparaison, ex. "vs mois dernier". */
   readonly label?: string
-  /** Faux si une hausse est une mauvaise nouvelle (pannes, couts). */
+  /** Conserve pour compatibilite : la variation est affichee en texte neutre. */
   readonly positiveIsGood?: boolean
 }
 
@@ -20,78 +18,69 @@ export interface StatCardProps {
   label: ReactNode
   /** Valeur deja formatee (formatMoney, formatNumber...). */
   value: ReactNode
+  /** Conserve pour compatibilite : plus affiche (pas de tuile d'icone). */
   icon?: ReactNode
+  /** Conserve pour compatibilite : plus utilise. */
   iconTone?: Tone
+  /** Variation, affichee en texte discret dans la ligne secondaire. */
   delta?: StatDelta
+  /** Une seule ligne courte et discrete sous la valeur. */
   hint?: ReactNode
-  /** Emplacement graphique (ex. <Sparkline values={...} />). */
+  /** Mini-courbe : affichee seulement avec `showSparkline`. */
   sparkline?: ReactNode
+  /** Opt-in : afficher la sparkline fournie. */
+  showSparkline?: boolean
+  /** Met la valeur en rouge (alerte reelle : retard, panne bloquante...). */
+  alert?: boolean
   loading?: boolean
   className?: string
 }
 
-function DeltaPill({ delta }: { delta: StatDelta }) {
-  const direction = delta.value > 0 ? 'up' : delta.value < 0 ? 'down' : 'flat'
-  const good = direction === 'flat' ? null : (direction === 'up') === (delta.positiveIsGood ?? true)
-  const Icon = direction === 'up' ? ArrowUpRight : direction === 'down' ? ArrowDownRight : Minus
-  return (
-    <span className="inline-flex items-center gap-1.5 text-xs">
-      <span
-        className={cn(
-          'inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 font-medium tabular-nums',
-          good === null ? softToneClasses.neutral : good ? softToneClasses.success : softToneClasses.danger,
-        )}
-      >
-        <Icon className="size-3.5" aria-hidden />
-        {formatPercent(delta.value, { signed: true })}
-      </span>
-      {delta.label && <span className="text-muted-foreground">{delta.label}</span>}
-    </span>
-  )
-}
-
-/** Indicateur cle (KPI) : libelle, valeur, variation et tendance. */
+/** Indicateur cle (KPI) sobre : libelle, grand chiffre, au plus une ligne secondaire. */
 export function StatCard({
   label,
   value,
-  icon,
-  iconTone = 'primary',
   delta,
   hint,
   sparkline,
+  showSparkline = false,
+  alert = false,
   loading,
   className,
 }: StatCardProps) {
-  return (
-    <Card className={cn('flex flex-col gap-3 p-5', className)}>
-      <div className="flex items-start justify-between gap-3">
-        <p className="text-sm font-medium text-muted-foreground">{label}</p>
-        {icon && (
-          <span
-            className={cn(
-              'grid size-8 shrink-0 place-items-center rounded-lg [&_svg]:size-4',
-              softToneClasses[iconTone],
-            )}
-          >
-            {icon}
+  const secondary =
+    delta || hint ? (
+      <>
+        {delta && (
+          <span className="tabular-nums">
+            {formatPercent(delta.value, { signed: true })}
+            {delta.label ? ` ${delta.label}` : ''}
           </span>
         )}
-      </div>
+        {delta && hint ? ' · ' : null}
+        {hint}
+      </>
+    ) : null
+  return (
+    <Card className={cn('flex min-w-0 flex-col gap-2 p-4 sm:p-5', className)}>
+      <p className="truncate text-sm text-muted-foreground">{label}</p>
       {loading ? (
         <div className="grid gap-2">
-          <Skeleton className="h-8 w-32" />
-          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-8 w-28" />
+          <Skeleton className="h-3.5 w-24" />
         </div>
       ) : (
         <>
-          <p className="text-2xl font-semibold tabular-nums tracking-tight text-foreground">{value}</p>
-          {(delta ?? hint) && (
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              {delta && <DeltaPill delta={delta} />}
-              {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
-            </div>
-          )}
-          {sparkline && <div className="-mx-1 mt-auto pt-1">{sparkline}</div>}
+          <p
+            className={cn(
+              'truncate text-xl font-semibold tabular-nums tracking-tight sm:text-2xl',
+              alert ? 'text-danger-emphasis' : 'text-foreground',
+            )}
+          >
+            {value}
+          </p>
+          {secondary && <p className="truncate text-xs text-muted-foreground">{secondary}</p>}
+          {showSparkline && sparkline && <div className="-mx-1 mt-auto pt-1">{sparkline}</div>}
         </>
       )}
     </Card>

@@ -23,7 +23,7 @@ export function SingleFilter<V extends string>({
   return (
     <Select<V | typeof TOUS>
       aria-label={label}
-      className="w-auto min-w-40"
+      className="w-full min-w-40"
       options={[{ value: TOUS, label: allLabel }, ...options]}
       value={value ?? TOUS}
       onValueChange={(next) => {

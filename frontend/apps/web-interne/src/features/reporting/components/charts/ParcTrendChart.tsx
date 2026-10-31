@@ -49,7 +49,6 @@ export function ParcTrendChart({ disponibilite = [], utilisation = [], loading }
     <Card className="flex h-full flex-col">
       <CardHeader
         title="Disponibilité et utilisation du parc"
-        description="Taux sur la période, en %"
         action={
           <ChartLegend
             items={[
@@ -60,11 +59,6 @@ export function ParcTrendChart({ disponibilite = [], utilisation = [], loading }
         }
       />
       <CardContent className="flex-1">
-        {!loading && data.length === 1 && (
-          <p className="mb-2 text-xs text-muted-foreground">
-            Historique en cours de constitution : un seul relevé disponible sur la période.
-          </p>
-        )}
         {loading ? (
           <Skeleton className="h-[280px] w-full" />
         ) : data.length === 0 ? (
@@ -82,7 +76,7 @@ export function ParcTrendChart({ disponibilite = [], utilisation = [], loading }
             <ComposedChart data={data} margin={chartMargin}>
               <defs>
                 <linearGradient id="grad-disponibilite" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor={chartColor(0)} stopOpacity={0.22} />
+                  <stop offset="0%" stopColor={chartColor(0)} stopOpacity={0.14} />
                   <stop offset="100%" stopColor={chartColor(0)} stopOpacity={0} />
                 </linearGradient>
               </defs>

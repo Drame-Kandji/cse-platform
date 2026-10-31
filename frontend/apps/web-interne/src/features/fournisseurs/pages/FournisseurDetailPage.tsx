@@ -58,7 +58,7 @@ export function Component() {
     <>
       <PageHeader
         title={f.raisonSociale}
-        description={`NINEA ${f.ninea}${f.ville ? ` · ${f.ville}` : ''} · ${String(f.nombreEvaluations)} évaluation(s)`}
+        subtitle={`NINEA ${f.ninea}${f.ville ? ` · ${f.ville}` : ''} · ${String(f.nombreEvaluations)} évaluation(s)`}
         meta={
           <>
             <StatusBadge kind="statutFournisseur" value={f.statut} />

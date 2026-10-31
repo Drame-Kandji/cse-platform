@@ -3,14 +3,21 @@ import { labelOf } from '@/shared/domain/labels'
 import { formatNumber } from '@/shared/lib/format'
 import { Card, CardContent, CardHeader } from '@/shared/ui/card'
 import { ChartContainer, ChartLegend, ChartTooltipContent } from '@/shared/ui/chart'
-import { axisProps, chartMargin, cursorProps, gridProps, yAxisWidthFor } from '@/shared/ui/chart-theme'
+import {
+  axisProps,
+  chartColor,
+  chartMargin,
+  cursorProps,
+  gridProps,
+  yAxisWidthFor,
+} from '@/shared/ui/chart-theme'
 import type { ParcCategorie } from '../../types'
 
 /** Couleurs alignees sur les badges d'etat matériel (disponible / affecte / maintenance). */
 const SERIES = [
-  { key: 'disponibles', label: 'Disponibles', color: 'rgb(var(--success))' },
-  { key: 'affectes', label: 'Affectés', color: 'rgb(var(--primary))' },
-  { key: 'enMaintenance', label: 'En maintenance', color: 'rgb(var(--warning))' },
+  { key: 'disponibles', label: 'Disponibles', color: chartColor(1) },
+  { key: 'affectes', label: 'Affectés', color: chartColor(0) },
+  { key: 'enMaintenance', label: 'En maintenance', color: chartColor(2) },
 ] as const
 
 /** Repartition du parc par categorie (barres empilees par etat). */

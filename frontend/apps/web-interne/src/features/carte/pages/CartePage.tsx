@@ -21,7 +21,6 @@ export function Component() {
     <>
       <PageHeader
         title="Carte du parc"
-        description="Localisation des chantiers et des engins au Sénégal. Touchez un point pour ouvrir les fiches."
         actions={
           <Button variant="secondary" leftIcon={<List />} asChild>
             <Link to={paths.materiels}>Vue liste</Link>

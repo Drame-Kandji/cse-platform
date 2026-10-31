@@ -44,7 +44,8 @@ describe('BesoinsListPage', () => {
     expect(await screen.findByText('BES-2026-0001')).toBeInTheDocument()
     expect(screen.getByText('BES-2026-0002')).toBeInTheDocument()
     expect(screen.getByText(/1–20 sur 42/)).toBeInTheDocument()
-    expect(await screen.findByText(/Délai moyen de validation/)).toHaveTextContent(/18\s?h$/)
+    expect(await screen.findByRole('button', { name: /En attente\s*7/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Tous\s*42/ })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('link', { name: /Nouveau besoin/ })).toBeInTheDocument()
     expect(derniere()?.get('page')).toBe('0')
     expect(derniere()?.get('sort')).toBe('createdAt,desc')
@@ -67,7 +68,7 @@ describe('BesoinsListPage', () => {
     })
     expect(derniere()?.get('q')).toBe('pelle')
 
-    // Re-cliquer la carte active retire le filtre.
+    // Re-cliquer l'onglet actif retire le filtre.
     await user.click(screen.getByRole('button', { name: /Rejetés/ }))
     await waitFor(() => {
       expect(derniere()?.has('statut')).toBe(false)

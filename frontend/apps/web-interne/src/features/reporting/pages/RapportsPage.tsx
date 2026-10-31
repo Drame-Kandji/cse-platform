@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { BarChart3, FileSpreadsheet, FileText } from 'lucide-react'
 import { reportingApi } from '../api/reporting.api'
 import { reportingKeys } from '../api/reporting.keys'
+import { AnalyseCharts } from '../components/AnalyseCharts'
 import { ChantiersTable } from '../components/ChantiersTable'
 import { KpiTables } from '../components/KpiTables'
 import { PeriodSelector } from '../components/PeriodSelector'
@@ -10,9 +11,7 @@ import { SeriesExplorer } from '../components/SeriesExplorer'
 import { useExportTableau, useTableau } from '../hooks/useReporting'
 import { useReportingFilters } from '../hooks/useReportingFilters'
 import { granulariteFor } from '../lib/period'
-import { PROFIL_LABELS } from '../lib/profils'
 import { seriesFor } from '../lib/series'
-import { formatDate, formatDateTime } from '@/shared/lib/format'
 import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
 import { Combobox } from '@/shared/ui/combobox'
@@ -58,7 +57,6 @@ export function Component() {
     <>
       <PageHeader
         title="Rapports"
-        description={`${PROFIL_LABELS[profil].vue} · du ${formatDate(period.du)} au ${formatDate(period.au)}`}
         actions={
           <>
             <Button
@@ -120,11 +118,9 @@ export function Component() {
           <ErrorState error={query.error} onRetry={() => void query.refetch()} />
         </Card>
       ) : (
-        <div className="grid gap-6">
-          <ProgressBar active={query.isFetching} className="-mb-6" />
-          <p className="-mt-2 text-xs text-muted-foreground">
-            Généré le {formatDateTime(query.data.genereLe)}
-          </p>
+        <div className="relative grid gap-6">
+          <ProgressBar active={query.isFetching} className="absolute inset-x-0 -top-3" />
+          <AnalyseCharts tableau={query.data} />
           <KpiTables tableau={query.data} />
           {query.data.chantiers && query.data.chantiers.length > 0 && (
             <ChantiersTable chantiers={query.data.chantiers} />

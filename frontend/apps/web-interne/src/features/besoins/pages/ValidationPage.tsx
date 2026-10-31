@@ -14,7 +14,7 @@ export function Component() {
   const onglet: Onglet = params.get('onglet') === 'consolidation' ? 'consolidation' : 'file'
   return (
     <>
-      <PageHeader title={t('validation.title')} description={t('validation.description')} />
+      <PageHeader title={t('validation.title')} />
       <Tabs
         value={onglet}
         onValueChange={(value) => {

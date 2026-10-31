@@ -34,5 +34,5 @@ export function BesoinHistorique({ besoinId }: { besoinId: string }) {
       tone: statut.tone,
     }
   })
-  return <Timeline items={items} />
+  return <Timeline items={items} label={t('detail.historique')} />
 }

@@ -62,7 +62,6 @@ export function Component() {
     <div className="mx-auto w-full max-w-3xl">
       <PageHeader
         title={t('form.editTitle', { reference: besoin.reference })}
-        description={t('form.editDescription')}
       />
       <BesoinForm
         defaultValues={besoinDefaults(besoin)}

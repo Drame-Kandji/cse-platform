@@ -22,7 +22,7 @@ import { useBesoinFiltres } from '../lib/use-besoin-filtres'
 
 const DEFAULT_SORT = [{ id: 'createdAt', desc: true }]
 
-/** Liste paginee des besoins avec statistiques, filtres synchronises a l'URL et creation rapide. */
+/** Liste paginee des besoins : onglets de statut, recherche + priorite, autres filtres dans "Filtres". */
 export function Component() {
   const { t } = useTranslation('besoins')
   const navigate = useNavigate()
@@ -31,6 +31,7 @@ export function Component() {
   const query = useBesoins({ ...filtres, ...table.pageParams })
   const chantiers = useChantiersSelectionnables()
   const columns = useMemo(() => besoinColumns(t), [t])
+  const secondaires = [filtres.statut, filtres.categorie, filtres.chantierId, filtres.du].filter(Boolean).length
   const chantierOptions = (chantiers.data?.content ?? []).map((c) => ({
     value: c.id,
     label: c.nom,
@@ -39,7 +40,7 @@ export function Component() {
 
   const nouveau = (
     <Can roles={access.besoinNouveau}>
-      <Button asChild size="lg">
+      <Button asChild>
         <Link to={paths.besoinNouveau}>
           <Plus aria-hidden />
           {t('list.nouveau')}
@@ -50,7 +51,7 @@ export function Component() {
 
   return (
     <>
-      <PageHeader title={t('list.title')} description={t('list.description')} actions={nouveau} />
+      <PageHeader title={t('list.title')} actions={nouveau} />
       <BesoinStats
         actif={filtres.statut}
         onFilter={(statut) => {
@@ -102,48 +103,53 @@ export function Component() {
             searchPlaceholder={t('list.searchPlaceholder')}
             canReset={actifs > 0}
             onReset={reset}
+            moreCount={secondaires}
+            moreFilters={
+              <>
+                <EnumFilter
+                  className="w-full"
+                  label={t('filters.statut')}
+                  options={optionsOf('statutBesoin')}
+                  value={filtres.statut}
+                  onChange={(statut) => {
+                    update({ statut })
+                  }}
+                />
+                <EnumFilter
+                  className="w-full"
+                  label={t('filters.categorie')}
+                  options={optionsOf('categorieMateriel')}
+                  value={filtres.categorie}
+                  onChange={(categorie) => {
+                    update({ categorie })
+                  }}
+                />
+                {chantierOptions.length > 1 && (
+                  <Combobox
+                    placeholder={t('filters.tousChantiers')}
+                    options={chantierOptions}
+                    value={filtres.chantierId ?? null}
+                    onValueChange={(chantierId) => {
+                      update({ chantierId: chantierId ?? undefined })
+                    }}
+                  />
+                )}
+                <DateRangePicker
+                  placeholder={t('filters.periode')}
+                  value={{ from: toDate(filtres.du), to: toDate(filtres.au) }}
+                  onChange={(range) => {
+                    update({ du: toIsoDate(range.from), au: toIsoDate(range.to) })
+                  }}
+                />
+              </>
+            }
           >
-            <EnumFilter
-              label={t('filters.statut')}
-              options={optionsOf('statutBesoin')}
-              value={filtres.statut}
-              onChange={(statut) => {
-                update({ statut })
-              }}
-            />
             <EnumFilter
               label={t('filters.priorite')}
               options={optionsOf('priorite')}
               value={filtres.priorite}
               onChange={(priorite) => {
                 update({ priorite })
-              }}
-            />
-            <EnumFilter
-              label={t('filters.categorie')}
-              options={optionsOf('categorieMateriel')}
-              value={filtres.categorie}
-              onChange={(categorie) => {
-                update({ categorie })
-              }}
-            />
-            {chantierOptions.length > 1 && (
-              <Combobox
-                className="sm:w-56"
-                placeholder={t('filters.tousChantiers')}
-                options={chantierOptions}
-                value={filtres.chantierId ?? null}
-                onValueChange={(chantierId) => {
-                  update({ chantierId: chantierId ?? undefined })
-                }}
-              />
-            )}
-            <DateRangePicker
-              className="sm:w-64"
-              placeholder={t('filters.periode')}
-              value={{ from: toDate(filtres.du), to: toDate(filtres.au) }}
-              onChange={(range) => {
-                update({ du: toIsoDate(range.from), au: toIsoDate(range.to) })
               }}
             />
           </FilterBar>

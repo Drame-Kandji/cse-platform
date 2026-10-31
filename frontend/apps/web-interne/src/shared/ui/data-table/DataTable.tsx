@@ -49,12 +49,21 @@ export interface DataTableProps<T> {
   initialColumnVisibility?: VisibilityState
   /** Rendu personnalise des cartes mobiles. */
   mobileCard?: (row: T) => ReactNode
+  /**
+   * Nombre maximal de colonnes visibles par defaut sur ordinateur (6). Les colonnes masquables
+   * au-dela sont cachees (de la fin vers le debut) et restent disponibles dans le menu Colonnes.
+   */
+  maxVisibleColumns?: number
   /** Libelle accessible du tableau. */
   label: string
   className?: string
 }
 
 const EMPTY: never[] = []
+const DEFAULT_MAX_COLUMNS = 6
+
+const columnId = <T,>(column: ColumnDef<T>) =>
+  column.id ?? ('accessorKey' in column ? String(column.accessorKey) : undefined)
 
 function isPage<T>(data: DataTableProps<T>['data']): data is PageResponse<T> {
   return data !== undefined && !Array.isArray(data)
@@ -78,6 +87,7 @@ export function DataTable<T>(props: DataTableProps<T>) {
     toolbar,
     label,
     className,
+    maxVisibleColumns = DEFAULT_MAX_COLUMNS,
   } = props
   const { t } = useTranslation()
   const isDesktop = useMediaQuery(BREAKPOINTS.md)
@@ -94,12 +104,26 @@ export function DataTable<T>(props: DataTableProps<T>) {
   const responsiveVisibility = useMemo(() => {
     const hidden: VisibilityState = {}
     for (const column of columns) {
-      const id = column.id ?? ('accessorKey' in column ? String(column.accessorKey) : undefined)
+      const id = columnId(column)
       const below = column.meta?.hideBelow
       if (id && below && !(below === 'xl' ? isXl : is2xl)) hidden[id] = false
     }
+    // Sobriete : au plus `maxVisibleColumns` colonnes ; on masque d'abord les dernieres colonnes
+    // masquables (jamais les actions, l'identifiant ni le titre de carte mobile).
+    let visible = columns.filter((column) => {
+      const id = columnId(column)
+      return !id || hidden[id] !== false
+    }).length
+    for (const column of [...columns].reverse()) {
+      if (visible <= maxVisibleColumns) break
+      const id = columnId(column)
+      if (!id || hidden[id] === false || id === 'actions') continue
+      if (column.enableHiding === false || column.meta?.mobilePrimary) continue
+      hidden[id] = false
+      visible -= 1
+    }
     return hidden
-  }, [columns, isXl, is2xl])
+  }, [columns, isXl, is2xl, maxVisibleColumns])
   const [userVisibility, setUserVisibility] = useState<VisibilityState>(props.initialColumnVisibility ?? {})
   const columnVisibility = useMemo(
     () => ({ ...responsiveVisibility, ...userVisibility }),
@@ -140,12 +164,12 @@ export function DataTable<T>(props: DataTableProps<T>) {
     // aux grilles parentes ; le tableau defile horizontalement dans sa carte au lieu d'elargir la page.
     <div
       className={cn(
-        'overflow-hidden rounded-xl border border-border bg-surface shadow-card [contain:inline-size]',
+        'overflow-hidden rounded-xl border border-border bg-surface [contain:inline-size]',
         className,
       )}
     >
       {(toolbar ?? props.enableColumnVisibility !== false) && (
-        <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-3">
+        <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-3 sm:px-5">
           <div className="min-w-0 flex-1">{toolbar}</div>
           {props.enableColumnVisibility !== false && isDesktop && <DataTableColumnToggle table={table} />}
         </div>
@@ -164,7 +188,7 @@ export function DataTable<T>(props: DataTableProps<T>) {
             aria-label={label}
             aria-busy={isLoading || undefined}
           >
-            <thead className="bg-surface-sunken/70">
+            <thead>
               {table.getHeaderGroups().map((group) => (
                 <tr key={group.id} className="border-b border-border">
                   {group.headers.map((header) => {
@@ -180,7 +204,7 @@ export function DataTable<T>(props: DataTableProps<T>) {
                         }
                         style={box.style}
                         className={cn(
-                          'h-10 whitespace-nowrap px-4 text-xs font-medium text-muted-foreground',
+                          'h-11 whitespace-nowrap px-4 text-xs font-medium text-muted-foreground first:pl-5 last:pr-5',
                           alignClasses[meta?.align ?? 'left'],
                           meta?.headerClassName,
                         )}
@@ -203,7 +227,7 @@ export function DataTable<T>(props: DataTableProps<T>) {
                 ? Array.from({ length: skeletonCount }, (_, index) => (
                     <tr key={index} className="border-b border-border last:border-0">
                       {visibleColumns.map((column) => (
-                        <td key={column.id} className="h-12 px-4">
+                        <td key={column.id} className="h-14 px-4 first:pl-5 last:pr-5">
                           <Skeleton className="h-4 w-full max-w-36" />
                         </td>
                       ))}
@@ -228,7 +252,7 @@ export function DataTable<T>(props: DataTableProps<T>) {
                       }
                       tabIndex={onRowClick ? 0 : undefined}
                       className={cn(
-                        'border-b border-border transition-colors last:border-0 hover:bg-muted/40',
+                        'border-b border-border transition-colors last:border-0 hover:bg-muted/50',
                         onRowClick &&
                           'cursor-pointer focus-visible:bg-muted/60 focus-visible:ring-inset focus-visible:ring-offset-0',
                       )}
@@ -241,7 +265,7 @@ export function DataTable<T>(props: DataTableProps<T>) {
                             key={cell.id}
                             style={box.style}
                             className={cn(
-                              'h-12 px-4 py-2',
+                              'h-14 px-4 py-2 first:pl-5 last:pr-5',
                               box.className,
                               alignClasses[meta?.align ?? 'left'],
                               meta?.align === 'right' && 'tabular-nums',

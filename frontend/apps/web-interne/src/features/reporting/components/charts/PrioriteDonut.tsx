@@ -7,10 +7,10 @@ import { chartColor } from '@/shared/ui/chart-theme'
 import { EmptyState } from '@/shared/ui/empty-state'
 import type { SectionBesoins } from '../../types'
 
-/** Couleurs ordinales alignees sur les badges de priorite (normale / urgente / critique). */
+/** Couleurs ordinales alignees sur les badges de priorite : bleu pale, bleu, rouge (critique). */
 const COLORS: Readonly<Record<Priorite, string>> = {
-  NORMAL: chartColor(0),
-  URGENT: 'rgb(var(--warning))',
+  NORMAL: chartColor(1),
+  URGENT: chartColor(0),
   CRITIQUE: 'rgb(var(--danger))',
 }
 

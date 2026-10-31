@@ -18,15 +18,12 @@ export function SidebarNav({ collapsed = false, onNavigate }: SidebarNavProps) {
   const { hasAnyRole } = useAuth()
   const groups = navigationFor(hasAnyRole)
   return (
-    <nav aria-label={tc('shell.mainNav')} className="grid gap-5 px-3 py-4">
-      {groups.map((group) => (
-        <div key={group.key} className="grid gap-0.5">
-          {collapsed ? (
-            <span className="mx-auto mb-1 h-px w-6 bg-border" aria-hidden />
-          ) : (
-            <p className="mb-1 px-2.5 text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground/80">
-              {t(`groups.${group.key}`)}
-            </p>
+    <nav aria-label={tc('shell.mainNav')} className="grid gap-3 px-3 py-4">
+      {groups.map((group, index) => (
+        // Groupes separes par un simple filet (pas d'intitule de section : navigation plus calme).
+        <div key={group.key} className="grid gap-0.5" role="group" aria-label={t(`groups.${group.key}`)}>
+          {index > 0 && (
+            <span className={cn('mb-2 h-px bg-border', collapsed ? 'mx-auto w-6' : 'mx-2.5')} aria-hidden />
           )}
           {group.items.map((item) => {
             const label = t(`items.${item.key}`)
@@ -40,25 +37,19 @@ export function SidebarNav({ collapsed = false, onNavigate }: SidebarNavProps) {
                   aria-label={collapsed ? label : undefined}
                   className={({ isActive }) =>
                     cn(
-                      'group relative flex h-10 items-center gap-3 rounded-lg px-2.5 text-sm font-medium transition-colors lg:h-9',
+                      'group relative flex h-10 items-center gap-3 rounded-lg px-2.5 text-sm transition-colors lg:h-9',
                       collapsed && 'mx-auto w-10 justify-center px-0',
                       isActive
-                        ? 'bg-primary/10 text-primary-emphasis'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                        ? 'bg-primary/[0.08] font-medium text-primary-emphasis'
+                        : 'text-foreground/80 hover:bg-muted hover:text-foreground',
                     )
                   }
                 >
                   {({ isActive }) => (
                     <>
-                      {isActive && !collapsed && (
-                        <span
-                          className="absolute -left-3 top-2 h-5 w-[3px] rounded-r-full bg-primary"
-                          aria-hidden
-                        />
-                      )}
                       <Icon
                         className={cn(
-                          'size-[18px] shrink-0',
+                          'size-[18px] shrink-0 stroke-[1.75]',
                           isActive
                             ? 'text-primary-emphasis'
                             : 'text-muted-foreground group-hover:text-foreground',

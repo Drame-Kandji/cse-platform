@@ -47,11 +47,10 @@ export function Sidebar() {
       <NavScroll collapsed={collapsed} />
       <div
         className={cn(
-          'flex shrink-0 items-center border-t border-border p-3',
-          collapsed ? 'justify-center' : 'justify-between',
+          'flex shrink-0 items-center p-3',
+          collapsed ? 'justify-center' : 'justify-end',
         )}
       >
-        {!collapsed && <span className="pl-2.5 text-2xs text-muted-foreground">{t('app.fullName')}</span>}
         <IconButton
           size="icon-sm"
           label={collapsed ? t('shell.expand') : t('shell.collapse')}

@@ -55,7 +55,7 @@ export function Component() {
       <PageHeader
         breadcrumb={back}
         title={contrat.numero}
-        description={contrat.objet}
+        subtitle={contrat.objet}
         meta={
           <>
             <StatusBadge kind="statutContrat" value={contrat.statut} />

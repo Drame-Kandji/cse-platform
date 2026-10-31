@@ -119,7 +119,6 @@ export function Component() {
     <>
       <PageHeader
         title="Référentiels"
-        description="Types d'engins du parc et seuils de maintenance préventive utilisés pour les alertes."
         actions={
           <Button
             leftIcon={<Plus />}

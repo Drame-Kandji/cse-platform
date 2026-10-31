@@ -16,7 +16,7 @@ export function Component() {
   const chantierParDefaut = user.chantierIds.length === 1 ? (user.chantierIds[0] ?? '') : ''
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <PageHeader title={t('form.createTitle')} description={t('form.createDescription')} />
+      <PageHeader title={t('form.createTitle')} />
       <BesoinForm
         defaultValues={besoinDefaults(undefined, chantierParDefaut)}
         submitLabel={t('form.submitCreate')}

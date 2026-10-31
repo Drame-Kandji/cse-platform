@@ -75,7 +75,7 @@ export function Component() {
             )}
           </>
         }
-        description={<MaterielSubtitle materiel={materiel} />}
+        subtitle={<MaterielSubtitle materiel={materiel} />}
         actions={<MaterielActions materiel={materiel} />}
       />
       <div className="grid gap-6">

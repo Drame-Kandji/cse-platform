@@ -4,7 +4,8 @@
  * l'opacite Tailwind : `bg-primary/10`. Ne jamais utiliser de couleur brute
  * dans les composants : passer par ces jetons (voir CONVENTIONS.md).
  * Contrastes verifies WCAG AA (texte >= 4.5:1) en clair et en sombre.
- * Couleurs chart-1..6 : ordre categoriel valide daltonisme (ne pas reordonner).
+ * Charte : bleu + blanc. Une seule couleur d'action (primary), rouge reserve aux erreurs.
+ * Couleurs chart-1..6 : nuances de bleu (clair/fonce alternes) puis gris "autres".
  */
 @tailwind base;
 @tailwind components;
@@ -12,79 +13,83 @@
 
 @layer base {
   :root {
+    /* Neutres : fond a peine teinte, surfaces blanches, texte quasi noir + un seul gris. */
     --background: 248 250 252; /* #f8fafc */
     --surface: 255 255 255; /* #ffffff */
     --surface-raised: 255 255 255; /* #ffffff */
-    --surface-sunken: 241 245 249; /* #f1f5f9 */
+    --surface-sunken: 244 246 249; /* #f4f6f9 */
     --foreground: 15 23 42; /* #0f172a */
     --muted: 241 245 249; /* #f1f5f9 */
     --muted-foreground: 86 101 124; /* #56657c */
-    --border: 226 232 240; /* #e2e8f0 */
-    --border-strong: 203 213 225; /* #cbd5e1 */
+    --border: 228 233 240; /* #e4e9f0 */
+    --border-strong: 208 215 226; /* #d0d7e2 */
     --input: 203 213 225; /* #cbd5e1 */
     --ring: 29 78 216; /* #1d4ed8 */
+    /* Un seul bleu CSE. info / success / warning / accent sont des alias du bleu (charte bleu + blanc). */
     --primary: 29 78 216; /* #1d4ed8 */
     --primary-foreground: 255 255 255; /* #ffffff */
     --primary-emphasis: 30 64 175; /* #1e40af */
-    --accent: 245 158 11; /* #f59e0b */
-    --accent-foreground: 15 23 42; /* #0f172a */
-    --accent-emphasis: 161 74 7; /* #a14a07 */
-    --success: 21 128 61; /* #15803d */
+    --accent: 29 78 216; /* #1d4ed8 */
+    --accent-foreground: 255 255 255; /* #ffffff */
+    --accent-emphasis: 30 64 175; /* #1e40af */
+    --success: 29 78 216; /* #1d4ed8 */
     --success-foreground: 255 255 255; /* #ffffff */
-    --success-emphasis: 22 101 52; /* #166534 */
-    --warning: 180 83 9; /* #b45309 */
+    --success-emphasis: 30 64 175; /* #1e40af */
+    --warning: 29 78 216; /* #1d4ed8 */
     --warning-foreground: 255 255 255; /* #ffffff */
-    --warning-emphasis: 146 64 14; /* #92400e */
+    --warning-emphasis: 30 64 175; /* #1e40af */
+    --info: 29 78 216; /* #1d4ed8 */
+    --info-foreground: 255 255 255; /* #ffffff */
+    --info-emphasis: 30 64 175; /* #1e40af */
+    /* Seule couleur semantique distincte : rouge (erreur, destructif, critique, en retard). */
     --danger: 220 38 38; /* #dc2626 */
     --danger-foreground: 255 255 255; /* #ffffff */
     --danger-emphasis: 185 28 28; /* #b91c1c */
-    --info: 3 105 161; /* #0369a1 */
-    --info-foreground: 255 255 255; /* #ffffff */
-    --info-emphasis: 7 89 133; /* #075985 */
-    --chart-1: 42 120 214; /* #2a78d6 */
-    --chart-2: 235 104 52; /* #eb6834 */
-    --chart-3: 27 175 122; /* #1baf7a */
-    --chart-4: 237 161 0; /* #eda100 */
-    --chart-5: 232 123 164; /* #e87ba4 */
-    --chart-6: 0 131 0; /* #008300 */
+    /* Graphiques : nuances de bleu alternees clair/fonce, gris clair pour "autres". */
+    --chart-1: 37 99 235; /* #2563eb */
+    --chart-2: 96 165 250; /* #60a5fa */
+    --chart-3: 30 58 138; /* #1e3a8a */
+    --chart-4: 147 197 253; /* #93c5fd */
+    --chart-5: 191 219 254; /* #bfdbfe */
+    --chart-6: 203 213 225; /* #cbd5e1 */
   }
 
   .dark {
-    --background: 10 15 28; /* #0a0f1c */
-    --surface: 15 22 38; /* #0f1626 */
-    --surface-raised: 21 29 48; /* #151d30 */
-    --surface-sunken: 12 19 34; /* #0c1322 */
-    --foreground: 238 242 247; /* #eef2f7 */
-    --muted: 24 33 53; /* #182135 */
-    --muted-foreground: 150 163 184; /* #96a3b8 */
-    --border: 30 41 61; /* #1e293d */
-    --border-strong: 44 58 82; /* #2c3a52 */
-    --input: 44 58 82; /* #2c3a52 */
+    --background: 10 14 24; /* #0a0e18 */
+    --surface: 16 21 33; /* #101521 */
+    --surface-raised: 21 27 41; /* #151b29 */
+    --surface-sunken: 12 17 28; /* #0c111c */
+    --foreground: 236 240 246; /* #ecf0f6 */
+    --muted: 25 32 47; /* #19202f */
+    --muted-foreground: 148 160 180; /* #94a0b4 */
+    --border: 32 40 56; /* #202838 */
+    --border-strong: 46 56 76; /* #2e384c */
+    --input: 46 56 76; /* #2e384c */
     --ring: 122 162 255; /* #7aa2ff */
     --primary: 37 99 235; /* #2563eb */
     --primary-foreground: 255 255 255; /* #ffffff */
     --primary-emphasis: 143 176 255; /* #8fb0ff */
-    --accent: 245 158 11; /* #f59e0b */
-    --accent-foreground: 10 15 28; /* #0a0f1c */
-    --accent-emphasis: 251 191 36; /* #fbbf24 */
-    --success: 21 128 61; /* #15803d */
+    --accent: 37 99 235; /* #2563eb */
+    --accent-foreground: 255 255 255; /* #ffffff */
+    --accent-emphasis: 143 176 255; /* #8fb0ff */
+    --success: 37 99 235; /* #2563eb */
     --success-foreground: 255 255 255; /* #ffffff */
-    --success-emphasis: 74 222 128; /* #4ade80 */
-    --warning: 180 83 9; /* #b45309 */
+    --success-emphasis: 143 176 255; /* #8fb0ff */
+    --warning: 37 99 235; /* #2563eb */
     --warning-foreground: 255 255 255; /* #ffffff */
-    --warning-emphasis: 253 186 116; /* #fdba74 */
+    --warning-emphasis: 143 176 255; /* #8fb0ff */
+    --info: 37 99 235; /* #2563eb */
+    --info-foreground: 255 255 255; /* #ffffff */
+    --info-emphasis: 143 176 255; /* #8fb0ff */
     --danger: 220 38 38; /* #dc2626 */
     --danger-foreground: 255 255 255; /* #ffffff */
     --danger-emphasis: 248 113 113; /* #f87171 */
-    --info: 3 105 161; /* #0369a1 */
-    --info-foreground: 255 255 255; /* #ffffff */
-    --info-emphasis: 56 189 248; /* #38bdf8 */
-    --chart-1: 57 135 229; /* #3987e5 */
-    --chart-2: 217 89 38; /* #d95926 */
-    --chart-3: 25 158 112; /* #199e70 */
-    --chart-4: 201 133 0; /* #c98500 */
-    --chart-5: 213 81 129; /* #d55181 */
-    --chart-6: 0 131 0; /* #008300 */
+    --chart-1: 59 130 246; /* #3b82f6 */
+    --chart-2: 147 197 253; /* #93c5fd */
+    --chart-3: 29 78 216; /* #1d4ed8 */
+    --chart-4: 191 219 254; /* #bfdbfe */
+    --chart-5: 96 165 250; /* #60a5fa */
+    --chart-6: 71 85 105; /* #475569 */
   }
 
   :root {
@@ -160,7 +165,7 @@
     background-color: rgb(var(--hero));
     background-image:
       radial-gradient(60rem 40rem at 110% -10%, rgb(var(--primary) / 0.55), transparent 60%),
-      radial-gradient(40rem 30rem at -20% 120%, rgb(var(--accent) / 0.16), transparent 60%);
+      radial-gradient(40rem 30rem at -20% 120%, rgb(var(--primary) / 0.18), transparent 60%);
   }
   .bg-grid {
     background-image:

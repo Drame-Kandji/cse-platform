@@ -60,7 +60,7 @@ export function Component() {
 
   return (
     <>
-      <PageHeader title="Mon profil" description="Informations de votre compte sur la plateforme CSE." />
+      <PageHeader title="Mon profil" />
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="flex flex-col items-center gap-4 p-6 text-center">
           <Avatar name={fullName} size="lg" className="size-16 text-lg" />

@@ -8,7 +8,8 @@ import { Skeleton } from './skeleton'
 
 export interface ComingSoonProps {
   title: string
-  description: string
+  /** Conserve pour compatibilite : plus affiche (charte sobre). */
+  description?: string
   icon: ReactNode
   /** Fonctionnalites prevues (liste courte, verbes a l'infinitif). */
   features: readonly string[]
@@ -20,13 +21,12 @@ export interface ComingSoonProps {
  * Emplacement temporaire d'un module non encore livre.
  * A remplacer par la vraie page : ne pas l'utiliser pour du contenu definitif.
  */
-export function ComingSoon({ title, description, icon, features, children }: ComingSoonProps) {
+export function ComingSoon({ title, icon, features, children }: ComingSoonProps) {
   const { t } = useTranslation()
   return (
     <>
       <PageHeader
         title={title}
-        description={description}
         meta={
           <Badge tone="accent" dot>
             {t('comingSoon.badge')}

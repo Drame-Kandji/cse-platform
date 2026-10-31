@@ -143,7 +143,7 @@ export function Component() {
 
   return (
     <>
-      <PageHeader title={t('page.title')} description={t('page.description')} actions={nouveau} />
+      <PageHeader title={t('page.title')} actions={nouveau} />
       {vue === 'tableau' ? (
         <DataTable
           label={t('page.tableLabel')}

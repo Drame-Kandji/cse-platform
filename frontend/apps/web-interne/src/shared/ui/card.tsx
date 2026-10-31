@@ -1,14 +1,14 @@
 import { forwardRef, type HTMLAttributes, type ReactNode } from 'react'
 import { cn } from '@/shared/lib/cn'
 
-/** Conteneur de contenu : bordure fine, coins xl, ombre minimale. */
+/** Conteneur de contenu : plat, bordure fine, coins xl, sans ombre. */
 export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement> & { interactive?: boolean }>(
   function Card({ className, interactive, ...props }, ref) {
     return (
       <div
         ref={ref}
         className={cn(
-          'rounded-xl border border-border bg-surface text-foreground shadow-card',
+          'rounded-xl border border-border bg-surface text-foreground',
           interactive && 'transition-colors hover:border-border-strong',
           className,
         )}
@@ -23,6 +23,7 @@ export interface CardHeaderProps extends Omit<HTMLAttributes<HTMLDivElement>, 't
   description?: ReactNode
   /** Actions alignees a droite (boutons, menu). */
   action?: ReactNode
+  /** Conserve pour compatibilite : n'est plus affiche (pas de tuile d'icone, charte sobre). */
   icon?: ReactNode
 }
 
@@ -32,17 +33,12 @@ export function CardHeader({
   title,
   description,
   action,
-  icon,
+  icon: _icon,
   children,
   ...props
 }: CardHeaderProps) {
   return (
     <div className={cn('flex items-start gap-3 px-5 pb-0 pt-5', className)} {...props}>
-      {icon && (
-        <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground [&_svg]:size-[18px]">
-          {icon}
-        </div>
-      )}
       <div className="min-w-0 flex-1">
         {title && <CardTitle>{title}</CardTitle>}
         {description && <CardDescription>{description}</CardDescription>}
@@ -55,7 +51,7 @@ export function CardHeader({
 
 export function CardTitle({ className, children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn('text-[0.9375rem] font-semibold leading-6 tracking-tight', className)} {...props}>
+    <h3 className={cn('text-base font-semibold leading-6 tracking-tight', className)} {...props}>
       {children}
     </h3>
   )
@@ -73,7 +69,7 @@ export function CardFooter({ className, ...props }: HTMLAttributes<HTMLDivElemen
   return (
     <div
       className={cn(
-        'flex items-center justify-end gap-2 rounded-b-xl border-t border-border bg-surface-sunken/60 px-5 py-3',
+        'flex items-center justify-end gap-2 rounded-b-xl border-t border-border px-5 py-3',
         className,
       )}
       {...props}

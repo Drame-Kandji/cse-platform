@@ -22,7 +22,6 @@ export function Component() {
     <>
       <PageHeader
         title={t('liste.titre')}
-        description={t('liste.description')}
         actions={
           <Can roles={access.achatsGestion}>
             <Button

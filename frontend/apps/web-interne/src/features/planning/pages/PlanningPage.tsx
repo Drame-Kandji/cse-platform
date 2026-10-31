@@ -32,7 +32,6 @@ export function Component() {
     <>
       <PageHeader
         title="Planning des affectations"
-        description="Occupation du parc par chantier. Cliquez sur une barre pour le détail, sur un créneau libre pour affecter."
         actions={
           peutAffecter && (
             <Button

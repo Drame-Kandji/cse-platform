@@ -113,26 +113,27 @@ describe('profils autorises', () => {
 })
 
 describe('DashboardPage', () => {
-  it("n'affiche que les sections renvoyees pour le profil et ne demande que leurs series", async () => {
+  it('reste sobre : 4 KPI du profil, un seul graphique et le lien vers l\'analyse detaillee', async () => {
     const seen = { kpis: [] as URLSearchParams[], series: [] as string[] }
     installHandlers(seen, tableauRm)
     const { container } = renderWithProviders(<DashboardPage />, { user: testUser(['RESPONSABLE_MATERIEL']) })
     expect(await screen.findByText('Disponibilité opérationnelle')).toBeInTheDocument()
     expect(screen.getByText('110 opérationnels sur 118')).toBeInTheDocument()
+    expect(screen.getByRole('list', { name: 'Indicateurs clés' }).children).toHaveLength(4)
     expect(container.querySelector('[data-section="parc"]')).not.toBeNull()
-    expect(container.querySelector('[data-section="besoins"]')).not.toBeNull()
-    expect(container.querySelector('[data-section="chantiers"]')).not.toBeNull()
+    // Graphiques secondaires et tableau des chantiers : deplaces dans Rapports.
+    expect(container.querySelector('[data-section="besoins"]')).toBeNull()
+    expect(container.querySelector('[data-section="chantiers"]')).toBeNull()
     expect(container.querySelector('[data-section="finances"]')).toBeNull()
     expect(container.querySelector('[data-section="fournisseurs"]')).toBeNull()
     expect(container.querySelector('[data-section="achats"]')).toBeNull()
     expect(screen.queryByText('Montant engagé')).not.toBeInTheDocument()
     expect(seen.kpis[0]?.get('profil')).toBe('RESPONSABLE_MATERIEL')
     await waitFor(() => {
-      expect(new Set(seen.series)).toEqual(
-        new Set(['TAUX_DISPONIBILITE', 'TAUX_UTILISATION', 'BESOINS_SOUMIS']),
-      )
+      expect(new Set(seen.series)).toEqual(new Set(['TAUX_DISPONIBILITE', 'TAUX_UTILISATION']))
     })
     expect(screen.getByText('Besoins en attente de validation')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: "Voir l'analyse détaillée" })).toBeInTheDocument()
     // Un seul profil autorise : pas de selecteur de vue.
     expect(screen.queryByRole('combobox', { name: 'Vue du tableau de bord' })).not.toBeInTheDocument()
   })

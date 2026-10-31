@@ -2,7 +2,7 @@ import { ChevronDown, LogOut, UserRound } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useCurrentUser, useAuth } from '@/shared/auth/context'
-import { ROLE_LABELS, ROLE_SHORT_LABELS } from '@/shared/domain/labels'
+import { ROLE_LABELS } from '@/shared/domain/labels'
 import { Avatar } from '@/shared/ui/avatar'
 import { Badge } from '@/shared/ui/badge'
 import { paths } from '../routes'
@@ -20,7 +20,6 @@ export function UserMenu() {
   const { logout, mode } = useAuth()
   const user = useCurrentUser()
   const navigate = useNavigate()
-  const primaryRole = user.roles[0]
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -28,12 +27,7 @@ export function UserMenu() {
         aria-label={t('shell.userMenu')}
       >
         <Avatar name={user.name} size="sm" />
-        <span className="hidden min-w-0 text-left leading-tight xl:grid">
-          <span className="truncate text-sm font-medium">{user.name}</span>
-          {primaryRole && (
-            <span className="truncate text-2xs text-muted-foreground">{ROLE_SHORT_LABELS[primaryRole]}</span>
-          )}
-        </span>
+        <span className="hidden min-w-0 truncate text-sm font-medium xl:block">{user.name}</span>
         <ChevronDown className="hidden size-4 text-muted-foreground xl:block" aria-hidden />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-72">

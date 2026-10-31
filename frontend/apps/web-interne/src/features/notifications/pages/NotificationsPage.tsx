@@ -59,7 +59,6 @@ export function Component() {
     <>
       <PageHeader
         title="Notifications"
-        description="Alertes et événements qui vous concernent : validations, maintenance, livraisons, finances."
         actions={
           <Button
             variant="secondary"

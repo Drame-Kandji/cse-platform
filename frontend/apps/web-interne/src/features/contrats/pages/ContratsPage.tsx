@@ -99,7 +99,7 @@ export function Component() {
 
   return (
     <>
-      <PageHeader title={t('list.title')} description={t('list.description')} />
+      <PageHeader title={t('list.title')} />
       <DataTable
         label={t('list.tableLabel')}
         columns={columns}

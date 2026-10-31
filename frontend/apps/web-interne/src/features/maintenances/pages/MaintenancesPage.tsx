@@ -33,7 +33,6 @@ export function Component() {
     <>
       <PageHeader
         title={t('page.title')}
-        description={t('page.description')}
         actions={
           <>
             <Can roles={access.panneSignalement}>

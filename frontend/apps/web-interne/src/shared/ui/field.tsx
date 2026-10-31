@@ -64,8 +64,12 @@ export function Field({
               *
             </span>
           )}
+          {/* Espace explicite : nom accessible « Garantie (mois) Facultatif » et non « …)Facultatif ». */}
           {optional && (
-            <span className="ml-1.5 text-xs font-normal text-muted-foreground">{t('states.optional')}</span>
+            <>
+              {' '}
+              <span className="ml-1 text-xs font-normal text-muted-foreground">{t('states.optional')}</span>
+            </>
           )}
         </label>
         {labelAction}

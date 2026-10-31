@@ -5,10 +5,10 @@ import { cn } from '@/shared/lib/cn'
 import { dotToneClasses, softToneClasses, solidToneClasses } from './tone'
 
 const badgeVariants = cva(
-  'inline-flex max-w-full items-center gap-1.5 whitespace-nowrap rounded-md font-medium ring-1 ring-inset [&_svg]:size-3.5',
+  'inline-flex max-w-full items-center gap-1.5 whitespace-nowrap rounded-full font-medium ring-1 ring-inset [&_svg]:size-3.5',
   {
     variants: {
-      size: { sm: 'h-5 px-1.5 text-2xs', md: 'h-6 px-2 text-xs' },
+      size: { sm: 'h-5 px-2 text-2xs', md: 'h-6 px-2.5 text-xs' },
     },
     defaultVariants: { size: 'md' },
   },
@@ -35,7 +35,7 @@ export function Badge({
     variant === 'solid'
       ? solidToneClasses[tone]
       : variant === 'outline'
-        ? 'bg-transparent text-foreground ring-border-strong'
+        ? 'bg-transparent text-muted-foreground ring-border-strong'
         : softToneClasses[tone]
   return (
     <span className={cn(badgeVariants({ size }), toneClass, className)} {...props}>
