@@ -1,33 +1,389 @@
 server:
-  port: 8088
+  port: ${SERVER_PORT:8088}
+  shutdown: graceful
 spring:
   application:
     name: ms-notification
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/cse?stringtype=unspecified}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:changeit}
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/cse}
+    username: ${DB_USERNAME:ms_notification}
+    password: ${DB_PASSWORD:changeit-services}
+    hikari:
+      connection-init-sql: SET search_path TO notification
+      maximum-pool-size: 10
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: validate
-    open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: UTC
   flyway:
-    enabled: true
     schemas: notification
-    baseline-on-migrate: true
-    validate-on-migrate: false
+    default-schema: notification
+    locations: classpath:db/migration,classpath:db/common
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${spring.application.name}
+      auto-offset-reset: earliest
+    producer:
+      acks: all
   security:
     oauth2:
       resourceserver:
         jwt:
+          jwk-set-uri: ${JWK_SET_URI:http://localhost:8180/realms/cse/protocol/openid-connect/certs}
           issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/cse}
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    default-encoding: UTF-8
+    properties:
+      mail.smtp.auth: ${MAIL_SMTP_AUTH:false}
+      mail.smtp.starttls.enable: ${MAIL_SMTP_STARTTLS:false}
+      # Délais courts : un serveur SMTP lent ne doit pas bloquer le consommateur Kafka.
+      mail.smtp.connectiontimeout: ${MAIL_TIMEOUT_MS:3000}
+      mail.smtp.timeout: ${MAIL_TIMEOUT_MS:3000}
+      mail.smtp.writetimeout: ${MAIL_TIMEOUT_MS:3000}
+  thymeleaf:
+    check-template-location: false
+  mvc:
+    async:
+      # Les flux SSE gèrent leur propre délai (cse.notification.sse.timeout).
+      request-timeout: -1
+  threads:
+    virtual:
+      enabled: false
+
+cse:
+  openapi:
+    title: ms-notification — Notifications
+    description: >-
+      Notifications in-app (liste, compteur, lecture, flux temps réel SSE) et e-mails, produites à
+      partir des événements métier Kafka selon des règles de routage configurables.
+  outbox:
+    # Le service ne publie aucun événement : relais inutile.
+    relay-enabled: false
+  notification:
+    frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:5173}
+    valeur-absente: "—"
+    sse:
+      ping-interval: ${SSE_PING_INTERVAL:PT25S}
+      timeout: ${SSE_TIMEOUT:PT30M}
+      max-connexions-par-utilisateur: ${SSE_MAX_CONNEXIONS:5}
+      reconnexion: PT5S
+    mail:
+      actif: ${MAIL_ENABLED:true}
+      expediteur: ${MAIL_FROM:CSE Plateforme <no-reply@cse.sn>}
+      prefixe-objet: "[CSE]"
+    libelles:
+      MATERIEL_ROULANT: matériel roulant
+      OUTILLAGE: outillage
+      EQUIPEMENT_INFORMATIQUE: équipement informatique
+      CONSOMMABLE: consommable
+      NORMAL: normale
+      URGENT: urgente
+      CRITIQUE: critique
+      MINEURE: mineure
+      MAJEURE: majeure
+      BLOQUANTE: bloquante
+      FAIBLE: faible
+      MOYENNE: moyenne
+      ELEVEE: élevée
+      APPEL_OFFRES: appel d'offres
+      DEMANDE_PRIX: demande de prix
+    # Règles de routage : evenement → destinataires (roles, champs-destinataires, chefs-du-chantier),
+    # niveau, titre/message/lien à marqueurs {champ du payload} ({acteurNom} = auteur de l'action),
+    # e-mail, condition optionnelle (EGAL, DIFFERENT, INFERIEUR, SUPERIEUR, VRAI, FAUX, PRESENT,
+    # COMMENCE_PAR).
+    regles:
+      # --- ms-besoins ---
+      - evenement: BESOIN_SOUMIS
+        roles: [RESPONSABLE_MATERIEL]
+        niveau: INFO
+        titre: "Nouveau besoin {reference} à valider"
+        message: "{demandeurNom} a exprimé le besoin {reference} : {quantite} × {designation} pour le chantier {chantierNom} (priorité {priorite})."
+        lien: /besoins/{besoinId}
+        entite: BESOIN
+        entite-id: besoinId
+      - evenement: BESOIN_VALIDE
+        champs-destinataires: [demandeurId]
+        niveau: SUCCES
+        titre: "Besoin {reference} validé"
+        message: "Votre besoin {reference} ({quantite} × {designation}, chantier {chantierNom}) a été validé par {acteurNom}."
+        lien: /besoins/{besoinId}
+        entite: BESOIN
+        entite-id: besoinId
+      - evenement: BESOIN_REJETE
+        champs-destinataires: [demandeurId]
+        niveau: ALERTE
+        titre: "Besoin {reference} rejeté"
+        message: "Votre besoin {reference} ({designation}, chantier {chantierNom}) a été rejeté. Motif : {motif}."
+        lien: /besoins/{besoinId}
+        entite: BESOIN
+        entite-id: besoinId
+        email: true
+      - evenement: BESOIN_AFFECTE_DIRECT
+        champs-destinataires: [demandeurId]
+        niveau: SUCCES
+        titre: "Besoin {reference} satisfait par le parc"
+        message: "Du matériel disponible a été affecté directement pour votre besoin {reference} ({quantite} × {designation}) au chantier {chantierNom}."
+        lien: /besoins/{besoinId}
+        entite: BESOIN
+        entite-id: besoinId
+        email: true
+      - evenement: BESOIN_EN_ACHAT
+        champs-destinataires: [demandeurId]
+        niveau: INFO
+        titre: "Besoin {reference} transmis aux achats"
+        message: "Le parc ne couvre pas votre besoin {reference} ({quantite} × {designation}) : il a été transmis au service des achats."
+        lien: /besoins/{besoinId}
+        entite: BESOIN
+        entite-id: besoinId
+      # --- ms-suivi ---
+      - evenement: MATERIEL_AFFECTE
+        champs-destinataires: [chefChantierId]
+        chefs-du-chantier: true
+        niveau: INFO
+        titre: "Matériel {materielCode} affecté à {chantierNom}"
+        message: "{materielDesignation} ({materielCode}) est affecté au chantier {chantierNom} du {dateDebut} au {dateFinPrevue}. Merci de confirmer sa réception."
+        lien: /materiels/{materielId}
+        entite: MATERIEL
+        entite-id: materielId
+        email: true
+      - evenement: FIN_AFFECTATION_PROCHAINE
+        champs-destinataires: [chefChantierId]
+        chefs-du-chantier: true
+        niveau: ALERTE
+        titre: "Fin d'affectation proche : {materielCode}"
+        message: "L'affectation de {materielDesignation} ({materielCode}) au chantier {chantierNom} se termine le {dateFinPrevue}."
+        lien: /materiels/{materielId}
+        entite: MATERIEL
+        entite-id: materielId
+      - evenement: FIN_AFFECTATION_PROCHAINE
+        roles: [RESPONSABLE_MATERIEL]
+        niveau: ALERTE
+        titre: "Fin d'affectation proche : {materielCode}"
+        message: "L'affectation de {materielDesignation} ({materielCode}) au chantier {chantierNom} se termine le {dateFinPrevue}. Prévoir sa libération ou sa prolongation."
+        lien: /materiels/{materielId}
+        entite: MATERIEL
+        entite-id: materielId
+      - evenement: PANNE_SIGNALEE
+        roles: [RESPONSABLE_MATERIEL]
+        condition: { champ: gravite, operateur: EGAL, valeur: BLOQUANTE }
+        niveau: CRITIQUE
+        titre: "Panne bloquante : {materielDesignation}"
+        message: "{signaleParNom} signale une panne bloquante sur {materielDesignation} (chantier {chantierNom}) : {description}"
+        lien: /materiels/{materielId}
+        entite: MATERIEL
+        entite-id: materielId
+        email: true
+      - evenement: PANNE_SIGNALEE
+        roles: [RESPONSABLE_MATERIEL]
+        condition: { champ: gravite, operateur: DIFFERENT, valeur: BLOQUANTE }
+        niveau: ALERTE
+        titre: "Panne {gravite} : {materielDesignation}"
+        message: "{signaleParNom} signale une panne {gravite} sur {materielDesignation} (chantier {chantierNom}) : {description}"
+        lien: /materiels/{materielId}
+        entite: MATERIEL
+        entite-id: materielId
+      - evenement: ALERTE_MAINTENANCE
+        roles: [RESPONSABLE_MATERIEL]
+        niveau: ALERTE
+        titre: "Maintenance préventive due : {code}"
+        message: "{designation} ({code}) a atteint son seuil de maintenance préventive ({heuresFonctionnement} h de fonctionnement). Planifiez une intervention."
+        lien: /materiels/{materielId}
+        entite: MATERIEL
+        entite-id: materielId
+        email: true
+      - evenement: MATERIEL_REFORME_DEMANDEE
+        roles: [DIRECTION_GENERALE]
+        niveau: ALERTE
+        titre: "Demande de réforme : {code}"
+        message: "{acteurNom} demande la réforme de {designation} ({code}). Motif : {motif}. Votre décision est requise."
+        lien: /materiels/{materielId}
+        entite: MATERIEL
+        entite-id: materielId
+        email: true
+      - evenement: MATERIEL_REFORME
+        roles: [RESPONSABLE_MATERIEL]
+        niveau: INFO
+        titre: "Matériel {code} réformé"
+        message: "{designation} ({code}) a été retiré du parc."
+        lien: /materiels/{materielId}
+        entite: MATERIEL
+        entite-id: materielId
+      # --- ms-achats ---
+      - evenement: AO_PUBLIE
+        roles: [RESPONSABLE_MATERIEL]
+        niveau: INFO
+        titre: "Appel d'offres {reference} publié"
+        message: "{acteurNom} a publié {reference} ({type}) : {objet}, {quantite} × {categorie}. Date limite : {dateLimite}."
+        lien: /appels-offres/{appelOffreId}
+        entite: APPEL_OFFRE
+        entite-id: appelOffreId
+      - evenement: ATTRIBUTION_PROPOSEE
+        roles: [RESPONSABLE_MATERIEL]
+        niveau: ALERTE
+        titre: "Attribution {reference} à co-valider"
+        message: "Une attribution est proposée pour {reference} ({objet}) pour {montantAttribue} FCFA. Votre co-validation est requise."
+        lien: /appels-offres/{appelOffreId}
+        entite: APPEL_OFFRE
+        entite-id: appelOffreId
+        email: true
+      - evenement: ATTRIBUTION_PROPOSEE
+        roles: [DIRECTION_GENERALE]
+        condition: { champ: approbationDgRequise, operateur: VRAI }
+        niveau: ALERTE
+        titre: "Attribution {reference} à approuver"
+        message: "L'attribution de {reference} ({objet}) pour {montantAttribue} FCFA dépasse le seuil de délégation : votre approbation est requise."
+        lien: /appels-offres/{appelOffreId}
+        entite: APPEL_OFFRE
+        entite-id: appelOffreId
+        email: true
+      - evenement: ATTRIBUTION_REFUSEE
+        roles: [RESPONSABLE_ACHATS]
+        niveau: ALERTE
+        titre: "Attribution {reference} refusée"
+        message: "L'attribution proposée pour {reference} ({objet}) a été refusée par {acteurNom}."
+        lien: /appels-offres/{appelOffreId}
+        entite: APPEL_OFFRE
+        entite-id: appelOffreId
+      - evenement: MARCHE_ATTRIBUE
+        roles: [RESPONSABLE_ACHATS]
+        niveau: SUCCES
+        titre: "Marché {reference} attribué"
+        message: "Toutes les approbations sont obtenues : le marché {reference} ({objet}) est attribué pour {montantAttribue} FCFA. Le contrat brouillon est disponible."
+        lien: /appels-offres/{appelOffreId}
+        entite: APPEL_OFFRE
+        entite-id: appelOffreId
+        email: true
+      - evenement: ENGAGEMENT_DEMANDE
+        roles: [DAF]
+        niveau: ALERTE
+        titre: "Engagement à valider : {numero}"
+        message: "Le contrat {numero} avec {fournisseurNom} ({designation}) a été signé : l'engagement de {montant} FCFA attend votre validation."
+        lien: /contrats/{contratId}
+        entite: CONTRAT
+        entite-id: contratId
+        email: true
+      - evenement: ENGAGEMENT_VALIDE
+        roles: [RESPONSABLE_ACHATS]
+        niveau: SUCCES
+        titre: "Engagement validé : {numero}"
+        message: "L'engagement de {montant} FCFA du contrat {numero} ({fournisseurNom}) a été validé par {acteurNom}. La livraison peut démarrer."
+        lien: /contrats/{contratId}
+        entite: CONTRAT
+        entite-id: contratId
+      - evenement: ENGAGEMENT_REJETE
+        roles: [RESPONSABLE_ACHATS]
+        niveau: ALERTE
+        titre: "Engagement rejeté : {numero}"
+        message: "L'engagement du contrat {numero} ({fournisseurNom}, {montant} FCFA) a été rejeté par {acteurNom}."
+        lien: /contrats/{contratId}
+        entite: CONTRAT
+        entite-id: contratId
+        email: true
+      - evenement: LIVRAISON_EFFECTUEE
+        chefs-du-chantier: true
+        niveau: SUCCES
+        titre: "Livraison effectuée pour {chantierNom}"
+        message: "{quantite} × {designation} livré(s) par {fournisseurNom} pour le chantier {chantierNom}. Merci de confirmer la réception du matériel."
+        lien: /materiels
+        entite: CONTRAT
+        entite-id: contratId
+        email: true
+      - evenement: LIVRAISON_EFFECTUEE
+        roles: [RESPONSABLE_MATERIEL]
+        niveau: SUCCES
+        titre: "Livraison effectuée : {numero}"
+        message: "{quantite} × {designation} livré(s) par {fournisseurNom} (contrat {numero}) pour le chantier {chantierNom}."
+        lien: /contrats/{contratId}
+        entite: CONTRAT
+        entite-id: contratId
+      - evenement: ALERTE_RETARD_LIVRAISON
+        roles: [RESPONSABLE_ACHATS]
+        niveau: ALERTE
+        titre: "Retard de livraison : {numero}"
+        message: "La livraison du contrat {numero} ({fournisseurNom}, {designation}) prévue le {dateLivraisonPrevue} est en retard."
+        lien: /contrats/{contratId}
+        entite: CONTRAT
+        entite-id: contratId
+        email: true
+      - evenement: FACTURE_RECUE
+        roles: [DAF]
+        niveau: INFO
+        titre: "Facture {numero} reçue"
+        message: "Facture {numero} de {montantTtc} FCFA TTC reçue, échéance le {dateEcheance}."
+        lien: /finance
+        entite: FACTURE
+        entite-id: factureId
+      # --- ms-fournisseurs ---
+      - evenement: FOURNISSEUR_INSCRIT
+        roles: [RESPONSABLE_ACHATS]
+        niveau: INFO
+        titre: "Nouvelle inscription fournisseur : {raisonSociale}"
+        message: "{raisonSociale} s'est inscrit sur le portail fournisseur et attend la validation de son compte."
+        lien: /fournisseurs/{fournisseurId}
+        entite: FOURNISSEUR
+        entite-id: fournisseurId
+      - evenement: FOURNISSEUR_BLACKLISTAGE_DEMANDE
+        roles: [DIRECTION_GENERALE]
+        niveau: ALERTE
+        titre: "Demande de blacklistage : {raisonSociale}"
+        message: "{acteurNom} demande le blacklistage du fournisseur {raisonSociale}. Motif : {motif}. Votre décision est requise."
+        lien: /fournisseurs/{fournisseurId}
+        entite: FOURNISSEUR
+        entite-id: fournisseurId
+        email: true
+      - evenement: DOCUMENT_EXPIRE
+        roles: [RESPONSABLE_ACHATS]
+        niveau: ALERTE
+        titre: "Document expiré : {raisonSociale}"
+        message: "Un document administratif du fournisseur {raisonSociale} a expiré : {motif}."
+        lien: /fournisseurs/{fournisseurId}
+        entite: FOURNISSEUR
+        entite-id: fournisseurId
+      # ms-fournisseurs signale un score sous son seuil (cse.fournisseurs.seuil-alerte-score) par un motif « ALERTE : … ».
+      - evenement: SCORE_RECALCULE
+        roles: [RESPONSABLE_ACHATS]
+        condition: { champ: motif, operateur: COMMENCE_PAR, valeur: "ALERTE :" }
+        niveau: ALERTE
+        titre: "Score fournisseur faible : {raisonSociale}"
+        message: "Le score de performance de {raisonSociale} est de {scorePerformance}/100. {motif}"
+        lien: /fournisseurs/{fournisseurId}
+        entite: FOURNISSEUR
+        entite-id: fournisseurId
+      - evenement: FOURNISSEUR_BLACKLISTAGE_REFUSE
+        roles: [RESPONSABLE_ACHATS]
+        niveau: INFO
+        titre: "Blacklistage refusé : {raisonSociale}"
+        message: "{acteurNom} a refusé le blacklistage du fournisseur {raisonSociale}. {motif}"
+        lien: /fournisseurs/{fournisseurId}
+        entite: FOURNISSEUR
+        entite-id: fournisseurId
+      - evenement: LITIGE_OUVERT
+        roles: [RESPONSABLE_ACHATS]
+        niveau: ALERTE
+        titre: "Litige {reference} ouvert"
+        message: "Un litige de gravité {gravite} a été ouvert avec {raisonSociale} : {objet}."
+        lien: /fournisseurs/{fournisseurId}
+        entite: FOURNISSEUR
+        entite-id: fournisseurId
+
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics
+  endpoints.web.exposure.include: health,info,metrics,prometheus
+  endpoint.health.probes.enabled: true
+  # MailHog absent ne doit pas rendre le service indisponible (les e-mails sont accessoires).
+  health.mail.enabled: ${MAIL_HEALTH_ENABLED:false}
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+    oauth:
+      client-id: cse-swagger
+      use-pkce-with-authorization-code-grant: true
+logging:
+  pattern:
+    level: "%5p [${spring.application.name},%X{correlationId:-}]"

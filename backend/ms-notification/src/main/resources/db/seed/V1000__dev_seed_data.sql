@@ -1,2 +1,0 @@
--- Seed données de développement pour ms-notification (profil dev uniquement)
--- Chantiers Dakar/Thiès/Saint-Louis/Kaolack/Ziguinchor, engins réalistes

@@ -1,0 +1,553 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "ms-chatbot — Assistant matériel et logistique",
+    "description" : "Assistant conversationnel : analyse d'intention déterministe, lecture des données réelles (ms-suivi, ms-besoins, ms-achats, ms-fournisseurs) avec les droits de l'utilisateur, filtrage par rôle, réponse par LLM OpenAI-compatible ou mode dégradé, historique des conversations.",
+    "contact" : {
+      "name" : "Équipe plateforme CSE",
+      "email" : "support@cse.sn"
+    },
+    "version" : "2.0.0"
+  },
+  "security" : [ {
+    "bearerAuth" : [ ]
+  }, {
+    "keycloak" : [ ]
+  } ],
+  "tags" : [ {
+    "name" : "Assistant",
+    "description" : "Assistant matériel et logistique (questions, historique, suggestions)"
+  } ],
+  "paths" : {
+    "/api/chatbot/query" : {
+      "post" : {
+        "tags" : [ "Assistant" ],
+        "summary" : "Poser une question",
+        "description" : "Analyse l'intention, lit les données réelles des services avec les droits de l'utilisateur, filtre selon son rôle et répond (LLM, ou mode dégradé sans LLM). L'échange est enregistré dans l'historique.",
+        "operationId" : "query",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Question"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Réponse de l'assistant",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Reponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Question vide ou trop longue",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Conversation inexistante ou appartenant à un autre utilisateur",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Trop de questions en peu de temps",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chatbot/suggestions" : {
+      "get" : {
+        "tags" : [ "Assistant" ],
+        "summary" : "Questions suggérées selon mon rôle",
+        "operationId" : "suggestions",
+        "responses" : {
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Liste de questions",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chatbot/historique" : {
+      "get" : {
+        "tags" : [ "Assistant" ],
+        "summary" : "Lister mes conversations",
+        "description" : "Les plus récentes d'abord.",
+        "operationId" : "historique",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "example" : 0
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "description" : "Taille (max 50)",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "example" : 20
+        } ],
+        "responses" : {
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Page de conversations",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseConversationResume"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chatbot/historique/{id}" : {
+      "get" : {
+        "tags" : [ "Assistant" ],
+        "summary" : "Consulter une de mes conversations",
+        "operationId" : "detail",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Conversation complète",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Conversation"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Conversation inexistante ou appartenant à un autre utilisateur",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "Assistant" ],
+        "summary" : "Supprimer une de mes conversations",
+        "operationId" : "supprimer",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Conversation supprimée"
+          },
+          "404" : {
+            "description" : "Conversation inexistante ou appartenant à un autre utilisateur",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "Question" : {
+        "type" : "object",
+        "properties" : {
+          "question" : {
+            "type" : "string",
+            "description" : "Question en langage naturel",
+            "example" : "Où se trouve la niveleuse NIV-002 ?",
+            "maxLength" : 1000,
+            "minLength" : 1
+          },
+          "conversationId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Conversation à poursuivre (absente = nouvelle conversation)",
+            "example" : "5b0f3c1e-8a7d-4e2b-9c41-2d6f8e0a1b3c"
+          }
+        },
+        "required" : [ "question" ]
+      },
+      "ProblemDetail" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "format" : "uri"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "detail" : {
+            "type" : "string"
+          },
+          "instance" : {
+            "type" : "string",
+            "format" : "uri"
+          },
+          "properties" : {
+            "type" : "object",
+            "additionalProperties" : { }
+          }
+        }
+      },
+      "Reponse" : {
+        "type" : "object",
+        "properties" : {
+          "conversationId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "5b0f3c1e-8a7d-4e2b-9c41-2d6f8e0a1b3c"
+          },
+          "messageId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "9d8c7b6a-1111-2222-3333-444455556666"
+          },
+          "reponse" : {
+            "type" : "string",
+            "description" : "Réponse en markdown simple",
+            "example" : "**Localisation** — 1 matériel trouvé :\n- **NIV-002** — Niveleuse CAT 140K : sur le chantier **Contournement de Thiès RN2** (affecté)"
+          },
+          "sources" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Source"
+            }
+          },
+          "intention" : {
+            "type" : "string",
+            "enum" : [ "LOCALISER_ENGIN", "DISPONIBILITE", "STATUT_BESOIN", "STATUT_COMMANDE", "HISTORIQUE_MAINTENANCE", "PLANNING_AFFECTATION", "FOURNISSEURS_PAR_CATEGORIE", "PROCEDURE", "AUTRE" ],
+            "example" : "LOCALISER_ENGIN"
+          },
+          "modeDegrade" : {
+            "type" : "boolean",
+            "description" : "Vrai si aucun LLM n'a été utilisé",
+            "example" : true
+          },
+          "horodatage" : {
+            "type" : "string",
+            "format" : "date-time",
+            "example" : "2026-10-30T09:15:00Z"
+          }
+        }
+      },
+      "Source" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "enum" : [ "MATERIEL", "BESOIN", "CHANTIER", "CONTRAT", "FOURNISSEUR", "MAINTENANCE", "APPEL_OFFRE" ],
+            "example" : "MATERIEL"
+          },
+          "id" : {
+            "type" : "string",
+            "example" : "a1b2c3d4-0000-0000-0000-000000000010"
+          },
+          "libelle" : {
+            "type" : "string",
+            "example" : "NIV-002 — Niveleuse CAT 140K"
+          },
+          "lien" : {
+            "type" : "string",
+            "example" : "/materiels/a1b2c3d4-0000-0000-0000-000000000010"
+          }
+        }
+      },
+      "ConversationResume" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "5b0f3c1e-8a7d-4e2b-9c41-2d6f8e0a1b3c"
+          },
+          "titre" : {
+            "type" : "string",
+            "example" : "Où se trouve la niveleuse NIV-002 ?"
+          },
+          "dernierMessage" : {
+            "type" : "string",
+            "example" : "**Localisation** — 1 matériel trouvé…"
+          },
+          "nombreMessages" : {
+            "type" : "integer",
+            "format" : "int32",
+            "example" : 2
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "example" : "2026-10-30T09:15:00Z"
+          }
+        }
+      },
+      "PageResponseConversationResume" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ConversationResume"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "Conversation" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "5b0f3c1e-8a7d-4e2b-9c41-2d6f8e0a1b3c"
+          },
+          "titre" : {
+            "type" : "string",
+            "example" : "Où se trouve la niveleuse NIV-002 ?"
+          },
+          "messages" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/MessageConversation"
+            }
+          }
+        }
+      },
+      "MessageConversation" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "9d8c7b6a-1111-2222-3333-444455556666"
+          },
+          "role" : {
+            "type" : "string",
+            "enum" : [ "UTILISATEUR", "ASSISTANT" ],
+            "example" : "ASSISTANT"
+          },
+          "contenu" : {
+            "type" : "string",
+            "example" : "**Localisation** — 1 matériel trouvé…"
+          },
+          "sources" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Source"
+            }
+          },
+          "horodatage" : {
+            "type" : "string",
+            "format" : "date-time",
+            "example" : "2026-10-30T09:15:00Z"
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "bearerAuth" : {
+        "type" : "http",
+        "description" : "Jeton d'accès Keycloak (realm cse)",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
+      },
+      "keycloak" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "http://localhost:8180/realms/cse/protocol/openid-connect/auth",
+            "tokenUrl" : "http://localhost:8180/realms/cse/protocol/openid-connect/token"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,33 +1,160 @@
 server:
-  port: 8087
+  port: ${SERVER_PORT:8087}
+  shutdown: graceful
 spring:
   application:
     name: ms-chatbot
+  config:
+    import: classpath:procedures.yml
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/cse?stringtype=unspecified}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:changeit}
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/cse}
+    username: ${DB_USERNAME:ms_chatbot}
+    password: ${DB_PASSWORD:changeit-services}
+    hikari:
+      connection-init-sql: SET search_path TO chatbot
+      maximum-pool-size: 10
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: validate
-    open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: UTC
   flyway:
-    enabled: true
     schemas: chatbot
-    baseline-on-migrate: true
-    validate-on-migrate: false
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    default-schema: chatbot
+    # db/common non requis : le chatbot ne publie ni ne consomme d'événement.
+    locations: classpath:db/migration
   security:
     oauth2:
       resourceserver:
         jwt:
+          jwk-set-uri: ${JWK_SET_URI:http://localhost:8180/realms/cse/protocol/openid-connect/certs}
           issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/cse}
+
+cse:
+  openapi:
+    title: ms-chatbot — Assistant matériel et logistique
+    description: >-
+      Assistant conversationnel : analyse d'intention déterministe, lecture des données réelles
+      (ms-suivi, ms-besoins, ms-achats, ms-fournisseurs) avec les droits de l'utilisateur, filtrage
+      par rôle, réponse par LLM OpenAI-compatible ou mode dégradé, historique des conversations.
+  clients:
+    connect-timeout: ${CLIENTS_CONNECT_TIMEOUT:PT2S}
+    read-timeout: ${CLIENTS_READ_TIMEOUT:PT5S}
+  chatbot:
+    question-max-caracteres: 1000
+    contexte-max-caracteres: 6000
+    reponse-max-caracteres: 4000
+    resultats-max: 10
+    sources-max: 10
+    horizon-planning-jours: 30
+    messages-historique: 6
+    longueur-titre: 80
+    longueur-apercu: 160
+    suggestions-max: 6
+    limite-debit:
+      capacite: ${CHATBOT_RATE_CAPACITE:10}
+      periode: ${CHATBOT_RATE_PERIODE:PT1M}
+    services:
+      suivi: ${MS_SUIVI_URL:http://localhost:8085}
+      besoins: ${MS_BESOINS_URL:http://localhost:8082}
+      achats: ${MS_ACHATS_URL:http://localhost:8083}
+      fournisseurs: ${MS_FOURNISSEURS_URL:http://localhost:8084}
+    llm:
+      # OpenAI : https://api.openai.com · Mistral : https://api.mistral.ai · Ollama : http://localhost:11434/v1
+      base-url: ${LLM_BASE_URL:}
+      api-key: ${LLM_API_KEY:}
+      model: ${LLM_MODEL:}
+      completions-path: ${LLM_COMPLETIONS_PATH:/v1/chat/completions}
+      temperature: 0.2
+      max-tokens: 800
+      delai-connexion: PT3S
+      delai-reponse: ${LLM_TIMEOUT:PT30S}
+      tentatives: 1
+      prompt-systeme: classpath:prompts/systeme-v1.st
+    liens:
+      MATERIEL: /materiels/{id}
+      BESOIN: /besoins/{id}
+      CHANTIER: /chantiers?chantier={id}
+      CONTRAT: /contrats/{id}
+      APPEL_OFFRE: /appels-offres/{id}
+      FOURNISSEUR: /fournisseurs/{id}
+      MAINTENANCE: /materiels/{parentId}
+    # Sections restreintes (alignées sur les rôles des endpoints appelés, contrat §2 à §5) ;
+    # les sections absentes sont ouvertes à tous les rôles internes.
+    acces:
+      BESOINS: [CHEF_CHANTIER, RESPONSABLE_MATERIEL, RESPONSABLE_ACHATS, DIRECTION_GENERALE]
+      CONTRATS: [RESPONSABLE_ACHATS, RESPONSABLE_MATERIEL, DAF, DIRECTION_GENERALE]
+      APPELS_OFFRES: [RESPONSABLE_ACHATS, RESPONSABLE_MATERIEL, DAF, DIRECTION_GENERALE]
+      FOURNISSEURS: [RESPONSABLE_ACHATS, RESPONSABLE_MATERIEL, DAF, DIRECTION_GENERALE]
+    # Montants des contrats, attributions et coûts de maintenance.
+    roles-montants: [RESPONSABLE_ACHATS, RESPONSABLE_MATERIEL, DAF, DIRECTION_GENERALE]
+    suggestions:
+      CHEF_CHANTIER:
+        - Quels engins sont affectés à mon chantier ?
+        - Où en est mon dernier besoin ?
+        - Y a-t-il une pelle hydraulique disponible ?
+        - Comment signaler une panne ?
+      RESPONSABLE_MATERIEL:
+        - Quels besoins sont en attente de validation ?
+        - Quels compacteurs sont disponibles ?
+        - Historique de maintenance de la niveleuse
+        - Planning des affectations du mois
+      RESPONSABLE_ACHATS:
+        - Quels sont les meilleurs fournisseurs de matériel roulant ?
+        - Où en sont les contrats en cours ?
+        - Quels appels d'offres sont publiés ?
+        - Comment se déroule une attribution ?
+      DAF:
+        - Quels contrats attendent la validation de l'engagement ?
+        - Comment fonctionne l'engagement financier ?
+      DIRECTION_GENERALE:
+        - Où en sont les contrats en cours ?
+        - Quels fournisseurs ont le meilleur score ?
+        - Où se trouvent les engins du parc ?
+      ADMIN_SYSTEME:
+        - Où se trouvent les engins du parc ?
+      DEFAUT:
+        - Où se trouve la pelle hydraulique ?
+        - Quels matériels sont disponibles ?
+        - Comment exprimer un besoin ?
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: PT30S
+        permitted-number-of-calls-in-half-open-state: 2
+    instances:
+      suivi: { base-config: default }
+      besoins: { base-config: default }
+      achats: { base-config: default }
+      fournisseurs: { base-config: default }
+      llm: { base-config: default, wait-duration-in-open-state: PT60S }
+  retry:
+    configs:
+      default:
+        max-attempts: 2
+        wait-duration: PT0.2S
+        retry-exceptions: [sn.cse.chatbot.application.exception.SourceIndisponibleException]
+    instances:
+      suivi: { base-config: default }
+      besoins: { base-config: default }
+      achats: { base-config: default }
+      fournisseurs: { base-config: default }
+
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics
+  endpoints.web.exposure.include: health,info,metrics,prometheus
+  endpoint.health.probes.enabled: true
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+    oauth:
+      client-id: cse-swagger
+      use-pkce-with-authorization-code-grant: true
+logging:
+  pattern:
+    level: "%5p [${spring.application.name},%X{correlationId:-}]"

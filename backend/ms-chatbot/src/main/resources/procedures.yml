@@ -1,0 +1,55 @@
+# Base de procédures internes de l'assistant (cse.chatbot.procedures), modifiable sans recompiler.
+cse:
+  chatbot:
+    procedures:
+      - sujet: Exprimer un besoin en matériel
+        mots-cles: [exprimer un besoin, expression de besoin, nouveau besoin, demander un materiel, faire une demande, besoin]
+        etapes:
+          - "Menu « Besoins » → « Nouveau besoin » (chef de chantier pour ses chantiers, ou Responsable Matériel)."
+          - "Renseignez le chantier, la désignation, la catégorie, la quantité, la durée d'utilisation et la date de besoin."
+          - "Choisissez la priorité : une justification est obligatoire pour une priorité urgente ou critique (règle R08)."
+          - "Le besoin est soumis « en attente » ; il reste modifiable tant qu'il n'est pas traité (R05)."
+          - "Vous êtes notifié de la décision du Responsable Matériel (validation, rejet, affectation ou achat)."
+      - sujet: Validation d'un besoin
+        mots-cles: [valider un besoin, validation, qui valide, rejeter un besoin, orientation]
+        etapes:
+          - "Seul le Responsable Matériel valide ou rejette un besoin (règle R01) ; un rejet exige un motif."
+          - "À la validation, la disponibilité du parc est vérifiée automatiquement."
+          - "Si le parc suffit, le matériel est affecté directement au chantier (statut « affecté direct »)."
+          - "Sinon, le besoin est transmis aux achats (statut « en achat ») pour un appel d'offres."
+      - sujet: Confirmer la réception d'un matériel
+        mots-cles: [reception, confirmer la reception, receptionner, livraison sur chantier, arrivee du materiel]
+        etapes:
+          - "Ouvrez la fiche du matériel affecté à votre chantier (lien de la notification « Matériel affecté »)."
+          - "Cliquez sur « Confirmer la réception » et ajoutez vos observations éventuelles."
+          - "L'affectation passe « en cours » ; la réception alimente aussi l'évaluation du fournisseur (R07)."
+      - sujet: Signaler une panne
+        mots-cles: [signaler une panne, panne, declarer une panne, materiel en panne, incident]
+        etapes:
+          - "Ouvrez la fiche du matériel puis « Signaler une panne » (chef de chantier ou Responsable Matériel)."
+          - "Indiquez la gravité (mineure, majeure, bloquante) et décrivez le problème."
+          - "Le Responsable Matériel est alerté immédiatement (alerte critique pour une panne bloquante)."
+          - "Il planifie une maintenance corrective ; le matériel passe « en maintenance » au démarrage de l'intervention."
+      - sujet: Appel d'offres et attribution
+        mots-cles: [appel d'offres, appel d offres, lancer un appel, attribution, attribuer, consultation, offres]
+        etapes:
+          - "Le Responsable des Achats publie l'appel d'offres à partir d'un besoin « en achat », en invitant des fournisseurs actifs (R14)."
+          - "Les offres restent anonymes jusqu'à la clôture (R10) ; elles sont ensuite évaluées selon des critères pondérés."
+          - "Le RA propose une attribution, co-validée par le Responsable Matériel ; au-delà du seuil de délégation, la Direction Générale approuve (R11)."
+          - "Toutes approbations obtenues : le marché est attribué et un contrat brouillon est généré (R03)."
+      - sujet: Engagement financier et livraison
+        mots-cles: [engagement, valider un engagement, daf, demarrer la livraison, livraison, signer un contrat, contrat]
+        etapes:
+          - "Le RA complète les clauses puis signe le contrat : un engagement financier est demandé au DAF."
+          - "La livraison ne peut démarrer qu'après validation de l'engagement par le DAF (R06)."
+          - "À la livraison, le RA confirme le bon de livraison : le matériel est créé dans le parc et affecté au chantier."
+      - sujet: Réforme d'un matériel
+        mots-cles: [reforme, reformer, retirer du parc, mise au rebut]
+        etapes:
+          - "Le Responsable Matériel demande la réforme depuis la fiche du matériel, avec un motif."
+          - "La Direction Générale approuve ou refuse la demande (R13) ; une réforme est définitive."
+      - sujet: Blacklistage d'un fournisseur
+        mots-cles: [blacklister, blacklistage, liste noire, exclure un fournisseur, suspendre un fournisseur]
+        etapes:
+          - "Le Responsable des Achats peut suspendre un fournisseur ou demander son blacklistage avec un motif."
+          - "Le blacklistage n'est effectif qu'après décision de la Direction Générale (procédure en deux étapes, R09)."

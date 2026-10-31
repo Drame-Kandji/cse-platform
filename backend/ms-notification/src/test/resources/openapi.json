@@ -1,0 +1,423 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "ms-notification — Notifications",
+    "description" : "Notifications in-app (liste, compteur, lecture, flux temps réel SSE) et e-mails, produites à partir des événements métier Kafka selon des règles de routage configurables.",
+    "contact" : {
+      "name" : "Équipe plateforme CSE",
+      "email" : "support@cse.sn"
+    },
+    "version" : "2.0.0"
+  },
+  "security" : [ {
+    "bearerAuth" : [ ]
+  }, {
+    "keycloak" : [ ]
+  } ],
+  "tags" : [ {
+    "name" : "Notifications",
+    "description" : "Notifications in-app de l'utilisateur et flux temps réel"
+  } ],
+  "paths" : {
+    "/api/notifications/tout-lire" : {
+      "post" : {
+        "tags" : [ "Notifications" ],
+        "summary" : "Tout marquer comme lu",
+        "operationId" : "toutLire",
+        "responses" : {
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "204" : {
+            "description" : "Toutes les notifications sont lues"
+          }
+        }
+      }
+    },
+    "/api/notifications/{id}/lue" : {
+      "patch" : {
+        "tags" : [ "Notifications" ],
+        "summary" : "Marquer une notification comme lue",
+        "description" : "Idempotent.",
+        "operationId" : "marquerLue",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Notification marquée comme lue",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Notification"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Notification inexistante ou destinée à un autre utilisateur",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/notifications" : {
+      "get" : {
+        "tags" : [ "Notifications" ],
+        "summary" : "Lister mes notifications",
+        "description" : "Notifications adressées à l'utilisateur ou à l'un de ses rôles, les plus récentes d'abord.",
+        "operationId" : "lister",
+        "parameters" : [ {
+          "name" : "lue",
+          "in" : "query",
+          "description" : "Filtre sur l'état de lecture",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          },
+          "example" : false
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "example" : 0
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "description" : "Taille (max 50)",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "example" : 20
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Page de notifications",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseNotification"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Paramètre invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/notifications/stream" : {
+      "get" : {
+        "tags" : [ "Notifications" ],
+        "summary" : "Flux temps réel des notifications (SSE)",
+        "description" : "Événements « notification » (données = Notification) et « ping » périodique. Le client utilise fetch en streaming avec l'en-tête Authorization (jamais de jeton dans l'URL).",
+        "operationId" : "stream",
+        "responses" : {
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Flux text/event-stream ouvert",
+            "content" : {
+              "text/event-stream" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SseEmitter"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/notifications/non-lues/count" : {
+      "get" : {
+        "tags" : [ "Notifications" ],
+        "summary" : "Compter mes notifications non lues",
+        "operationId" : "compter",
+        "responses" : {
+          "401" : {
+            "description" : "Non authentifié",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Compteur",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CompteurNonLues"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "ProblemDetail" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "format" : "uri"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "detail" : {
+            "type" : "string"
+          },
+          "instance" : {
+            "type" : "string",
+            "format" : "uri"
+          },
+          "properties" : {
+            "type" : "object",
+            "additionalProperties" : { }
+          }
+        }
+      },
+      "Notification" : {
+        "type" : "object",
+        "description" : "Notification destinée à l'utilisateur ou à un de ses rôles",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "6f1c2a8e-4b1d-4c7e-9a51-0d3f2b7c9e10"
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "Type de l'événement d'origine",
+            "example" : "BESOIN_VALIDE"
+          },
+          "titre" : {
+            "type" : "string",
+            "example" : "Besoin BES-2026-0012 validé"
+          },
+          "message" : {
+            "type" : "string",
+            "example" : "Votre besoin BES-2026-0012 (2 × Pelle hydraulique) a été validé par Ibrahima Fall."
+          },
+          "niveau" : {
+            "type" : "string",
+            "enum" : [ "INFO", "SUCCES", "ALERTE", "CRITIQUE" ],
+            "example" : "SUCCES"
+          },
+          "lien" : {
+            "type" : "string",
+            "description" : "Route du frontend",
+            "example" : "/besoins/3c9d8f6e-1a2b-4c3d-8e9f-0a1b2c3d4e5f"
+          },
+          "entite" : {
+            "type" : "string",
+            "example" : "BESOIN"
+          },
+          "entiteId" : {
+            "type" : "string",
+            "example" : "3c9d8f6e-1a2b-4c3d-8e9f-0a1b2c3d4e5f"
+          },
+          "lue" : {
+            "type" : "boolean",
+            "example" : false
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "example" : "2026-10-30T09:15:00Z"
+          }
+        }
+      },
+      "PageResponseNotification" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Notification"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "SseEmitter" : {
+        "type" : "object",
+        "properties" : {
+          "timeout" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "CompteurNonLues" : {
+        "type" : "object",
+        "properties" : {
+          "count" : {
+            "type" : "integer",
+            "format" : "int64",
+            "example" : 3
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "bearerAuth" : {
+        "type" : "http",
+        "description" : "Jeton d'accès Keycloak (realm cse)",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
+      },
+      "keycloak" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "http://localhost:8180/realms/cse/protocol/openid-connect/auth",
+            "tokenUrl" : "http://localhost:8180/realms/cse/protocol/openid-connect/token"
+          }
+        }
+      }
+    }
+  }
+}

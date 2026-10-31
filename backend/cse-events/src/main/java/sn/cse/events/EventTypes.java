@@ -35,6 +35,8 @@ public final class EventTypes {
   public static final String FOURNISSEUR_REACTIVE = "FOURNISSEUR_REACTIVE";
   public static final String FOURNISSEUR_BLACKLISTAGE_DEMANDE = "FOURNISSEUR_BLACKLISTAGE_DEMANDE";
   public static final String FOURNISSEUR_BLACKLISTE = "FOURNISSEUR_BLACKLISTE";
+  public static final String FOURNISSEUR_BLACKLISTAGE_REFUSE = "FOURNISSEUR_BLACKLISTAGE_REFUSE";
+  public static final String FOURNISSEUR_MODIFIE = "FOURNISSEUR_MODIFIE";
   public static final String SCORE_RECALCULE = "SCORE_RECALCULE";
   public static final String DOCUMENT_EXPIRE = "DOCUMENT_EXPIRE";
   public static final String LITIGE_OUVERT = "LITIGE_OUVERT";
