@@ -65,15 +65,16 @@ function renderDetail(c: Contrat, roles: Parameters<typeof testUser>[0] = ['RESP
 }
 
 describe('ContratDetailPage', () => {
-  it('desactive "Demarrer la livraison" tant que l engagement DAF n est pas valide (R06)', async () => {
+  it('apres la signature fournisseur, attend la validation DAF sans action de livraison (R06)', async () => {
     renderDetail(contrat({ statut: 'SIGNE' }))
-    const button = await screen.findByRole('button', { name: /Démarrer la livraison/ })
-    expect(button).toBeDisabled()
-    expect(screen.getByText(/Engagement DAF requis \(R06\)/)).toBeInTheDocument()
-    expect(button).toHaveAttribute('aria-describedby', 'contrat-demarrer-aide')
+    expect(
+      await screen.findByText("En attente de la validation de l'engagement par le DAF"),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Démarrer la livraison/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Autres actions' })).not.toBeInTheDocument()
   })
 
-  it('demarre la livraison lorsque l engagement est valide', async () => {
+  it('engagement valide : attend l expedition, demarrage hors portail dans le menu', async () => {
     const user = userEvent.setup()
     let called = false
     const c = contrat({
@@ -87,10 +88,10 @@ describe('ContratDetailPage', () => {
       }),
     )
     renderDetail(c)
-    const button = await screen.findByRole('button', { name: /Démarrer la livraison/ })
-    expect(button).toBeEnabled()
-    expect(screen.queryByText(/Engagement DAF requis/)).not.toBeInTheDocument()
-    await user.click(button)
+    expect(await screen.findByText("En attente de l'expédition par le fournisseur")).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Démarrer la livraison/ })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Autres actions' }))
+    await user.click(await screen.findByRole('menuitem', { name: 'Démarrer la livraison (hors portail)' }))
     const dialog = await screen.findByRole('alertdialog')
     await user.click(within(dialog).getByRole('button', { name: 'Démarrer la livraison' }))
     await waitFor(() => {
@@ -99,16 +100,67 @@ describe('ContratDetailPage', () => {
     expect(await screen.findByRole('button', { name: /Confirmer la livraison/ })).toBeInTheDocument()
   })
 
+  it('le RA signe et envoie le brouillon au fournisseur pour contresignature', async () => {
+    const user = userEvent.setup()
+    const c = contrat({ statut: 'BROUILLON', engagement: null })
+    server.use(
+      http.post(`${API}/contrats/${c.id}/signer`, () =>
+        HttpResponse.json({
+          ...c,
+          statut: 'EN_ATTENTE_SIGNATURE',
+          signatureCse: { parNom: 'Fatou Sarr', date: '2026-11-01T10:00:00Z' },
+        }),
+      ),
+    )
+    renderDetail(c)
+    await user.click(await screen.findByRole('button', { name: 'Signer et envoyer au fournisseur' }))
+    const dialog = await screen.findByRole('alertdialog')
+    expect(within(dialog).getByText(/Le fournisseur doit contresigner/)).toBeInTheDocument()
+    await user.click(within(dialog).getByRole('button', { name: 'Signer et envoyer au fournisseur' }))
+    expect(await screen.findByText('En attente de la signature du fournisseur')).toBeInTheDocument()
+    expect(screen.getByText('Fatou Sarr')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Signer et envoyer/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Modifier les clauses/ })).not.toBeInTheDocument()
+  })
+
+  it('affiche le motif de refus du fournisseur sur le brouillon', async () => {
+    renderDetail(
+      contrat({ statut: 'BROUILLON', engagement: null, motifRefusSignature: 'Délai de 30 jours intenable' }),
+    )
+    expect(await screen.findByText(/Signature refusée par le fournisseur/)).toBeInTheDocument()
+    expect(screen.getByText('Délai de 30 jours intenable')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Signer et envoyer au fournisseur' })).toBeEnabled()
+  })
+
+  it('affiche les deux signatures et l expedition declaree par le fournisseur', async () => {
+    renderDetail(
+      contrat({
+        statut: 'EN_LIVRAISON',
+        signatureCse: { parNom: 'Fatou Sarr', date: '2026-10-01T09:00:00Z' },
+        signatureFournisseur: { parNom: 'Moussa Kane', date: '2026-10-02T11:00:00Z' },
+        dateExpedition: '2026-10-20',
+        commentaireExpedition: 'Transport par porte-char',
+      }),
+    )
+    expect(await screen.findByText('Signature CSE')).toBeInTheDocument()
+    expect(screen.getByText('Fatou Sarr')).toBeInTheDocument()
+    expect(screen.getByText('Signature fournisseur')).toBeInTheDocument()
+    expect(screen.getByText('Moussa Kane')).toBeInTheDocument()
+    expect(screen.getByText('Expédition')).toBeInTheDocument()
+    expect(screen.getByText('Transport par porte-char')).toBeInTheDocument()
+    expect(screen.queryByText(/En attente de/)).not.toBeInTheDocument()
+  })
+
   it('reste en lecture seule pour le DAF', async () => {
     renderDetail(contrat({ statut: 'BROUILLON' }), ['DAF'])
     expect(await screen.findByText(/Consultation seule/)).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /Signer le contrat/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Signer et envoyer/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Modifier les clauses/ })).not.toBeInTheDocument()
   })
 
   it('propose signature et edition des clauses au RA sur un brouillon', async () => {
     renderDetail(contrat({ statut: 'BROUILLON', engagement: null }))
-    expect(await screen.findByRole('button', { name: /Signer le contrat/ })).toBeEnabled()
+    expect(await screen.findByRole('button', { name: 'Signer et envoyer au fournisseur' })).toBeEnabled()
     expect(screen.getByRole('button', { name: /Modifier les clauses/ })).toBeInTheDocument()
   })
 
@@ -126,7 +178,7 @@ describe('ContratDetailPage', () => {
     )
     expect(await screen.findByText(/Engagement refusé par le DAF/)).toBeInTheDocument()
     expect(screen.getByText('Budget chantier insuffisant')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Signer le contrat/ })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Signer et envoyer au fournisseur' })).toBeEnabled()
     expect(screen.queryByRole('button', { name: /Démarrer la livraison/ })).not.toBeInTheDocument()
   })
 

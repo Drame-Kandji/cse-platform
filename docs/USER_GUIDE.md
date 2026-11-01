@@ -1,13 +1,15 @@
-# Guide utilisateur : Plateforme interne CSE
+# Guide utilisateur : Plateforme interne CSE et portail fournisseur
 
 Ce guide explique, rôle par rôle, comment réaliser les tâches courantes dans l'application web interne de
-la Compagnie Sahélienne d'Entreprises. Les captures proviennent de l'environnement de démonstration
-(données fictives).
+la Compagnie Sahélienne d'Entreprises, puis dans le **portail fournisseur** (§8). Les captures proviennent
+de l'environnement de démonstration (données fictives). Un script de démonstration complet, pas à pas, est
+disponible dans [DEMO.md](DEMO.md).
 
 **Sommaire** : [1. Prise en main](#1-prise-en-main) · [2. Chef de chantier](#2-chef-de-chantier) ·
 [3. Responsable Matériel](#3-responsable-matériel) · [4. Responsable Achats](#4-responsable-des-achats) ·
 [5. DAF](#5-direction-administrative-et-financière-daf) · [6. Direction Générale](#6-direction-générale) ·
-[7. Administrateur](#7-administrateur-système) · [8. Questions fréquentes](#8-questions-fréquentes)
+[7. Administrateur](#7-administrateur-système) · [8. Portail fournisseur](#8-portail-fournisseur) ·
+[9. Questions fréquentes](#9-questions-fréquentes)
 
 ---
 
@@ -245,7 +247,8 @@ est encore affecté.
 La fiche d'un AO présente une synthèse (budget, quantité, chantier, date limite, offres reçues, besoin
 d'origine) ; **Détails** déplie la description, les critères pondérés et les fournisseurs invités.
 
-- Onglet **Offres** : **Saisir une offre reçue** (offres arrivées hors portail) avant la date limite (R02).
+- Onglet **Offres** : les offres déposées par les fournisseurs sur le portail (§8.3) y arrivent d'elles-mêmes ;
+  **Saisir une offre reçue** sert aux offres arrivées hors portail, avant la date limite (R02).
   Tant que l'AO est publié, les offres sont **anonymisées** (codes `OFR-…`, règle R10).
 - **Clôturer** l'AO (automatique à la date limite) : l'anonymat est levé.
 - Onglets **Évaluation** et **Comparatif** (visibles une fois l'AO clôturé) : saisir les notes ; prix et
@@ -266,17 +269,33 @@ toutes les approbations obtenues, l'AO passe **Attribué** et un **contrat broui
 
 ### 4.4 Exécuter le contrat
 
-Menu **Contrats & commandes** → fiche du contrat ; la frise montre Brouillon → Signé → Engagement validé →
-En livraison → Livré → Clôturé, l'action suivante est le bouton principal en haut de la fiche, et les onglets
-**Clauses contractuelles**, **Jalons** et **Engagement budgétaire** détaillent le contrat.
+Menu **Contrats & commandes** → fiche du contrat ; la frise montre Brouillon → En attente du fournisseur →
+Signé → Engagement validé → En livraison → Livré → Clôturé. L'action suivante est le bouton principal en haut
+de la fiche ; une ligne bleue indique ce que l'on attend des autres acteurs. La synthèse affiche les deux
+signatures (CSE et fournisseur, nom et date) et, le cas échéant, l'expédition déclarée par le fournisseur.
+Les onglets **Clauses contractuelles**, **Jalons** et **Engagement budgétaire** détaillent le contrat.
 
-1. Compléter les **clauses** (garantie, pénalité de retard, jalons) puis **Signer le contrat** : une demande
-   d'engagement part à la DAF.
-2. Après validation de l'engagement (R06) : **Démarrer la livraison**.
-3. À réception : **Confirmer la livraison** (date réelle, numéro de bon de livraison). Les matériels sont
+1. Compléter les **clauses** (garantie, pénalité de retard, jalons) puis **Signer et envoyer au
+   fournisseur** : la confirmation rappelle que le fournisseur doit **contresigner** sur son portail. Le
+   contrat passe **En attente du fournisseur** (« En attente de la signature du fournisseur ») ; les clauses
+   ne sont plus modifiables.
+2. Le fournisseur signe sur le portail : le contrat passe **Signé** et la demande d'engagement part à la DAF
+   (« En attente de la validation de l'engagement par le DAF »). S'il **refuse**, le contrat revient en
+   **Brouillon** et la fiche affiche son **motif de refus** en rouge : renégocier, ajuster les clauses puis
+   signer à nouveau.
+3. Après validation de l'engagement (R06), la fiche indique « En attente de l'expédition par le
+   fournisseur » : c'est le fournisseur qui **déclare l'expédition** sur le portail (date et commentaire
+   visibles dans la synthèse), le contrat passe **En livraison**. Si le fournisseur ne peut pas utiliser le
+   portail, le menu **…** propose **Démarrer la livraison (hors portail)**.
+4. À réception : **Confirmer la livraison** (date réelle, numéro de bon de livraison). Les matériels sont
    créés automatiquement dans le parc et affectés au chantier du besoin ; le chef confirme ensuite la
-   réception. Les retards sont signalés et les pénalités calculées.
-4. **Clôturer le contrat** une fois toutes les factures payées.
+   réception. Les retards sont signalés et les pénalités calculées. Le fournisseur peut alors déposer sa
+   facture sur le portail.
+5. **Clôturer le contrat** une fois toutes les factures payées.
+
+![Contrat en attente de la signature du fournisseur](images/ra-contrat-attente-fournisseur.png)
+
+![Démarrage de la livraison hors portail, menu « … »](images/ra-contrat-hors-portail.png)
 
 ![Contrats](images/ra-contrats.png)
 
@@ -292,7 +311,15 @@ bancaires (visibles du RA et de la DAF seulement), documents administratifs (ale
 évaluations, catalogue, litiges ; actions **Valider l'inscription**, **Suspendre**, réactiver,
 **Demander le blacklistage** (fournisseur suspendu uniquement, décision de la Direction Générale, R09).
 
+**Inscriptions du portail** : un fournisseur qui s'inscrit lui-même sur le portail (§8.1) apparaît dans le
+sous-onglet **À valider** (statut « En attente de validation »). Ouvrir sa fiche, vérifier NINEA, contact et
+spécialités, puis **Valider l'inscription** : le fournisseur devient **Actif** (invitable aux appels
+d'offres), un compte portail est créé avec son e-mail comme identifiant, et un message confirme qu'**un
+e-mail lui a été envoyé pour définir son mot de passe** (visible dans MailHog en démonstration).
+
 ![Fournisseurs](images/ra-fournisseurs.png)
+
+![Inscriptions à valider](images/ra-fournisseurs-a-valider.png)
 
 ![Fiche fournisseur](images/ra-fournisseur-detail.png)
 
@@ -302,9 +329,9 @@ bancaires (visibles du RA et de la DAF seulement), documents administratifs (ale
 
 ### 4.6 Factures
 
-Le RA est autorisé par l'API à enregistrer et consulter les factures, mais l'écran **Finance** n'est ouvert
-qu'à la DAF et à la Direction Générale : dans l'interface actuelle, la saisie des factures reçues se fait donc
-par la DAF (§5.2). Limite connue de la version 2.0.0.
+Les fournisseurs déposent eux-mêmes leurs factures sur le portail (§8.5), une fois le contrat livré. Le RA
+est autorisé par l'API à enregistrer et consulter les factures, mais l'écran **Finance** n'est ouvert qu'à la
+DAF et à la Direction Générale : une facture reçue hors portail est donc saisie par la DAF (§5.2).
 
 ---
 
@@ -312,15 +339,18 @@ par la DAF (§5.2). Limite connue de la version 2.0.0.
 
 ### 5.1 Valider les engagements (R06)
 
-Menu **Finance** → onglet **Engagements à valider** : pour chaque contrat signé, **Valider** ou **Refuser**
-(commentaire). Sans engagement validé, la livraison ne peut pas démarrer.
+Menu **Finance** → onglet **Engagements à valider** : pour chaque contrat **signé par la CSE et par le
+fournisseur**, **Valider** ou **Refuser** (commentaire). L'engagement n'apparaît qu'après la contresignature
+du fournisseur. Sans engagement validé, le fournisseur ne peut pas déclarer l'expédition.
 
 ![Finance](images/daf-finance.png)
 
 ### 5.2 Traiter les factures
 
-Onglet **Factures** : **Enregistrer une facture**, puis pour chaque facture **Mandater** (référence du mandat),
-**Payer** ou **Rejeter** (motif). Les factures dont l'échéance est dépassée sont signalées « en retard ».
+Onglet **Factures** : les factures déposées par les fournisseurs sur le portail arrivent au statut **Reçue** ;
+**Enregistrer une facture** sert aux factures reçues hors portail. Pour chaque facture : **Mandater**
+(référence du mandat), **Payer** ou **Rejeter** (motif transmis au fournisseur, visible sur son portail).
+Les factures dont l'échéance est dépassée sont signalées « en retard ».
 
 ### 5.3 Pilotage financier
 
@@ -414,7 +444,86 @@ automatique toutes les 15 secondes.
 
 ---
 
-## 8. Questions fréquentes
+## 8. Portail fournisseur
+
+Le portail (démonstration : http://localhost:5174) est l'application des **fournisseurs** de la CSE : ils y
+déposent leurs offres, signent leurs contrats, déclarent leurs expéditions et déposent leurs factures. Il ne
+montre au fournisseur que ses propres données. Compte de démonstration : `fournisseur@cse.sn` (Moussa Kane,
+Sahel Engins SA), mot de passe `Cse@2026`.
+
+### 8.1 S'inscrire
+
+Page d'accueil du portail → **Inscrire mon entreprise** : raison sociale, NINEA, RCCM, adresse, ville, pays,
+téléphone, **e-mail** (il deviendra l'identifiant de connexion), nom et fonction du contact, spécialités.
+**Envoyer la demande** : la demande part au Responsable des Achats (statut « En attente de validation »).
+Après validation (§4.5), le fournisseur reçoit un e-mail « définir votre mot de passe », puis se connecte
+avec **Se connecter**. Un NINEA ou un e-mail déjà connu est refusé.
+
+![Inscription](images/portail-inscription.png)
+
+### 8.2 Accueil
+
+Après connexion : quatre chiffres (offres en cours, contrats actifs, montant facturé, montant payé) et la
+liste **À faire**, triée par urgence : contrat à signer, expédition à déclarer, facture rejetée, facture à
+déposer, appel d'offres où déposer une offre (avec sa date limite). Un clic ouvre l'écran concerné.
+
+![Accueil du portail](images/portail-accueil.png)
+
+### 8.3 Appels d'offres
+
+Menu **Appels d'offres** : onglet **Ouverts** (consultations ouvertes ou sur invitation, badge « Invité »,
+compte à rebours jusqu'à la date limite) et onglet **Mes offres** (offres déposées, puis résultat « Retenue »
+ou « Non retenue » une fois l'appel d'offres attribué). Dans la fiche : description, date limite, catégorie,
+quantité, critères d'évaluation pondérés, puis **Déposer une offre** : montant proposé (FCFA), délai de
+livraison (jours), garantie (mois), description. Une seule offre par appel d'offres, avant la date limite
+(R02). Les offres restent anonymes pour la CSE jusqu'à la clôture (R10).
+
+![Dépôt d'une offre](images/portail-ao-offre.png)
+
+### 8.4 Contrats
+
+Menu **Contrats** : onglets **À signer**, **En cours**, **Livrés**, **Clôturés**, **Tous**. La fiche montre
+l'avancement (Signature, Engagement, Expédition, Livraison, Facturation, Clôture), les jalons, les clauses et
+les montants.
+
+- **Signer** : bouton **Signer le contrat** (contrat « À signer », déjà signé par la CSE). La confirmation
+  rappelle la quantité, le montant et le délai. Le contrat passe « Signé » et l'engagement est soumis à la DAF.
+- **Refuser** : menu **…** → **Refuser la signature**, avec un **motif obligatoire** (ex. pénalité trop
+  élevée). Le contrat retourne au Responsable des Achats, qui voit le motif et renégocie.
+- **Expédier** : une fois l'engagement validé par la DAF (contrat « À expédier »), **Déclarer l'expédition** :
+  date d'expédition (aujourd'hui par défaut, ni future ni antérieure à la signature) et commentaire.
+- **Jalons** : pendant la livraison, **Marquer atteint** sur chaque jalon (date de réalisation).
+- **Facturer** : sur un contrat livré, **Déposer la facture** ouvre directement le formulaire de facture.
+
+![Contrats](images/portail-contrats.png)
+
+![Contrat à signer](images/portail-contrat-signer.png)
+
+![Déclaration d'expédition](images/portail-contrat-expedier.png)
+
+### 8.5 Factures
+
+Menu **Factures** : compteurs **Toutes**, **Reçues**, **Mandatées**, **Payées**, **Rejetées** ; une facture
+rejetée affiche le motif de la DAF, une facture payée sa date de paiement. **Nouvelle facture** : contrat livré,
+numéro de facture, montant HT, taux de TVA (18 % par défaut), dates d'émission et d'échéance ; la TVA et le
+total TTC sont calculés en direct. Le total ne peut pas dépasser le montant du contrat.
+
+![Factures](images/portail-factures.png)
+
+![Nouvelle facture](images/portail-facture-nouvelle.png)
+
+### 8.6 Mon entreprise
+
+Menu **Mon entreprise** : onglet **Profil** (coordonnées modifiables par **Modifier**, spécialités,
+certifications, banque, et la **performance** vue par la CSE : score sur 100, nombre d'évaluations,
+livraisons à l'heure), onglet **Documents** (documents administratifs et leurs dates d'expiration), onglet
+**Catalogue** (articles, prix unitaires et délais, utilisés par la CSE pour comparer les prix).
+
+![Mon entreprise](images/portail-entreprise.png)
+
+---
+
+## 9. Questions fréquentes
 
 | Question | Réponse |
 |---|---|
@@ -422,7 +531,10 @@ automatique toutes les 15 secondes.
 | « Accès refusé » sur une action | Votre rôle ne permet pas cette opération (ex. un chef ne peut agir que sur ses chantiers). |
 | Je ne peux plus modifier mon besoin | Il a été validé ou rejeté (règle R05). |
 | « Conflit d'affectation » | Le matériel est déjà affecté sur une période qui chevauche celle demandée. |
-| La livraison ne démarre pas | L'engagement du contrat n'est pas encore validé par la DAF (R06). |
+| Le contrat reste « En attente du fournisseur » | Le fournisseur n'a pas encore signé sur son portail ; s'il refuse, le contrat revient en brouillon avec son motif. |
+| L'engagement n'apparaît pas à la DAF | Il est créé à la signature du fournisseur, pas à celle de la CSE. |
+| La livraison ne démarre pas | L'engagement du contrat n'est pas encore validé par la DAF (R06), ou le fournisseur n'a pas encore déclaré l'expédition (secours : menu **…** → **Démarrer la livraison (hors portail)**). |
+| Un fournisseur inscrit ne reçoit pas d'e-mail | Son inscription doit d'abord être validée par le Responsable des Achats (Fournisseurs → À valider). |
 | Un fournisseur n'apparaît pas parmi les invités | Il n'est pas **actif** ou n'a pas la spécialité de l'appel d'offres (R14). |
 | L'assistant répond « mode dégradé » | Le moteur d'IA n'est pas configuré ou indisponible : la réponse est construite à partir des données, sans reformulation. |
 | Mot de passe oublié | Lien « Mot de passe oublié » de la page de connexion, ou demande à l'administrateur. |

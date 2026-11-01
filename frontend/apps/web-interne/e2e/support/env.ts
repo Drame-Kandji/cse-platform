@@ -4,6 +4,8 @@
  */
 export const e2eEnv = {
   baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:5173',
+  /** Portail fournisseur (origine distincte, client Keycloak `cse-portail-fournisseur`). */
+  portailURL: process.env.E2E_PORTAIL_URL ?? 'http://localhost:5174',
   gatewayURL: process.env.E2E_GATEWAY_URL ?? 'http://localhost:8080',
   keycloakURL: process.env.E2E_KEYCLOAK_URL ?? 'http://localhost:8180',
   realm: process.env.E2E_KEYCLOAK_REALM ?? 'cse',
@@ -24,6 +26,17 @@ export const comptes = {
 
 export type RoleE2e = keyof typeof comptes
 
+/** Compte du portail fournisseur : Moussa Kane, fournisseur F1 Sahel Engins SA (contrat §12). */
+export const comptesPortail = {
+  fournisseur: 'fournisseur@cse.sn',
+} as const
+
+export type RolePortail = keyof typeof comptesPortail
+
+/** Tout compte utilisable par le client API de préparation (interne ou portail). */
+export type RoleApi = RoleE2e | RolePortail
+export const comptesApi: Record<RoleApi, string> = { ...comptes, ...comptesPortail }
+
 /** Chantiers du chef de démonstration. */
 export const chantiers = {
   dakar: { id: 'c0000000-0000-0000-0000-000000000001', nom: 'Extension autoroute Dakar-AIBD' },
@@ -37,4 +50,4 @@ export const fournisseurs = {
 } as const
 
 /** Fichier storageState d'un rôle (rempli par la configuration globale). */
-export const storageStateOf = (role: RoleE2e) => `e2e/.auth/${role}.json`
+export const storageStateOf = (role: RoleApi) => `e2e/.auth/${role}.json`

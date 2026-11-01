@@ -52,7 +52,7 @@ export type ActionStatut =
   | { type: 'deciderBlacklistage'; decision: DecisionBlacklistage }
 
 const SUCCES: Record<ActionStatut['type'], string> = {
-  valider: 'Inscription validée',
+  valider: 'Inscription validée : un e-mail a été envoyé au fournisseur pour définir son mot de passe',
   suspendre: 'Fournisseur suspendu',
   reactiver: 'Fournisseur réactivé',
   demanderBlacklistage: 'Demande de blacklistage transmise à la Direction Générale',

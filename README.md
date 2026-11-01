@@ -3,10 +3,10 @@
 Système de management et de suivi des matériels et équipements de la **Compagnie Sahélienne d'Entreprises**
 (BTP, Sénégal) : expression et validation des besoins des chantiers, gestion du parc (affectations,
 maintenance, pannes, réforme), achats (appels d'offres anonymisés, évaluation multicritère, contrats,
-engagements, factures), référentiel fournisseurs, tableaux de bord par profil, assistant IA, notifications
-et journal d'audit.
+engagements, factures), référentiel fournisseurs, **portail fournisseur** (inscription, offres, signature des
+contrats, expédition, factures), tableaux de bord par profil, assistant IA, notifications et journal d'audit.
 
-Projet de Master (MILIA, EPT), encadré par le Pr. Guissé. Version **2.0.0** ([CHANGELOG](CHANGELOG.md)).
+Projet de Master (MILIA, EPT), encadré par le Pr. Guissé. Version **2.1.0** ([CHANGELOG](CHANGELOG.md)). Démonstration guidée pour un jury : [docs/DEMO.md](docs/DEMO.md).
 
 ![Tableau de bord de la Direction Générale](docs/images/dg-dashboard.png)
 
@@ -22,6 +22,9 @@ Projet de Master (MILIA, EPT), encadré par le Pr. Guissé. Version **2.0.0** ([
 | **Finance (DAF)** | **Journal d'audit (Administrateur)** |
 | ![Finance](docs/images/daf-finance.png) | ![Audit](docs/images/admin-audit.png) |
 
+| **Portail fournisseur : accueil** | **Portail fournisseur : contrat à signer** |
+| ![Portail, accueil](docs/images/portail-accueil.png) | ![Portail, contrat](docs/images/portail-contrat-signer.png) |
+
 Sur mobile : ![Mobile](docs/images/mobile-chef-dashboard.png)
 
 Toutes les captures sont commentées dans le [guide utilisateur](docs/USER_GUIDE.md).
@@ -31,8 +34,9 @@ Toutes les captures sont commentées dans le [guide utilisateur](docs/USER_GUIDE
 ```mermaid
 flowchart LR
   U((Utilisateurs CSE)) --> W["web-interne<br/>React 18 · Vite · Tailwind"]
-  W -->|OIDC PKCE| KC[Keycloak 25]
-  W -->|/api + JWT| GW["ms-gateway :8080<br/>Spring Cloud Gateway"]
+  F((Fournisseurs)) --> P["portail-fournisseur<br/>React 18 · Vite"]
+  W & P -->|OIDC PKCE| KC[Keycloak 25]
+  W & P -->|/api + JWT| GW["ms-gateway :8080<br/>Spring Cloud Gateway"]
   GW --> AUTH[ms-auth] & BES[ms-besoins] & ACH[ms-achats] & FOU[ms-fournisseurs] & SUI[ms-suivi]
   GW --> REP[ms-reporting] & BOT[ms-chatbot] & NOT[ms-notification] & AUD[ms-audit]
   BES -->|REST| SUI
@@ -74,7 +78,12 @@ make start    # lance les 10 microservices sur l'hôte (profil dev, données de 
 make front    # http://localhost:5173 (la première fois : pnpm --dir frontend install)
 ```
 
-Ouvrir http://localhost:5173 et se connecter avec un compte ci-dessous. Les services génèrent leur jeu de
+Portail fournisseur, dans un second terminal : `make portail` (ou `scripts/cse.sh portail`), sur
+http://localhost:5174.
+
+Ouvrir http://localhost:5173 et se connecter avec un compte ci-dessous (portail : `fournisseur@cse.sn`).
+Les deux applications partagent la session Keycloak : pour être à la fois agent CSE et fournisseur, utiliser
+deux navigateurs ou une fenêtre privée. Les services génèrent leur jeu de
 démonstration au premier démarrage (chantiers, parc, besoins, fournisseurs, appels d'offres, contrats,
 factures sur 9 mois) ; compter 2 à 3 minutes pour que les tableaux de bord soient complets.
 
@@ -94,7 +103,7 @@ Mot de passe commun : **`Cse@2026`** (realm de développement uniquement).
 | `daf@cse.sn` | Ousmane Ba | DAF (`DAF`) | engagements, factures |
 | `dg@cse.sn` | Aminata Sow | Direction Générale (`DIRECTION_GENERALE`) | lecture seule + arbitrages R09/R11/R13 |
 | `admin@cse.sn` | Cheikh Ndiaye | Administrateur (`ADMIN_SYSTEME`) | utilisateurs, référentiels, audit |
-| `fournisseur@cse.sn` | Moussa Kane | Fournisseur (`FOURNISSEUR`) | API `/api/portail/**` (pas de front) |
+| `fournisseur@cse.sn` | Moussa Kane | Fournisseur (`FOURNISSEUR`) | portail fournisseur, fournisseur F1 Sahel Engins SA |
 
 Jeton pour les appels en ligne de commande : `TOKEN=$(scripts/token.sh dg@cse.sn)`.
 
@@ -103,12 +112,13 @@ Jeton pour les appels en ligne de commande : `TOKEN=$(scripts/token.sh dg@cse.sn
 | Service | URL | Accès |
 |---|---|---|
 | Application web interne | http://localhost:5173 (dev) · https://localhost:8443 (`make up`) | comptes ci-dessus |
+| Portail fournisseur | http://localhost:5174 (`make portail`) · inscription publique : http://localhost:5174/inscription | `fournisseur@cse.sn` |
 | Passerelle d'API | http://localhost:8080/api | Bearer JWT |
 | Swagger UI agrégé | http://localhost:8080/swagger-ui.html | bouton « Authorize » (client `cse-swagger`, PKCE) |
 | Swagger d'un service | http://localhost:808N/swagger-ui.html | idem |
 | État de la plateforme | http://localhost:8080/api/plateforme/etat · écran Administration | rôle interne |
 | Console Keycloak | http://localhost:8180/admin | `KEYCLOAK_ADMIN` / `KEYCLOAK_ADMIN_PASSWORD` de `.env` |
-| MailHog (e-mails envoyés) | http://localhost:8025 | - |
+| MailHog (e-mails envoyés, dont « définir votre mot de passe » des fournisseurs validés) | http://localhost:8025 | - |
 | Kafka | `localhost:9092` (hôte), `kafka:29092` (conteneurs) | `docker exec cse-kafka-1 kafka-topics.sh --bootstrap-server localhost:29092 --list` |
 | PostgreSQL | `localhost:5433`, base `cse` | `ms_<service>` / `CSE_DB_PASSWORD` |
 
@@ -123,10 +133,11 @@ reporting 8086, chatbot 8087, notification 8088, audit 8089.
 | `make build` | compile et installe tous les modules (tests inclus) |
 | `make start` / `make stop` / `make status` | microservices sur l'hôte (journaux dans `logs/`) |
 | `make front` | application web interne en développement |
+| `make portail` | portail fournisseur en développement (port 5174) |
 | `make test` | tests backend |
 | `make verify` | **porte de qualité** : `mvn verify` (Spotless, tests, ArchUnit, OpenAPI, JaCoCo ≥ 80 %) puis typecheck, lint, tests et build du front |
-| `make front-verify` | porte de qualité du front seule |
-| `make e2e` | tests de bout en bout (plateforme démarrée) |
+| `make front-verify` | porte de qualité du front seule (web interne + portail fournisseur) |
+| `make e2e` | tests de bout en bout API et interface, dont le circuit complet avec le portail (plateforme et portail démarrés) |
 | `make up` / `make images` / `make certs` | plateforme conteneurisée, images, certificats de développement |
 | `make backup` / `make restore DUMP=…` | sauvegarde / restauration PostgreSQL |
 | `make perf` | test de charge k6 |
@@ -138,7 +149,7 @@ Réinitialiser les données de démonstration : `scripts/cse.sh reset`.
 
 ```
 backend/             Maven : cse-common (socle), cse-events (contrats d'événements), ms-* (10 services, README chacun)
-frontend/            pnpm : apps/web-interne, apps/portail-fournisseur (hors périmètre), packages/*
+frontend/            pnpm : apps/web-interne, apps/portail-fournisseur, packages/*
 infra/               docker-compose.yml, init PostgreSQL, realm Keycloak, Nginx, sauvegardes
 scripts/             cse.sh, token.sh, smoke.sh, backup-now.sh, restore.sh, gen-certs.sh
 tests/               perf (k6), tests de bout en bout
@@ -149,7 +160,8 @@ docs/                documentation, adr/, http/ (collections de requêtes), imag
 
 | Document | Contenu |
 |---|---|
-| [docs/USER_GUIDE.md](docs/USER_GUIDE.md) | guide utilisateur par rôle, avec captures |
+| [docs/USER_GUIDE.md](docs/USER_GUIDE.md) | guide utilisateur par rôle et portail fournisseur, avec captures |
+| [docs/DEMO.md](docs/DEMO.md) | script de démonstration de bout en bout (15 min), raccourcis sur données préparées |
 | [docs/architecture.md](docs/architecture.md) | C4, microservices, flux, séquences, correspondance UML ↔ code |
 | [docs/API_CONTRACT.md](docs/API_CONTRACT.md) | contrat d'API et d'événements (référence) |
 | [docs/events.md](docs/events.md) | catalogue Kafka, outbox, idempotence, DLT, audit |

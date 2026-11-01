@@ -24,7 +24,11 @@
     "readOnly": "Consultation seule",
     "late": "Livraison en retard",
     "penalties": "Pénalités de retard",
-    "penaltiesHint": "Calculées selon le taux contractuel de {{taux}} % par jour de retard."
+    "penaltiesHint": "Calculées selon le taux contractuel de {{taux}} % par jour de retard.",
+    "attenteFournisseur": "En attente de la signature du fournisseur",
+    "attenteDaf": "En attente de la validation de l'engagement par le DAF",
+    "attenteExpedition": "En attente de l'expédition par le fournisseur",
+    "refusFournisseur": "Signature refusée par le fournisseur : renégociez puis signez à nouveau."
   },
   "fields": {
     "fournisseur": "Fournisseur",
@@ -33,15 +37,17 @@
     "designation": "Désignation",
     "quantite": "Quantité",
     "montant": "Montant",
-    "dateSignature": "Date de signature",
     "delai": "Délai de livraison",
     "datePrevue": "Livraison prévue",
     "dateReelle": "Livraison effective",
-    "bonLivraison": "Bon de livraison"
+    "bonLivraison": "Bon de livraison",
+    "signatureCse": "Signature CSE",
+    "signatureFournisseur": "Signature fournisseur",
+    "expedition": "Expédition"
   },
   "engagement": {
     "title": "Engagement budgétaire",
-    "none": "Créé à la signature du contrat.",
+    "none": "Créé à la signature du fournisseur.",
     "demande": "Demandé le",
     "decision": "Décision le",
     "par": "Par",
@@ -72,18 +78,19 @@
     "marquerDescription": "Date réelle : aujourd'hui."
   },
   "actions": {
-    "signer": "Signer le contrat",
-    "signerTitle": "Signer le contrat {{numero}} ?",
-    "signerDescription": "Un engagement de {{montant}} sera soumis au DAF.",
-    "demarrer": "Démarrer la livraison",
-    "demarrerTitle": "Démarrer la livraison ?",
-    "demarrerDescription": "Le fournisseur sera notifié.",
-    "demarrerBloque": "Engagement DAF requis (R06)",
+    "signer": "Signer et envoyer au fournisseur",
+    "signerTitle": "Signer le contrat {{numero}} et l'envoyer au fournisseur ?",
+    "signerDescription": "Le fournisseur doit contresigner sur son portail. Ensuite, l'engagement de {{montant}} sera soumis au DAF.",
+    "demarrer": "Démarrer la livraison (hors portail)",
+    "demarrerTitle": "Démarrer la livraison hors portail ?",
+    "demarrerDescription": "À utiliser seulement si le fournisseur ne peut pas déclarer l'expédition sur son portail.",
     "confirmer": "Confirmer la livraison",
     "confirmerDescription": "Date de réception et bon de livraison.",
     "observations": "Observations",
     "cloturer": "Clôturer le contrat",
     "cloturerTitle": "Clôturer le contrat {{numero}} ?",
-    "cloturerDescription": "Action définitive."
+    "cloturerDescription": "Action définitive.",
+    "more": "Autres actions",
+    "demarrerConfirm": "Démarrer la livraison"
   }
 }

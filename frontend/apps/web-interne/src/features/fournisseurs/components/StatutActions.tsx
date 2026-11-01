@@ -29,7 +29,7 @@ export function StatutActions({ fournisseur }: { fournisseur: FournisseurDetail 
       {isRa && statut === 'EN_ATTENTE_VALIDATION' && (
         <ConfirmDialog
           title="Valider l'inscription ?"
-          description={raisonSociale}
+          description={`${raisonSociale} : un compte portail sera créé et un e-mail envoyé pour définir le mot de passe.`}
           confirmLabel={t('statut.valider')}
           onConfirm={() => action.mutateAsync({ type: 'valider' }).then(() => undefined)}
           trigger={<Button leftIcon={<CheckCircle2 />}>{t('statut.valider')}</Button>}

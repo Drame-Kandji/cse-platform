@@ -27,6 +27,12 @@ export interface Jalon {
   readonly statut: StatutJalon
 }
 
+/** Signature horodatee (CSE par le RA, puis fournisseur sur le portail). */
+export interface SignatureContrat {
+  readonly parNom: string
+  readonly date: string
+}
+
 /** Contrat / bon de commande (ms-achats). */
 export interface Contrat {
   readonly id: string
@@ -54,6 +60,12 @@ export interface Contrat {
   readonly engagement?: EngagementContrat | null
   readonly jalons: readonly Jalon[]
   readonly penalitesRetard: number
+  readonly signatureCse?: SignatureContrat | null
+  readonly signatureFournisseur?: SignatureContrat | null
+  /** Motif du dernier refus de signature du fournisseur (contrat revenu en BROUILLON). */
+  readonly motifRefusSignature?: string | null
+  readonly dateExpedition?: string | null
+  readonly commentaireExpedition?: string | null
   readonly version: number
 }
 

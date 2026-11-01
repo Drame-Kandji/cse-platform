@@ -52,6 +52,7 @@ describe('referentiel des libelles', () => {
       { value: 'CRITIQUE', label: 'Critique' },
     ])
     expect(labelOf('statutContrat', 'ENGAGEMENT_VALIDE')).toBe('Engagement validé')
+    expect(labelOf('statutContrat', 'EN_ATTENTE_SIGNATURE')).toBe('En attente du fournisseur')
     expect(describeStatus('role', 'DAF').tone).toBe('neutral')
   })
 })

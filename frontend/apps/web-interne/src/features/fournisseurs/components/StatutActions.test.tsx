@@ -1,9 +1,11 @@
-import { screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { toast } from 'sonner'
+import { describe, expect, it, vi } from 'vitest'
 import type { Role } from '@/shared/domain/labels'
 import { renderWithProviders, testUser } from '@/test/render'
 import type { FournisseurDetail } from '../api/types'
-import { fournisseurActif } from '../test/fixtures'
+import { API, fournisseurActif, HttpResponse, mswHttp, setupMsw } from '../test/fixtures'
 import { StatutActions } from './StatutActions'
 
 const demande: FournisseurDetail = {
@@ -11,6 +13,8 @@ const demande: FournisseurDetail = {
   statut: 'SUSPENDU',
   blacklistageDemande: { demandeurNom: 'Fatou Sarr', motif: 'Fraude documentaire', date: '2026-10-01' },
 }
+
+const server = setupMsw()
 
 function renderFor(roles: Role[], fournisseur: FournisseurDetail) {
   return renderWithProviders(<StatutActions fournisseur={fournisseur} />, { user: testUser(roles) })
@@ -52,6 +56,31 @@ describe('StatutActions', () => {
   it('le RA valide une inscription en attente', () => {
     renderFor(['RESPONSABLE_ACHATS'], { ...fournisseurActif, statut: 'EN_ATTENTE_VALIDATION' })
     expect(screen.getByRole('button', { name: "Valider l'inscription" })).toBeInTheDocument()
+  })
+
+  it('le RA valide l inscription et est informe de l e-mail envoye au fournisseur', async () => {
+    const user = userEvent.setup()
+    const success = vi.spyOn(toast, 'success')
+    let called = false
+    const enAttente: FournisseurDetail = { ...fournisseurActif, statut: 'EN_ATTENTE_VALIDATION' }
+    server.use(
+      mswHttp.patch(`${API}/fournisseurs/${enAttente.id}/valider-inscription`, () => {
+        called = true
+        return HttpResponse.json({ ...enAttente, statut: 'ACTIF' })
+      }),
+    )
+    renderFor(['RESPONSABLE_ACHATS'], enAttente)
+    await user.click(screen.getByRole('button', { name: "Valider l'inscription" }))
+    const dialog = await screen.findByRole('alertdialog')
+    expect(within(dialog).getByText(/e-mail envoyé pour définir le mot de passe/)).toBeInTheDocument()
+    await user.click(within(dialog).getByRole('button', { name: "Valider l'inscription" }))
+    await waitFor(() => {
+      expect(called).toBe(true)
+    })
+    await waitFor(() => {
+      expect(success).toHaveBeenCalledWith(expect.stringMatching(/e-mail a été envoyé au fournisseur/))
+    })
+    success.mockRestore()
   })
 
   it('la DG ne peut pas approuver sa propre demande', () => {

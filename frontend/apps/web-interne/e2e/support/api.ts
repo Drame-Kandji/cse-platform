@@ -1,14 +1,14 @@
 import { expect } from '@playwright/test'
-import { comptes, e2eEnv, type RoleE2e } from './env'
+import { comptesApi, e2eEnv, type RoleApi } from './env'
 
 /**
  * Client API de préparation des données (passerelle + jetons Keycloak du client de développement
  * `cse-tests-e2e`, password grant). Sert uniquement aux étapes préparatoires et aux vérifications
  * de cohérence à terme : les décisions métier testées passent par l'interface.
  */
-const jetons = new Map<RoleE2e, { valeur: string; expireLe: number }>()
+const jetons = new Map<RoleApi, { valeur: string; expireLe: number }>()
 
-async function jeton(role: RoleE2e): Promise<string> {
+async function jeton(role: RoleApi): Promise<string> {
   const enCache = jetons.get(role)
   if (enCache && enCache.expireLe > Date.now() + 30_000) return enCache.valeur
   const reponse = await fetch(`${e2eEnv.keycloakURL}/realms/${e2eEnv.realm}/protocol/openid-connect/token`, {
@@ -17,7 +17,7 @@ async function jeton(role: RoleE2e): Promise<string> {
     body: new URLSearchParams({
       client_id: e2eEnv.testClientId,
       grant_type: 'password',
-      username: comptes[role],
+      username: comptesApi[role],
       password: e2eEnv.password,
     }),
   })
@@ -29,7 +29,7 @@ async function jeton(role: RoleE2e): Promise<string> {
 
 /** Appel brut : renvoie le statut et le corps JSON (ou null). */
 export async function appeler(
-  role: RoleE2e,
+  role: RoleApi,
   methode: 'GET' | 'POST' | 'PUT' | 'PATCH',
   chemin: string,
   corps?: unknown,
@@ -48,7 +48,7 @@ export async function appeler(
 
 /** Appel qui doit réussir (2xx), sinon échec explicite avec le ProblemDetail. */
 export async function api<T>(
-  role: RoleE2e,
+  role: RoleApi,
   methode: 'GET' | 'POST' | 'PUT' | 'PATCH',
   chemin: string,
   corps?: unknown,

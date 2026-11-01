@@ -16,7 +16,13 @@ export function contratStepIndex(statut: StatutContrat): number {
   return STATUT_CONTRAT.indexOf(statut)
 }
 
-const AVANT_LIVRAISON: readonly StatutContrat[] = ['BROUILLON', 'SIGNE', 'ENGAGEMENT_VALIDE', 'EN_LIVRAISON']
+const AVANT_LIVRAISON: readonly StatutContrat[] = [
+  'BROUILLON',
+  'EN_ATTENTE_SIGNATURE',
+  'SIGNE',
+  'ENGAGEMENT_VALIDE',
+  'EN_LIVRAISON',
+]
 
 /**
  * Indique si la livraison est en retard : date prevue depassee sans livraison,

@@ -17,10 +17,13 @@ interface AppelOffreDto {
  * Scénario critique 2 (spec §6.2) : cycle complet d'achat, du besoin orienté vers les achats jusqu'à la
  * livraison et à la création des matériels dans ms-suivi. Les étapes préparatoires (besoin, publication
  * de l'AO) passent par l'API ; les décisions (offres, clôture, notes, attribution, co-validation RM,
- * approbation DG au-delà du seuil R11, signature, engagement DAF R06, livraison) passent par l'interface.
+ * approbation DG au-delà du seuil R11, signature CSE, engagement DAF R06, livraison) passent par l'interface.
+ * La contresignature du fournisseur (portail) passe par l'API du portail avec le compte du fournisseur F1 ;
+ * le parcours complet dans le portail est couvert par le scénario 4. Ici, la livraison est démarrée par le RA
+ * « hors portail » (secours), sans expédition déclarée par le fournisseur.
  */
 test.describe('Scénario 2 · Cycle complet d’achat', () => {
-  test('AO au-delà du seuil de délégation : offres, attribution co-validée par le RM et approuvée par la DG, engagement DAF, livraison', async ({
+  test('AO au-delà du seuil de délégation : offres, attribution co-validée par le RM et approuvée par la DG, contresignature du fournisseur, engagement DAF, livraison hors portail', async ({
     en,
   }) => {
     test.setTimeout(300_000)
@@ -120,8 +123,20 @@ test.describe('Scénario 2 · Cycle complet d’achat', () => {
     })
     await expect(ra.getByRole('main')).toContainText('Livraison franco sur le chantier Dakar-AIBD')
     await contrat.signer()
-    // R06 : la livraison ne peut démarrer qu'après l'engagement DAF.
-    await expect(ra.getByRole('button', { name: 'Démarrer la livraison' })).toBeDisabled()
+    // Aucun engagement tant que le fournisseur n'a pas contresigné.
+    await expect(ra.getByRole('button', { name: 'Autres actions' })).toHaveCount(0)
+
+    // 5 bis. Fournisseur F1 : contresignature (API du portail) -> SIGNE + engagement EN_ATTENTE (R06).
+    const signe = await api<{ statut: string; signatureFournisseur: { parNom: string } | null }>(
+      'fournisseur',
+      'POST',
+      `/api/portail/contrats/${contratId}/signer`,
+    )
+    expect(signe.statut).toBe('SIGNE')
+    expect(signe.signatureFournisseur?.parNom).toBeTruthy()
+    await contrat.ouvrir(contratId)
+    await contrat.attendreStatut('Signé')
+    await expect(ra.getByRole('main')).toContainText("En attente de la validation de l'engagement par le DAF")
 
     // 6. DAF : validation de l'engagement budgétaire.
     const daf = await en('daf')
@@ -131,10 +146,11 @@ test.describe('Scénario 2 · Cycle complet d’achat', () => {
     await finance.validerEngagement(numeroContrat, 'Crédits disponibles (E2E)')
     await expect(finance.ligneEngagement(numeroContrat)).toHaveCount(0)
 
-    // 7. RA : démarrage puis confirmation de la livraison.
+    // 7. RA : démarrage hors portail (secours) puis confirmation de la livraison.
     await contrat.ouvrir(contratId)
     await contrat.attendreStatut('Engagement validé')
-    await contrat.demarrerLivraison()
+    await expect(ra.getByRole('main')).toContainText("En attente de l'expédition par le fournisseur")
+    await contrat.demarrerLivraisonHorsPortail()
     await contrat.confirmerLivraison(`BL-E2E-${sfx}`)
     await expect(ra.getByRole('main')).toContainText(`BL-E2E-${sfx}`)
 

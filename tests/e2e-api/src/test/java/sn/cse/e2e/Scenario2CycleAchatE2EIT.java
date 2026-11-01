@@ -38,8 +38,8 @@ class Scenario2CycleAchatE2EIT {
 
   @Test
   @DisplayName(
-      "AO au-delà du seuil (R11) : offres, clôture, notes, attribution RM + DG, contrat, engagement"
-          + " DAF (R06), livraison, matériels créés")
+      "AO au-delà du seuil (R11) : offres, clôture, notes, attribution RM + DG, double signature,"
+          + " engagement DAF (R06), livraison hors portail, matériels créés")
   void cycleComplet_auDelaDuSeuil_jusquALaLivraison() {
     String sfx = suffixe();
     String designation = "Niveleuse E2E API " + sfx;
@@ -164,7 +164,8 @@ class Scenario2CycleAchatE2EIT {
     String contratId = attribue.getString("contratId");
     assertThat(contratId).isNotNull();
 
-    // Contrat BROUILLON (R03) -> clauses -> signature -> engagement EN_ATTENTE.
+    // Contrat BROUILLON (R03) -> clauses -> signature CSE puis fournisseur -> engagement
+    // EN_ATTENTE.
     JsonPath contrat = attendu(en(Compte.RA).get("/api/contrats/{id}", contratId), 200).jsonPath();
     assertThat(contrat.getString("statut")).isEqualTo("BROUILLON");
     assertThat(contrat.getString("fournisseurId")).isEqualTo(FOURNISSEUR_SAHEL);
@@ -186,10 +187,27 @@ class Scenario2CycleAchatE2EIT {
                     List.of(Map.of("libelle", "Expédition", "datePrevue", jour(10)))))
             .put("/api/contrats/{id}/clauses", contratId),
         200);
-    JsonPath signe =
+    // Signature CSE -> EN_ATTENTE_SIGNATURE, sans engagement tant que le fournisseur n'a pas signé.
+    JsonPath signeCse =
         attendu(en(Compte.RA).post("/api/contrats/{id}/signer", contratId), 200).jsonPath();
+    assertThat(signeCse.getString("statut")).isEqualTo("EN_ATTENTE_SIGNATURE");
+    assertThat(signeCse.getString("signatureCse.parNom")).isNotBlank();
+    assertThat(signeCse.getString("engagement")).isNull();
+    // Le RA ne peut pas signer à la place du fournisseur (rôle FOURNISSEUR requis sur le portail).
+    problemDetail(
+        en(Compte.RA).post("/api/portail/contrats/{id}/signer", contratId), 403, "ACCES_REFUSE");
+
+    // Contresignature du fournisseur F1 sur le portail -> SIGNE + engagement EN_ATTENTE (DAF).
+    JsonPath signe =
+        attendu(en(Compte.FOURNISSEUR).post("/api/portail/contrats/{id}/signer", contratId), 200)
+            .jsonPath();
     assertThat(signe.getString("statut")).isEqualTo("SIGNE");
+    assertThat(signe.getString("signatureFournisseur.parNom")).isNotBlank();
     assertThat(signe.getString("engagement.statut")).isEqualTo("EN_ATTENTE");
+    problemDetail(
+        en(Compte.FOURNISSEUR).post("/api/portail/contrats/{id}/signer", contratId),
+        409,
+        "TRANSITION_INTERDITE");
 
     // R06 : livraison impossible avant l'engagement DAF.
     problemDetail(

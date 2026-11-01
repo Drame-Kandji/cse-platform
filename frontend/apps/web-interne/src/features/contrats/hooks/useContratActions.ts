@@ -24,12 +24,15 @@ export function useEnregistrerClauses(id: string) {
   })
 }
 
-/** Signature du contrat (cree l'engagement EN_ATTENTE cote DAF). */
+/**
+ * Signature CSE : le contrat passe EN_ATTENTE_SIGNATURE ; l'engagement DAF n'est cree qu'a la
+ * contresignature du fournisseur sur le portail.
+ */
 export function useSignerContrat(id: string) {
   const onSuccess = useOnContrat()
   return useMutation({
     mutationFn: () => contratsApi.signer(id),
-    meta: { successMessage: 'Contrat signé : engagement transmis au DAF' },
+    meta: { successMessage: 'Contrat signé et envoyé au fournisseur pour contresignature' },
     onSuccess,
   })
 }
@@ -39,7 +42,7 @@ export const MESSAGE_ENGAGEMENT_NON_VALIDE =
   "L'engagement budgétaire n'est pas encore validé par le DAF (R06) : la livraison ne peut pas démarrer."
 
 /**
- * Demarrage de la livraison (exige un engagement valide, R06).
+ * Demarrage de la livraison hors portail (secours ; exige un engagement valide, R06).
  * Sur 422 `ENGAGEMENT_NON_VALIDE`, affiche un message explicite et recharge le contrat.
  */
 export function useDemarrerLivraison(id: string) {

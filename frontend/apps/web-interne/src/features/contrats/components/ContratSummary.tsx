@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { to } from '@/app/routes'
 import { labelOf } from '@/shared/domain/labels'
-import { EMPTY_VALUE, formatDate, formatMoney, formatNumber } from '@/shared/lib/format'
+import { EMPTY_VALUE, formatDate, formatDateTime, formatMoney, formatNumber } from '@/shared/lib/format'
 import { Card, CardContent, StatusBadge } from '@/shared/ui'
-import type { Contrat } from '../api/types'
+import type { Contrat, SignatureContrat } from '../api/types'
 import { livraisonEnRetard } from './contrat-domain'
 
 function Item({ label, children }: { label: string; children: ReactNode }) {
@@ -19,13 +19,35 @@ function Item({ label, children }: { label: string; children: ReactNode }) {
 
 const linkClass = 'text-primary-emphasis underline-offset-4 hover:underline'
 
-/** Faits essentiels du contrat (grille compacte) + alertes reelles (retard, refus DAF). */
+function Signature({ signature }: { signature: SignatureContrat | null | undefined }) {
+  if (!signature) return <>{EMPTY_VALUE}</>
+  return (
+    <>
+      {signature.parNom}
+      <span className="block text-xs text-muted-foreground tabular-nums">{formatDateTime(signature.date)}</span>
+    </>
+  )
+}
+
+/** Etape d'attente affichee en ligne calme (bleu) selon le statut du contrat. */
+const ATTENTE: Partial<Record<Contrat['statut'], 'attenteFournisseur' | 'attenteDaf' | 'attenteExpedition'>> = {
+  EN_ATTENTE_SIGNATURE: 'attenteFournisseur',
+  SIGNE: 'attenteDaf',
+  ENGAGEMENT_VALIDE: 'attenteExpedition',
+}
+
+/**
+ * Faits essentiels du contrat (grille compacte, signatures, expedition), etape d'attente en cours
+ * et alertes reelles (retard, refus du fournisseur ou du DAF).
+ */
 export function ContratSummary({ contrat }: { contrat: Contrat }) {
   const { t } = useTranslation('contrats')
   const late = livraisonEnRetard(contrat)
   const taux = contrat.clauses.penaliteRetardPctParJour
   const engagement = contrat.engagement
   const refuse = contrat.statut === 'BROUILLON' && engagement?.statut === 'REFUSEE'
+  const refusFournisseur = contrat.statut === 'BROUILLON' ? contrat.motifRefusSignature : null
+  const attente = ATTENTE[contrat.statut]
   return (
     <Card>
       <CardContent className="grid gap-4">
@@ -46,6 +68,17 @@ export function ContratSummary({ contrat }: { contrat: Contrat }) {
                 <span className="font-medium tabular-nums">{formatMoney(contrat.penalitesRetard)}</span>
               </p>
             )}
+          </div>
+        )}
+        {attente && (
+          <p role="status" className="text-sm font-medium text-primary-emphasis">
+            {t(`detail.${attente}`)}
+          </p>
+        )}
+        {refusFournisseur && (
+          <div role="status" className="grid gap-0.5 text-sm">
+            <p className="font-medium text-danger-emphasis">{t('detail.refusFournisseur')}</p>
+            <p className="text-muted-foreground">{refusFournisseur}</p>
           </div>
         )}
         {refuse && (
@@ -78,7 +111,12 @@ export function ContratSummary({ contrat }: { contrat: Contrat }) {
               EMPTY_VALUE
             )}
           </Item>
-          <Item label={t('fields.dateSignature')}>{formatDate(contrat.dateSignature)}</Item>
+          <Item label={t('fields.signatureCse')}>
+            <Signature signature={contrat.signatureCse} />
+          </Item>
+          <Item label={t('fields.signatureFournisseur')}>
+            <Signature signature={contrat.signatureFournisseur} />
+          </Item>
           <Item label={t('fields.datePrevue')}>
             <span className={late ? 'text-danger-emphasis' : undefined}>
               {formatDate(contrat.dateLivraisonPrevue)}
@@ -89,6 +127,14 @@ export function ContratSummary({ contrat }: { contrat: Contrat }) {
           </Item>
           <Item label={t('fields.dateReelle')}>{formatDate(contrat.dateLivraisonReelle)}</Item>
           <Item label={t('fields.bonLivraison')}>{contrat.numeroBonLivraison ?? EMPTY_VALUE}</Item>
+          {contrat.dateExpedition && (
+            <Item label={t('fields.expedition')}>
+              <span className="tabular-nums">{formatDate(contrat.dateExpedition)}</span>
+              {contrat.commentaireExpedition && (
+                <span className="block text-xs text-muted-foreground">{contrat.commentaireExpedition}</span>
+              )}
+            </Item>
+          )}
         </dl>
       </CardContent>
     </Card>

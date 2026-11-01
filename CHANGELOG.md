@@ -2,6 +2,39 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) ; versions sémantiques.
 
+## [2.1.0] - 2026-11-01 : Portail fournisseur
+
+Le fournisseur devient acteur du circuit d'achat : il s'inscrit, dépose ses offres, signe ses contrats,
+déclare ses expéditions et dépose ses factures sur un portail dédié.
+
+### Ajouté
+- **Portail fournisseur** (`apps/portail-fournisseur`, http://localhost:5174, client Keycloak
+  `cse-portail-fournisseur`) : inscription publique, accueil avec liste « À faire », appels d'offres et dépôt
+  d'offre, contrats (signature, refus motivé, expédition, jalons), factures, fiche entreprise et catalogue ;
+  cibles `make portail` et `scripts/cse.sh portail`.
+- **ms-achats** : signature en deux temps (RA puis fournisseur, statut `EN_ATTENTE_SIGNATURE`), refus motivé
+  (`motifRefusSignature`), expédition (`dateExpedition`, `commentaireExpedition`) et jalons déclarés par le
+  fournisseur, routes `/api/portail/contrats`, données de démonstration du fournisseur F1 à chaque étape.
+- **ms-fournisseurs** et **ms-auth** : inscription publique `POST /api/portail/inscription` ; à la validation
+  par le RA, création du compte Keycloak `FOURNISSEUR` et e-mail de définition du mot de passe (MailHog).
+- **ms-gateway** : inscription sans jeton limitée par adresse IP ; **ms-reporting** et **ms-notification** :
+  nouveau statut et règles de notification (signature, refus, expédition).
+- **web-interne** : statut « En attente du fournisseur » (libellés, filtre, frise du contrat) ; fiche contrat
+  avec les deux signatures, l'étape attendue (signature du fournisseur, engagement DAF, expédition), le motif
+  de refus du fournisseur et l'expédition déclarée ; message de validation d'inscription indiquant l'envoi de
+  l'e-mail au fournisseur.
+- **Tests de bout en bout** : scénario Playwright 4 « Circuit complet avec le fournisseur » qui pilote les deux
+  applications dans le navigateur ; test RestAssured du portail (cloisonnement 404, inscription 201 puis 409).
+- **Documentation** : [docs/DEMO.md](docs/DEMO.md) (script de démonstration pour un jury), section « Portail
+  fournisseur » du guide utilisateur et captures `docs/images/portail-*`.
+
+### Modifié
+- **web-interne** : l'action de signature devient « Signer et envoyer au fournisseur » ; l'engagement DAF naît
+  de la contresignature du fournisseur ; « Démarrer la livraison » passe dans le menu « … » sous le nom
+  « Démarrer la livraison (hors portail) », le cas nominal étant l'expédition déclarée par le fournisseur.
+- Scénario 2 (Playwright et RestAssured) : contresignature du fournisseur avant l'engagement DAF, livraison
+  démarrée hors portail.
+
 ## [2.0.0] - 2026-10-31 : Refonte complète
 
 Reconstruction de la plateforme après audit de la v1 (voir [ADR-0003](docs/adr/0003-contrat-api-v2.md)). Rupture de compatibilité : nouveau contrat d'API, nouveaux schémas de base, nouveau realm.

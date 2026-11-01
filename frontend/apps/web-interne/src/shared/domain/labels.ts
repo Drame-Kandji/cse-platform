@@ -79,6 +79,7 @@ export type StatutFournisseur = (typeof STATUT_FOURNISSEUR)[number]
 
 export const STATUT_CONTRAT = [
   'BROUILLON',
+  'EN_ATTENTE_SIGNATURE',
   'SIGNE',
   'ENGAGEMENT_VALIDE',
   'EN_LIVRAISON',
@@ -253,6 +254,7 @@ export const STATUS_MAPS = {
   } satisfies DescriptorMap<StatutFournisseur>,
   statutContrat: {
     BROUILLON: { label: 'Brouillon', tone: 'neutral' },
+    EN_ATTENTE_SIGNATURE: { label: 'En attente du fournisseur', tone: 'primary' },
     SIGNE: { label: 'Signé', tone: 'neutral' },
     ENGAGEMENT_VALIDE: { label: 'Engagement validé', tone: 'primary' },
     EN_LIVRAISON: { label: 'En livraison', tone: 'primary' },
