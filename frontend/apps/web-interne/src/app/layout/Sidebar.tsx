@@ -6,7 +6,7 @@ import { cn } from '@/shared/lib/cn'
 import { IconButton } from '@/shared/ui/button'
 import { Sheet, SheetContent } from '@/shared/ui/sheet'
 import { paths } from '../routes'
-import { Logo } from './Logo'
+import { Logo } from '@/shared/ui/logo'
 import { useShell } from './shell-context'
 import { SidebarNav } from './SidebarNav'
 

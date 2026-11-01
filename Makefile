@@ -1,5 +1,5 @@
 # Plateforme CSE : commandes usuelles. `make verify` est la porte de qualité (backend + frontend).
-.PHONY: help build test verify up infra start stop status down front front-verify logs clean certs backup restore perf images e2e e2e-api e2e-ui
+.PHONY: help build test verify up infra start stop status down front portail front-verify logs clean certs backup restore perf images e2e e2e-api e2e-ui
 
 MVN := mvn -f backend/pom.xml
 PNPM := pnpm --dir frontend
@@ -22,11 +22,15 @@ verify: ## Porte de qualité complète : format, tests, couverture JaCoCo, puis 
 	$(MVN) verify
 	$(MAKE) front-verify
 
-front-verify: ## Typecheck, lint, tests et build du frontend
-	$(PNPM) --filter @cse/web-interne typecheck
-	$(PNPM) --filter @cse/web-interne lint
-	$(PNPM) --filter @cse/web-interne test
-	$(PNPM) --filter @cse/web-interne build
+FRONT_APPS := @cse/web-interne @cse/portail-fournisseur
+
+front-verify: ## Typecheck, lint, tests et build du frontend (web interne + portail fournisseur), gardes charte
+	@for app in $(FRONT_APPS); do \
+	  $(PNPM) --filter $$app typecheck && $(PNPM) --filter $$app lint && \
+	  $(PNPM) --filter $$app test && $(PNPM) --filter $$app build || exit 1; \
+	done
+	node frontend/scripts/check-no-emoji.mjs
+	node frontend/scripts/check-palette.mjs
 
 infra: ## Démarre l'infrastructure Docker (PostgreSQL, Kafka, Keycloak, Redis, MailHog)
 	scripts/cse.sh infra
@@ -42,6 +46,9 @@ status: ## État des microservices
 
 front: ## Lance l'application web interne sur http://localhost:5173
 	scripts/cse.sh front
+
+portail: ## Lance le portail fournisseur sur http://localhost:5174
+	scripts/cse.sh portail
 
 up: certs ## Plateforme complète conteneurisée (images construites)
 	$(COMPOSE) --profile apps up -d --build
@@ -78,4 +85,4 @@ logs: ## Journaux de l'infrastructure Docker
 
 clean: ## Nettoie les artefacts de build
 	$(MVN) -q clean
-	rm -rf frontend/apps/web-interne/dist
+	rm -rf frontend/apps/web-interne/dist frontend/apps/portail-fournisseur/dist

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ThemeToggle } from '../layout/ThemeToggle'
-import { LogoMark } from '../layout/Logo'
+import { ThemeToggle } from '@/shared/theme/ThemeToggle'
+import { LogoMark } from '@/shared/ui/logo'
 
 /** Mise en page des ecrans de connexion : fond clair, marque discrete, contenu centre. */
 export function LoginLayout({ children, wide = false }: { children: ReactNode; wide?: boolean }) {

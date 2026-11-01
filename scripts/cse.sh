@@ -5,6 +5,7 @@
 #   scripts/cse.sh stop       arrête les microservices
 #   scripts/cse.sh status     état des microservices (sonde /actuator/health)
 #   scripts/cse.sh front      lance l'application web interne (Vite, port 5173)
+#   scripts/cse.sh portail    lance le portail fournisseur (Vite, port 5174)
 #   scripts/cse.sh down       arrête microservices + infrastructure
 #   scripts/cse.sh reset      DÉVELOPPEMENT : efface les données métier (schémas + topics Kafka) puis redémarre ;
 #                             les DevDataSeeder recréent un jeu de démonstration cohérent (comptes Keycloak conservés)
@@ -81,6 +82,7 @@ reset() {
 }
 
 front() { cd "$RACINE/frontend" && pnpm --filter @cse/web-interne dev; }
+portail() { cd "$RACINE/frontend" && pnpm --filter @cse/portail-fournisseur dev; }
 
 case "${1:-}" in
   infra) infra ;;
@@ -88,7 +90,8 @@ case "${1:-}" in
   stop) stop ;;
   status) status ;;
   front) front ;;
+  portail) portail ;;
   down) stop; "${COMPOSE[@]}" stop ;;
   reset) reset "$@" ;;
-  *) sed -n '2,11p' "$0"; exit 1 ;;
+  *) sed -n '2,12p' "$0"; exit 1 ;;
 esac

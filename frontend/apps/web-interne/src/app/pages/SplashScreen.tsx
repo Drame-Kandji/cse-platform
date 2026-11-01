@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Spinner } from '@/shared/ui/skeleton'
-import { LogoMark } from '../layout/Logo'
+import { LogoMark } from '@/shared/ui/logo'
 
 /** Ecran d'attente pendant la verification de session. */
 export function SplashScreen() {

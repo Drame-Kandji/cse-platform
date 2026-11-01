@@ -23,13 +23,18 @@ export function shouldRetry(failureCount: number, error: unknown): boolean {
   return failureCount < 2
 }
 
+export interface QueryClientOptions {
+  /** Message des toasts d'erreur (defaut : `getErrorMessage`) ; le portail fournisseur y mappe ses codes. */
+  readonly errorMessage?: (error: unknown) => string
+}
+
 /** Cree le QueryClient de l'application avec les regles globales CSE. */
-export function createQueryClient(): QueryClient {
+export function createQueryClient({ errorMessage = getErrorMessage }: QueryClientOptions = {}): QueryClient {
   return new QueryClient({
     queryCache: new QueryCache({
       onError: (error, query) => {
         if (query.meta?.toastOnBackgroundError && query.state.data !== undefined) {
-          toast.error(getErrorMessage(error))
+          toast.error(errorMessage(error))
         }
       },
     }),
@@ -40,7 +45,7 @@ export function createQueryClient(): QueryClient {
       },
       onError: (error, _variables, _context, mutation) => {
         if (mutation.meta?.silentError) return
-        toast.error(getErrorMessage(error))
+        toast.error(errorMessage(error))
       },
     }),
     defaultOptions: {

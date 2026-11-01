@@ -5,7 +5,7 @@ import { IconButton } from '@/shared/ui/button'
 import { Breadcrumbs } from './Breadcrumbs'
 import { NotificationBell } from './NotificationBell'
 import { useShell } from './shell-context'
-import { ThemeToggle } from './ThemeToggle'
+import { ThemeToggle } from '@/shared/theme/ThemeToggle'
 import { UserMenu } from './UserMenu'
 
 /** Barre superieure : menu mobile, fil d'Ariane, recherche, notifications, theme, utilisateur. */

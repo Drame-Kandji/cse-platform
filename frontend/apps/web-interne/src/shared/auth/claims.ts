@@ -15,6 +15,7 @@ const claimsSchema = z
       .partial()
       .optional(),
     chantier_ids: z.union([z.array(z.string()), z.string()]).optional(),
+    fournisseur_id: z.string().optional(),
   })
   .passthrough()
 
@@ -43,6 +44,8 @@ export function userFromClaims(claims: unknown): AuthUser {
     email: c.email,
     roles: (c.realm_access?.roles ?? []).filter(isRole),
     chantierIds,
+    fournisseurId: c.fournisseur_id,
+    realmRoles: c.realm_access?.roles ?? [],
   }
 }
 

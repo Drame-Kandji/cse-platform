@@ -12,6 +12,10 @@ export interface AuthUser {
   readonly roles: readonly Role[]
   /** Chantiers rattaches (claim `chantier_ids`, vide si absent). */
   readonly chantierIds: readonly string[]
+  /** Fournisseur rattache (claim `fournisseur_id`, portail fournisseur). */
+  readonly fournisseurId?: string
+  /** Tous les roles du royaume, y compris ceux hors `Role` (ex. FOURNISSEUR pour le portail). */
+  readonly realmRoles?: readonly string[]
 }
 
 export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated' | 'error'

@@ -1,0 +1,256 @@
+{
+  "app": {
+    "name": "CSE Fournisseurs"
+  },
+  "nav": {
+    "label": "Navigation principale",
+    "accueil": "Accueil",
+    "appelsOffres": "Appels d'offres",
+    "contrats": "Contrats",
+    "factures": "Factures",
+    "entreprise": "Mon entreprise"
+  },
+  "shell": {
+    "skip": "Aller au contenu",
+    "openMenu": "Ouvrir le menu",
+    "userMenu": "Menu utilisateur",
+    "logout": "Se déconnecter"
+  },
+  "auth": {
+    "title": "Portail fournisseur",
+    "login": "Se connecter",
+    "noAccount": "Pas encore de compte ?",
+    "register": "Inscrire mon entreprise",
+    "loading": "Vérification de la session…",
+    "errorTitle": "Connexion impossible",
+    "errorDescription": "Le service d'authentification ne répond pas. Réessayez dans un instant.",
+    "retry": "Réessayer",
+    "reservedTitle": "Accès réservé aux fournisseurs",
+    "reservedDescription": "Ce portail est destiné aux fournisseurs de la CSE. Le personnel CSE utilise la plateforme interne."
+  },
+  "notFound": {
+    "title": "Page introuvable",
+    "description": "Cette page n'existe pas ou a été déplacée.",
+    "home": "Retour à l'accueil"
+  },
+  "accueil": {
+    "hello": "Bonjour, {{nom}}",
+    "todo": "À faire",
+    "nothing": "Rien à faire pour le moment",
+    "kpis": {
+      "offres": "Offres en cours",
+      "contrats": "Contrats actifs",
+      "facture": "Montant facturé",
+      "paye": "Montant payé",
+      "ttc": "TTC"
+    }
+  },
+  "ao": {
+    "ouverts": "Ouverts",
+    "mesOffres": "Mes offres",
+    "invite": "Invité",
+    "deposee": "Offre déposée",
+    "deposer": "Déposer une offre",
+    "quantite": "Qté {{n}}",
+    "quantiteLabel": "Quantité",
+    "delaiJours": "{{n}} j",
+    "garantieMois": "{{n}} mois",
+    "procedure": "Procédure",
+    "chantier": "Chantier",
+    "publie": "Publié le",
+    "criteres": "Critères d'évaluation",
+    "description": "Description",
+    "specifications": "Spécifications",
+    "monOffre": "Mon offre",
+    "introuvable": "Appel d'offres introuvable ou clôturé",
+    "emptyOuverts": "Aucun appel d'offres ouvert",
+    "emptyOffres": "Aucune offre déposée",
+    "columns": {
+      "appel": "Appel d'offres",
+      "categorie": "Catégorie",
+      "dateLimite": "Date limite",
+      "montant": "Montant",
+      "depot": "Déposée le",
+      "resultat": "Résultat"
+    },
+    "dialog": {
+      "title": "Déposer une offre",
+      "montant": "Montant proposé",
+      "delai": "Délai de livraison (jours)",
+      "garantie": "Garantie (mois)",
+      "description": "Description",
+      "submit": "Déposer l'offre",
+      "conflit": "Vous avez déjà déposé une offre pour cet appel d'offres."
+    }
+  },
+  "contrats": {
+    "empty": "Aucun contrat",
+    "introuvable": "Contrat introuvable",
+    "progression": "Avancement du contrat",
+    "refuseMotif": "Signature refusée : {{motif}}",
+    "jalons": "Jalons de livraison",
+    "jalonPrevu": "Prévu le {{date}}",
+    "jalonAtteintLe": "Atteint le {{date}}",
+    "marquerAtteint": "Marquer atteint",
+    "facturer": "Déposer la facture",
+    "plus": "Autres actions",
+    "onglets": {
+      "A_SIGNER": "À signer",
+      "EN_COURS": "En cours",
+      "LIVRES": "Livrés",
+      "CLOTURES": "Clôturés",
+      "TOUS": "Tous"
+    },
+    "columns": {
+      "contrat": "Contrat",
+      "montant": "Montant",
+      "livraison": "Livraison prévue",
+      "statut": "Statut"
+    },
+    "infos": {
+      "designation": "Désignation",
+      "delai": "Délai de livraison",
+      "signe": "Signé le",
+      "expedie": "Expédié le",
+      "livre": "Livré le",
+      "bl": "Bon de livraison",
+      "penalites": "Pénalités de retard"
+    },
+    "clauses": {
+      "title": "Clauses",
+      "garantie": "Garantie",
+      "penalite": "Pénalité de retard",
+      "parJour": "{{pct}} % par jour",
+      "livraison": "Conditions de livraison",
+      "maintenance": "Conditions de maintenance"
+    },
+    "signer": {
+      "action": "Signer le contrat",
+      "title": "Signer le contrat {{numero}} ?",
+      "description": "Vous vous engagez à livrer {{quantite}} × {{designation}} pour {{montant}}, sous {{delai}} jours.",
+      "confirm": "Signer"
+    },
+    "refuser": {
+      "title": "Refuser la signature",
+      "motif": "Motif du refus",
+      "confirm": "Refuser"
+    },
+    "expedier": {
+      "title": "Déclarer l'expédition",
+      "date": "Date d'expédition",
+      "commentaire": "Commentaire",
+      "confirm": "Déclarer"
+    },
+    "jalon": {
+      "title": "Jalon atteint",
+      "date": "Date de réalisation"
+    }
+  },
+  "factures": {
+    "nouvelle": "Nouvelle facture",
+    "toutes": "Toutes",
+    "empty": "Aucune facture",
+    "emptyStatut": "Aucune facture {{statut}}",
+    "echeance": "Échéance {{date}}",
+    "payeeLe": "Le {{date}}",
+    "onglets": {
+      "RECUE": "Reçues",
+      "MANDATEE": "Mandatées",
+      "PAYEE": "Payées",
+      "REJETEE": "Rejetées"
+    },
+    "columns": {
+      "facture": "Facture",
+      "ttc": "Montant TTC",
+      "dates": "Émission",
+      "statut": "Statut"
+    },
+    "dialog": {
+      "title": "Nouvelle facture",
+      "contrat": "Contrat livré",
+      "aucunContrat": "Aucun contrat livré à facturer",
+      "numero": "Numéro de facture",
+      "ht": "Montant HT",
+      "tva": "TVA",
+      "montantTva": "TVA ({{taux}} %)",
+      "ttc": "Total TTC",
+      "emission": "Date d'émission",
+      "echeance": "Date d'échéance",
+      "submit": "Déposer la facture"
+    }
+  },
+  "entreprise": {
+    "ninea": "NINEA {{ninea}}",
+    "edit": "Modifier les coordonnées",
+    "modifier": "Modifier",
+    "coordonnees": "Coordonnées",
+    "contact": "Contact",
+    "performance": "Performance",
+    "evaluations": "Évaluations",
+    "ponctualite": "Livraisons à l'heure",
+    "inscription": "Inscrit le",
+    "noDocuments": "Aucun document enregistré",
+    "expire": "Expiré",
+    "expireLe": "Expire le {{date}}",
+    "sansExpiration": "Sans expiration",
+    "certificationsHint": "Une certification par ligne",
+    "tabs": {
+      "profil": "Profil",
+      "documents": "Documents",
+      "catalogue": "Catalogue"
+    },
+    "fields": {
+      "raisonSociale": "Raison sociale",
+      "ninea": "NINEA",
+      "rccm": "RCCM",
+      "adresse": "Adresse",
+      "ville": "Ville",
+      "pays": "Pays",
+      "telephone": "Téléphone",
+      "email": "E-mail",
+      "contactNom": "Nom du contact",
+      "contactFonction": "Fonction",
+      "specialites": "Spécialités",
+      "certifications": "Certifications",
+      "banque": "Banque",
+      "iban": "IBAN"
+    }
+  },
+  "catalogue": {
+    "ajouter": "Ajouter une ligne",
+    "modifier": "Modifier la ligne",
+    "empty": "Catalogue vide",
+    "unite": "Unité",
+    "par": "par {{unite}}",
+    "columns": {
+      "reference": "Référence",
+      "designation": "Désignation",
+      "categorie": "Catégorie",
+      "prix": "Prix unitaire",
+      "delai": "Délai (jours)",
+      "delaiCourt": "Délai",
+      "maj": "Mis à jour"
+    }
+  },
+  "inscription": {
+    "title": "Inscrire mon entreprise",
+    "submit": "Envoyer la demande",
+    "already": "Déjà inscrit ?",
+    "successTitle": "Demande envoyée",
+    "successText": "Votre demande est en attente de validation par le service achats. Vous recevrez un e-mail pour définir votre mot de passe.",
+    "backToLogin": "Retour à la connexion",
+    "fields": {
+      "raisonSociale": "Raison sociale",
+      "ninea": "NINEA",
+      "rccm": "RCCM",
+      "adresse": "Adresse",
+      "ville": "Ville",
+      "pays": "Pays",
+      "telephone": "Téléphone",
+      "email": "E-mail",
+      "contactNom": "Nom du contact",
+      "contactFonction": "Fonction",
+      "specialites": "Spécialités"
+    }
+  }
+}

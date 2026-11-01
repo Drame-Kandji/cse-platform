@@ -83,7 +83,18 @@ describe('claims', () => {
       email: 'f.sarr@cse.sn',
       roles: ['RESPONSABLE_MATERIEL'],
       chantierIds: ['ch-1'],
+      realmRoles: ['offline_access', 'RESPONSABLE_MATERIEL', 'uma_authorization'],
     })
+  })
+  it('expose le fournisseur rattache et les roles hors plateforme interne', () => {
+    const user = userFromClaims({
+      sub: 'f',
+      realm_access: { roles: ['FOURNISSEUR'] },
+      fournisseur_id: 'f0000000-0000-0000-0000-000000000001',
+    })
+    expect(user.roles).toEqual([])
+    expect(user.realmRoles).toEqual(['FOURNISSEUR'])
+    expect(user.fournisseurId).toBe('f0000000-0000-0000-0000-000000000001')
   })
   it('tolere l absence de roles et de chantiers', () => {
     expect(userFromClaims({ sub: 'x' })).toMatchObject({ name: 'x', roles: [], chantierIds: [] })
