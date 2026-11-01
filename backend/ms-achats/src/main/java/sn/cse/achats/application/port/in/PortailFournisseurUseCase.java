@@ -23,6 +23,13 @@ public interface PortailFournisseurUseCase {
   /**
    * @param fournisseur utilisateur du portail
    * @param appelOffreId appel d'offres
+   * @return l'appel d'offres s'il est visible sur le portail (même filtre que la liste, sinon 404)
+   */
+  AppelOffre appelOffre(CurrentUser fournisseur, UUID appelOffreId);
+
+  /**
+   * @param fournisseur utilisateur du portail
+   * @param appelOffreId appel d'offres
    * @param montant montant proposé
    * @param delaiLivraisonJours délai
    * @param garantieMois garantie
@@ -59,7 +66,7 @@ public interface PortailFournisseurUseCase {
   PageResponse<Facture> factures(CurrentUser fournisseur, PageQuery page);
 
   /**
-   * @param commande facture déposée (contrat du fournisseur uniquement)
+   * @param commande facture déposée (contrat LIVRE ou CLOTURE du fournisseur uniquement)
    * @return la facture RECUE
    */
   Facture deposerFacture(RecevoirFactureCommand commande);

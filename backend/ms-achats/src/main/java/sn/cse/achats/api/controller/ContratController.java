@@ -35,6 +35,7 @@ import sn.cse.achats.domain.model.ClausesContrat;
 import sn.cse.achats.domain.model.NouveauJalon;
 import sn.cse.achats.domain.model.StatutContrat;
 import sn.cse.common.pagination.PageResponse;
+import sn.cse.common.security.CurrentUserProvider;
 import sn.cse.common.web.PageableFactory;
 
 /** Contrats d'achat : génération, clauses, signature, livraison, jalons et clôture. */
@@ -47,6 +48,7 @@ public class ContratController {
   private final GenererContratUseCase generation;
   private final ExecuterContratUseCase execution;
   private final PageableFactory pages;
+  private final CurrentUserProvider utilisateurs;
   private final AchatsApiMapper mapper;
 
   /**
@@ -54,6 +56,7 @@ public class ContratController {
    * @param generation génération
    * @param execution exécution
    * @param pages pagination
+   * @param utilisateurs utilisateur courant (signataire)
    * @param mapper conversion DTO
    */
   public ContratController(
@@ -61,11 +64,13 @@ public class ContratController {
       GenererContratUseCase generation,
       ExecuterContratUseCase execution,
       PageableFactory pages,
+      CurrentUserProvider utilisateurs,
       AchatsApiMapper mapper) {
     this.consultation = consultation;
     this.generation = generation;
     this.execution = execution;
     this.pages = pages;
+    this.utilisateurs = utilisateurs;
     this.mapper = mapper;
   }
 
@@ -168,17 +173,20 @@ public class ContratController {
 
   /**
    * @param id contrat
-   * @return le contrat signé
+   * @return le contrat en attente de la signature du fournisseur
    */
   @PostMapping("/{id}/signer")
   @PreAuthorize(Acces.ACHATS)
   @Operation(
-      summary = "Signer le contrat",
+      summary = "Signer le contrat pour le CSE",
       description =
-          "BROUILLON → SIGNE : échéance de livraison fixée, engagement EN_ATTENTE demandé à la DAF.")
-  @ApiResponse(responseCode = "200", description = "Contrat signé")
+          "Signature du CSE : BROUILLON → EN_ATTENTE_SIGNATURE, clauses figées, publie"
+              + " CONTRAT_ENVOYE_SIGNATURE. Le contrat passe SIGNE (engagement EN_ATTENTE demandé à"
+              + " la DAF) lorsque le fournisseur signe sur le portail. Autre statut : 409"
+              + " TRANSITION_INTERDITE.")
+  @ApiResponse(responseCode = "200", description = "Contrat EN_ATTENTE_SIGNATURE")
   public ContratDto signer(@PathVariable UUID id) {
-    return mapper.contrat(execution.signer(id));
+    return mapper.contrat(execution.signer(id, utilisateurs.require()));
   }
 
   /**
@@ -188,8 +196,10 @@ public class ContratController {
   @PostMapping("/{id}/livraison/demarrer")
   @PreAuthorize(Acces.ACHATS)
   @Operation(
-      summary = "Démarrer la livraison",
-      description = "R06 : engagement validé par la DAF requis (422 ENGAGEMENT_NON_VALIDE).")
+      summary = "Démarrer la livraison (hors portail)",
+      description =
+          "Secours lorsque le fournisseur ne déclare pas son expédition sur le portail. R06 :"
+              + " engagement validé par la DAF requis (422 ENGAGEMENT_NON_VALIDE).")
   @ApiResponse(responseCode = "200", description = "Contrat EN_LIVRAISON")
   public ContratDto demarrerLivraison(@PathVariable UUID id) {
     return mapper.contrat(execution.demarrerLivraison(id));

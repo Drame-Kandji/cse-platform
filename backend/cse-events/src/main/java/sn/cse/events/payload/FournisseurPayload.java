@@ -12,9 +12,22 @@ public record FournisseurPayload(
     List<String> specialites,
     String statut,
     BigDecimal scorePerformance,
-    String motif) {
+    String motif,
+    String contactNom) {
 
   public FournisseurPayload {
     specialites = specialites == null ? List.of() : List.copyOf(specialites);
+  }
+
+  /** Instantané sans interlocuteur (événements antérieurs à l'ajout de {@code contactNom}). */
+  public FournisseurPayload(
+      UUID fournisseurId,
+      String raisonSociale,
+      String email,
+      List<String> specialites,
+      String statut,
+      BigDecimal scorePerformance,
+      String motif) {
+    this(fournisseurId, raisonSociale, email, specialites, statut, scorePerformance, motif, null);
   }
 }

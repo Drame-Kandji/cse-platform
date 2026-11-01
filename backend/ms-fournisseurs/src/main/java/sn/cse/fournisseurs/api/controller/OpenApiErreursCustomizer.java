@@ -1,5 +1,6 @@
 package sn.cse.fournisseurs.api.controller;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -76,8 +77,11 @@ public class OpenApiErreursCustomizer implements OperationCustomizer, OpenApiCus
     ApiResponses reponses =
         operation.getResponses() == null ? new ApiResponses() : operation.getResponses();
     ajouter(reponses, "400");
-    ajouter(reponses, "401");
-    ajouter(reponses, "403");
+    // Une opération publique (@SecurityRequirements vide) ne renvoie ni 401 ni 403.
+    if (!handlerMethod.hasMethodAnnotation(SecurityRequirements.class)) {
+      ajouter(reponses, "401");
+      ajouter(reponses, "403");
+    }
     if (cheminAvecId) {
       ajouter(reponses, "404");
     }

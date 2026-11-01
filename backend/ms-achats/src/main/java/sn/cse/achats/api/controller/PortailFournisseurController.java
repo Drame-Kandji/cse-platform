@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,17 +18,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import sn.cse.achats.api.dto.AppelOffrePortailDto;
+import sn.cse.achats.api.dto.ContratDto;
 import sn.cse.achats.api.dto.CreerFactureRequest;
+import sn.cse.achats.api.dto.ExpedierRequest;
 import sn.cse.achats.api.dto.FactureDto;
+import sn.cse.achats.api.dto.JalonRealiseRequest;
 import sn.cse.achats.api.dto.MarchePortailDto;
 import sn.cse.achats.api.dto.OffrePortailDto;
 import sn.cse.achats.api.dto.OffrePortailRequest;
+import sn.cse.achats.api.dto.RefuserSignatureRequest;
 import sn.cse.achats.api.mapper.AchatsApiMapper;
 import sn.cse.achats.application.command.RecevoirFactureCommand;
+import sn.cse.achats.application.port.in.ContratsPortailUseCase;
 import sn.cse.achats.application.port.in.PortailFournisseurUseCase;
 import sn.cse.achats.application.port.out.AppelOffreRepository;
 import sn.cse.achats.application.port.out.ContratRepository;
 import sn.cse.achats.application.port.out.FactureRepository;
+import sn.cse.achats.domain.model.StatutContrat;
 import sn.cse.common.pagination.PageResponse;
 import sn.cse.common.security.CurrentUser;
 import sn.cse.common.security.CurrentUserProvider;
@@ -35,7 +42,8 @@ import sn.cse.common.web.PageableFactory;
 
 /**
  * Portail fournisseur : données filtrées sur le claim {@code fournisseur_id} du jeton (403
- * COMPTE_NON_RATTACHE s'il est absent).
+ * COMPTE_NON_RATTACHE s'il est absent). Une ressource d'un autre fournisseur renvoie 404, jamais
+ * 403, pour ne pas révéler son existence.
  */
 @RestController
 @RequestMapping("/api/portail")
@@ -43,22 +51,26 @@ import sn.cse.common.web.PageableFactory;
 public class PortailFournisseurController {
 
   private final PortailFournisseurUseCase portail;
+  private final ContratsPortailUseCase contrats;
   private final PageableFactory pages;
   private final CurrentUserProvider utilisateurs;
   private final AchatsApiMapper mapper;
 
   /**
    * @param portail cas d'utilisation du portail
+   * @param contrats contrats du fournisseur
    * @param pages pagination
    * @param utilisateurs utilisateur courant
    * @param mapper conversion DTO
    */
   public PortailFournisseurController(
       PortailFournisseurUseCase portail,
+      ContratsPortailUseCase contrats,
       PageableFactory pages,
       CurrentUserProvider utilisateurs,
       AchatsApiMapper mapper) {
     this.portail = portail;
+    this.contrats = contrats;
     this.pages = pages;
     this.utilisateurs = utilisateurs;
     this.mapper = mapper;
@@ -89,6 +101,24 @@ public class PortailFournisseurController {
             utilisateur,
             pages.query(page, size, sort, AppelOffreRepository.TRIABLES, "dateLimite,asc"))
         .map(a -> mapper.appelOffrePortail(a, fournisseur));
+  }
+
+  /**
+   * @param id appel d'offres
+   * @return l'appel d'offres vu par le fournisseur
+   */
+  @GetMapping("/appels-offres/{id}")
+  @PreAuthorize(Acces.FOURNISSEUR)
+  @Operation(
+      summary = "Consulter un appel d'offres ouvert",
+      description =
+          "Même filtre que la liste (publié, date limite non atteinte, procédure ouverte ou"
+              + " fournisseur invité) ; sinon 404.")
+  @ApiResponse(responseCode = "200", description = "Appel d'offres")
+  public AppelOffrePortailDto appelOffre(@PathVariable UUID id) {
+    CurrentUser utilisateur = utilisateurs.require();
+    return mapper.appelOffrePortail(
+        portail.appelOffre(utilisateur, id), utilisateur.fournisseurId());
   }
 
   /**
@@ -158,6 +188,127 @@ public class PortailFournisseurController {
   }
 
   /**
+   * @param statut statut (facultatif)
+   * @param page page
+   * @param size taille
+   * @param sort tri
+   * @return les contrats du fournisseur
+   */
+  @GetMapping("/contrats")
+  @PreAuthorize(Acces.FOURNISSEUR)
+  @Operation(
+      summary = "Mes contrats",
+      description =
+          "Contrats du fournisseur connecté, filtre facultatif par statut. Tri autorisé : numero,"
+              + " dateSignature, dateLivraisonPrevue, statut, createdAt (défaut numero,desc).")
+  @ApiResponse(responseCode = "200", description = "Page de contrats")
+  public PageResponse<ContratDto> contrats(
+      @Parameter(example = "EN_ATTENTE_SIGNATURE") @RequestParam(required = false)
+          StatutContrat statut,
+      @Parameter(example = "0") @RequestParam(required = false) Integer page,
+      @Parameter(example = "20") @RequestParam(required = false) Integer size,
+      @Parameter(example = "numero,desc") @RequestParam(required = false) String sort) {
+    return contrats
+        .contrats(
+            utilisateurs.require(),
+            statut,
+            pages.query(page, size, sort, ContratRepository.TRIABLES, "numero,desc"))
+        .map(mapper::contrat);
+  }
+
+  /**
+   * @param id contrat
+   * @return le contrat
+   */
+  @GetMapping("/contrats/{id}")
+  @PreAuthorize(Acces.FOURNISSEUR)
+  @Operation(
+      summary = "Consulter un de mes contrats",
+      description = "Contrat d'un autre fournisseur : 404.")
+  @ApiResponse(responseCode = "200", description = "Contrat")
+  public ContratDto contrat(@PathVariable UUID id) {
+    return mapper.contrat(contrats.contrat(utilisateurs.require(), id));
+  }
+
+  /**
+   * @param id contrat
+   * @return le contrat signé
+   */
+  @PostMapping("/contrats/{id}/signer")
+  @PreAuthorize(Acces.FOURNISSEUR)
+  @Operation(
+      summary = "Signer le contrat",
+      description =
+          "EN_ATTENTE_SIGNATURE → SIGNE : échéance de livraison fixée, engagement EN_ATTENTE"
+              + " demandé à la DAF ; publie CONTRAT_SIGNE puis ENGAGEMENT_DEMANDE. Autre statut :"
+              + " 409 TRANSITION_INTERDITE.")
+  @ApiResponse(responseCode = "200", description = "Contrat SIGNE")
+  public ContratDto signer(@PathVariable UUID id) {
+    return mapper.contrat(contrats.signer(utilisateurs.require(), id));
+  }
+
+  /**
+   * @param id contrat
+   * @param requete motif du refus
+   * @return le contrat revenu en brouillon
+   */
+  @PostMapping("/contrats/{id}/refuser")
+  @PreAuthorize(Acces.FOURNISSEUR)
+  @Operation(
+      summary = "Refuser de signer le contrat",
+      description =
+          "EN_ATTENTE_SIGNATURE → BROUILLON avec un motif obligatoire : la signature du CSE est"
+              + " annulée, le motif est conservé pour le responsable des achats ; publie"
+              + " CONTRAT_SIGNATURE_REFUSEE. Autre statut : 409 TRANSITION_INTERDITE.")
+  @ApiResponse(responseCode = "200", description = "Contrat BROUILLON")
+  public ContratDto refuser(
+      @PathVariable UUID id, @Valid @RequestBody RefuserSignatureRequest requete) {
+    return mapper.contrat(contrats.refuser(utilisateurs.require(), id, requete.motif()));
+  }
+
+  /**
+   * @param id contrat
+   * @param requete expédition
+   * @return le contrat en livraison
+   */
+  @PostMapping("/contrats/{id}/expedier")
+  @PreAuthorize(Acces.FOURNISSEUR)
+  @Operation(
+      summary = "Déclarer l'expédition",
+      description =
+          "ENGAGEMENT_VALIDE → EN_LIVRAISON ; publie LIVRAISON_DEMARREE. R06 : engagement validé"
+              + " par la DAF requis (422 ENGAGEMENT_NON_VALIDE). Date d'expédition ni future (422"
+              + " DATE_FUTURE) ni antérieure à la signature (422 DATE_EXPEDITION_INVALIDE).")
+  @ApiResponse(responseCode = "200", description = "Contrat EN_LIVRAISON")
+  public ContratDto expedier(@PathVariable UUID id, @Valid @RequestBody ExpedierRequest requete) {
+    return mapper.contrat(
+        contrats.expedier(
+            utilisateurs.require(), id, requete.dateExpedition(), requete.commentaire()));
+  }
+
+  /**
+   * @param id contrat
+   * @param jalonId jalon
+   * @param requete date de réalisation
+   * @return le contrat
+   */
+  @PatchMapping("/contrats/{id}/jalons/{jalonId}")
+  @PreAuthorize(Acces.FOURNISSEUR)
+  @Operation(
+      summary = "Renseigner un jalon",
+      description =
+          "Contrat EN_LIVRAISON uniquement (409 CONTRAT_NON_EN_LIVRAISON) ; date non future (422"
+              + " DATE_FUTURE).")
+  @ApiResponse(responseCode = "200", description = "Contrat mis à jour")
+  public ContratDto jalon(
+      @PathVariable UUID id,
+      @PathVariable UUID jalonId,
+      @Valid @RequestBody JalonRealiseRequest requete) {
+    return mapper.contrat(
+        contrats.enregistrerJalon(utilisateurs.require(), id, jalonId, requete.dateReelle()));
+  }
+
+  /**
    * @param page page
    * @param size taille
    * @return les factures du fournisseur
@@ -185,7 +336,10 @@ public class PortailFournisseurController {
   @PreAuthorize(Acces.FOURNISSEUR)
   @Operation(
       summary = "Déposer une facture",
-      description = "Uniquement sur un contrat du fournisseur connecté (404 sinon).")
+      description =
+          "Uniquement sur un contrat du fournisseur connecté (404 sinon), livré (422"
+              + " CONTRAT_NON_LIVRE sinon). Un contrat clôturé est soldé : il n'accepte plus de"
+              + " facture (422 CONTRAT_NON_FACTURABLE).")
   @ApiResponse(responseCode = "201", description = "Facture RECUE")
   public FactureDto deposerFacture(@Valid @RequestBody CreerFactureRequest requete) {
     return mapper.facture(

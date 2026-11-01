@@ -45,6 +45,7 @@ import sn.cse.reporting.domain.model.EtatMateriel;
 import sn.cse.reporting.domain.model.FormatExport;
 import sn.cse.reporting.domain.model.ParametresReporting;
 import sn.cse.reporting.domain.model.Point;
+import sn.cse.reporting.domain.model.StatutContrat;
 import sn.cse.reporting.domain.model.Tableau;
 
 /**
@@ -520,6 +521,33 @@ class ProjectionEtTableauTest {
     assertThat(fournisseurs.projeter(evt("TYPE_INCONNU", null, MAINTENANT))).isFalse();
     assertThat(achats.projeter(evt(EventTypes.BESOIN_SOUMIS, null, MAINTENANT))).isFalse();
     assertThat(fournisseurs.projeter(evt(EventTypes.AO_PUBLIE, null, MAINTENANT))).isFalse();
+  }
+
+  @Test
+  void should_projeter_la_signature_en_deux_temps_du_portail_fournisseur() {
+    assertThat(
+            achats.projeter(
+                evt(
+                    EventTypes.CONTRAT_ENVOYE_SIGNATURE,
+                    contrat("EN_ATTENTE_SIGNATURE", null),
+                    t("2026-10-10T08:00:00Z"))))
+        .isTrue();
+    assertThat(vues.contrats.get(K).statut()).isEqualTo(StatutContrat.EN_ATTENTE_SIGNATURE);
+    assertThat(vues.contrats.get(K).enCours()).isTrue();
+    assertThat(vues.contrats.get(K).engage()).isFalse();
+    assertThat(
+            achats.projeter(
+                evt(
+                    EventTypes.CONTRAT_SIGNATURE_REFUSEE,
+                    contrat("BROUILLON", null),
+                    t("2026-10-11T08:00:00Z"))))
+        .isTrue();
+    assertThat(vues.contrats.get(K).statut()).isEqualTo(StatutContrat.BROUILLON);
+    achats.projeter(
+        evt(EventTypes.CONTRAT_SIGNE, contrat("SIGNE", null), t("2026-10-12T08:00:00Z")));
+    assertThat(vues.contrats.get(K).statut()).isEqualTo(StatutContrat.SIGNE);
+    assertThat(tableau("DG").achats().contratsEnCours()).isEqualTo(1);
+    assertThat(StatutContrat.EN_ATTENTE_SIGNATURE.libelle()).isEqualTo("En attente de signature");
   }
 
   @Test

@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
+import sn.cse.achats.domain.model.ResultatOffre;
 import sn.cse.achats.domain.model.StatutAO;
 
 /**
@@ -22,6 +23,8 @@ import sn.cse.achats.domain.model.StatutAO;
  * @param description description
  * @param dateDepot dépôt
  * @param retenue offre retenue
+ * @param resultat EN_COURS tant que l'appel d'offres n'est pas attribué, puis RETENUE ou
+ *     NON_RETENUE
  */
 @Schema(name = "OffrePortail", description = "Offre déposée par le fournisseur connecté")
 public record OffrePortailDto(
@@ -37,4 +40,9 @@ public record OffrePortailDto(
     @Schema(example = "12") Integer garantieMois,
     @Schema(example = "Camions Mercedes Actros neufs") String description,
     @Schema(example = "2026-10-25T10:00:00Z") Instant dateDepot,
-    @Schema(example = "false") boolean retenue) {}
+    @Schema(example = "false") boolean retenue,
+    @Schema(
+            description =
+                "EN_COURS tant que l'appel d'offres n'est pas attribué, puis RETENUE ou NON_RETENUE",
+            example = "EN_COURS")
+        ResultatOffre resultat) {}

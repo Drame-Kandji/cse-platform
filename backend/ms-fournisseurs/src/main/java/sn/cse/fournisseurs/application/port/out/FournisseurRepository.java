@@ -37,6 +37,12 @@ public interface FournisseurRepository {
   boolean nineaUtilise(String ninea, UUID exclu);
 
   /**
+   * @param email adresse e-mail (comparaison insensible à la casse)
+   * @return {@code true} si un fournisseur utilise déjà cette adresse
+   */
+  boolean emailUtilise(String email);
+
+  /**
    * @param criteres filtres
    * @param page pagination et tri (liste blanche contrôlée en amont)
    * @return page de fournisseurs

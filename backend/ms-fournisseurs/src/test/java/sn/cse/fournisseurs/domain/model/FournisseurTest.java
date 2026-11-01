@@ -47,6 +47,37 @@ class FournisseurTest {
   }
 
   @Test
+  void should_inscrire_en_attente_de_validation_when_auto_inscription() {
+    Fournisseur f = Fixtures.enAttente();
+    assertThat(f.getStatut()).isEqualTo(StatutFournisseur.EN_ATTENTE_VALIDATION);
+    assertThat(f.getCoordonneesBancaires()).isEmpty();
+    assertThat(f.getDateInscription()).isEqualTo(AUJOURDHUI);
+  }
+
+  @Test
+  void should_refuser_inscription_when_interlocuteur_absent() {
+    ProfilFournisseur p = Fixtures.profil("Sans contact", "001234567 1A1");
+    ProfilFournisseur sansContact =
+        new ProfilFournisseur(
+            p.raisonSociale(),
+            p.ninea(),
+            null,
+            null,
+            null,
+            p.pays(),
+            null,
+            p.email(),
+            "  ",
+            null,
+            p.specialites(),
+            null);
+    assertThatThrownBy(() -> Fournisseur.inscrire(sansContact, null, BigDecimal.TEN, AUJOURDHUI))
+        .isInstanceOf(BusinessRuleException.class)
+        .extracting(e -> ((CseException) e).getCode())
+        .isEqualTo(CodesErreur.DONNEE_INVALIDE);
+  }
+
+  @Test
   void should_valider_inscription_when_en_attente() {
     Fournisseur f = Fixtures.enAttente();
     f.validerInscription();

@@ -35,6 +35,8 @@ public final class Donnees {
       new Acteur(uuid("00000000-0000-0000-0000-000000000401"), "Ousmane Ba");
   public static final Acteur DG =
       new Acteur(uuid("00000000-0000-0000-0000-000000000501"), "Aminata Sow");
+  public static final Acteur REPRESENTANT_F1 =
+      new Acteur(uuid("00000000-0000-0000-0000-000000000701"), "Moussa Kane");
 
   public static final FournisseurConnu F1 =
       fournisseur(1, "Sahel Engins SA", StatutFournisseur.ACTIF);
@@ -130,5 +132,18 @@ public final class Donnees {
 
   public static ContratAchat contratBrouillon() {
     return ContratAchat.generer(aoAttribue(), "CTR-2026-001", PARAMETRES);
+  }
+
+  /**
+   * Signature en deux temps : le CSE une heure avant, le fournisseur à l'instant donné.
+   *
+   * @param c contrat BROUILLON
+   * @param signatureFournisseur instant de la signature du fournisseur
+   * @return le contrat SIGNE
+   */
+  public static ContratAchat signer(ContratAchat c, Instant signatureFournisseur) {
+    c.signerPourLeCse(RA, signatureFournisseur.minusSeconds(3600));
+    c.signerPourLeFournisseur(REPRESENTANT_F1, signatureFournisseur);
+    return c;
   }
 }

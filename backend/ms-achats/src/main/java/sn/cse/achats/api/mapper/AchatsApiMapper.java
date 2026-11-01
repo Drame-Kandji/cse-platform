@@ -3,6 +3,7 @@ package sn.cse.achats.api.mapper;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 import sn.cse.achats.api.dto.AppelOffreDto;
@@ -22,6 +23,7 @@ import sn.cse.achats.api.dto.JalonDto;
 import sn.cse.achats.api.dto.MarchePortailDto;
 import sn.cse.achats.api.dto.OffreDto;
 import sn.cse.achats.api.dto.OffrePortailDto;
+import sn.cse.achats.api.dto.SignatureDto;
 import sn.cse.achats.api.dto.SyntheseFinanceDto;
 import sn.cse.achats.application.port.in.OffreFournisseur;
 import sn.cse.achats.application.port.in.OffreVue;
@@ -34,6 +36,7 @@ import sn.cse.achats.domain.model.CriterePondere;
 import sn.cse.achats.domain.model.Engagement;
 import sn.cse.achats.domain.model.Facture;
 import sn.cse.achats.domain.model.Offre;
+import sn.cse.achats.domain.model.Signature;
 import sn.cse.achats.domain.service.Comparatif;
 import sn.cse.achats.domain.service.SyntheseFinance;
 
@@ -169,6 +172,11 @@ public class AchatsApiMapper {
                         j.statutAu(aujourdhui)))
             .toList(),
         c.getPenalitesRetard(),
+        c.getSignatureCse().map(AchatsApiMapper::signature).orElse(null),
+        c.getSignatureFournisseur().map(AchatsApiMapper::signature).orElse(null),
+        c.getMotifRefusSignature(),
+        c.getDateExpedition(),
+        c.getCommentaireExpedition(),
         c.getVersion());
   }
 
@@ -255,7 +263,8 @@ public class AchatsApiMapper {
    * @param fournisseurId fournisseur connecté
    * @return la vue portail
    */
-  public AppelOffrePortailDto appelOffrePortail(AppelOffre a, java.util.UUID fournisseurId) {
+  public AppelOffrePortailDto appelOffrePortail(AppelOffre a, UUID fournisseurId) {
+    Optional<Offre> monOffre = a.offreDu(fournisseurId);
     return new AppelOffrePortailDto(
         a.getId(),
         a.getReference(),
@@ -269,7 +278,10 @@ public class AchatsApiMapper {
         a.getDateLimite(),
         a.getStatut(),
         criteres(a.getPonderation().criteres()),
-        a.offreDu(fournisseurId).isPresent());
+        a.getOrigine().map(o -> o.chantierNom()).orElse(null),
+        a.estInvite(fournisseurId),
+        monOffre.isPresent(),
+        monOffre.map(Offre::getId).orElse(null));
   }
 
   /**
@@ -292,7 +304,8 @@ public class AchatsApiMapper {
         o.getGarantieMois(),
         o.getDescription(),
         o.getDateDepot(),
-        o.isRetenue());
+        o.isRetenue(),
+        a.resultatDe(o));
   }
 
   /**
@@ -324,6 +337,10 @@ public class AchatsApiMapper {
         at.dateProposition(),
         approbation(at.coValidationMateriel()),
         at.approbationDg() == null ? null : approbation(at.approbationDg()));
+  }
+
+  private static SignatureDto signature(Signature s) {
+    return new SignatureDto(s.parNom(), s.date());
   }
 
   private static ApprobationDto approbation(Approbation a) {

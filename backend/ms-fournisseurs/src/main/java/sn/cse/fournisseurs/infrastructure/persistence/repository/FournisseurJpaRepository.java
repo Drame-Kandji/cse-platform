@@ -28,6 +28,12 @@ public interface FournisseurJpaRepository
   boolean existsByNineaAndIdNot(String ninea, UUID id);
 
   /**
+   * @param email adresse e-mail
+   * @return {@code true} si utilisée (insensible à la casse)
+   */
+  boolean existsByEmailIgnoreCase(String email);
+
+  /**
    * @param statut statut
    * @return fournisseurs dans ce statut
    */

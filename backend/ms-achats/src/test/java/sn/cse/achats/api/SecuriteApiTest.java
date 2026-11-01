@@ -41,6 +41,7 @@ import sn.cse.achats.application.port.in.CloturerAppelOffreUseCase;
 import sn.cse.achats.application.port.in.ConsulterAppelsOffresUseCase;
 import sn.cse.achats.application.port.in.ConsulterContratsUseCase;
 import sn.cse.achats.application.port.in.ConsulterFinanceUseCase;
+import sn.cse.achats.application.port.in.ContratsPortailUseCase;
 import sn.cse.achats.application.port.in.DeposerOffreUseCase;
 import sn.cse.achats.application.port.in.DocumentPdf;
 import sn.cse.achats.application.port.in.EvaluerOffresUseCase;
@@ -108,6 +109,7 @@ class SecuriteApiTest {
   @MockitoBean GererFacturesUseCase factures;
   @MockitoBean ConsulterFinanceUseCase finance;
   @MockitoBean PortailFournisseurUseCase portail;
+  @MockitoBean ContratsPortailUseCase contratsPortail;
   @MockitoBean MettreAJourProjectionsUseCase projections;
 
   private static String json(String corps) {

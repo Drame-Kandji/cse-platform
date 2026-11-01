@@ -61,6 +61,11 @@ public final class Memoire {
     }
 
     @Override
+    public boolean emailUtilise(String email) {
+      return donnees.values().stream().anyMatch(f -> f.getProfil().email().equalsIgnoreCase(email));
+    }
+
+    @Override
     public PageResponse<Fournisseur> rechercher(CriteresFournisseurs c, PageQuery page) {
       List<Fournisseur> tous =
           donnees.values().stream()

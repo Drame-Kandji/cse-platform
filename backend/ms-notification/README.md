@@ -34,6 +34,8 @@ marqueurs `{champ}` (+ `{acteurNom}`), `entite`/`entite-id`, `email`, `condition
 (`EGAL`, `DIFFERENT`, `INFERIEUR`, `SUPERIEUR`, `VRAI`, `FAUX`, `PRESENT`, `COMMENCE_PAR`). Valeurs mises
 en forme en français (dates jj/mm/aaaa, montants groupés, codes traduits par `cse.notification.libelles`).
 Un lien dont un marqueur manque est omis. La configuration est validée au démarrage.
+`FOURNISSEUR_INSCRIT` ne notifie le RA que pour une inscription publique (`statut = EN_ATTENTE_VALIDATION`) ;
+un fournisseur créé directement par le RA (déjà `ACTIF`) ne génère pas de notification.
 
 ## E-mail
 `MailPort` → Spring Mail (MailHog en dev : `MAIL_HOST=localhost`, `MAIL_PORT=1025`) + gabarit Thymeleaf

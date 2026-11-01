@@ -19,9 +19,11 @@ import sn.cse.common.exception.ConflictException;
 import sn.cse.common.exception.ResourceNotFoundException;
 
 /**
- * Agrégat contrat d'achat, né d'un appel d'offres attribué (R03). Cycle de vie : BROUILLON → SIGNE
- * → ENGAGEMENT_VALIDE → EN_LIVRAISON → LIVRE → CLOTURE (table de transitions de {@link
- * StatutContrat}). La livraison ne démarre qu'après validation de l'engagement par la DAF (R06).
+ * Agrégat contrat d'achat, né d'un appel d'offres attribué (R03). Cycle de vie : BROUILLON →
+ * EN_ATTENTE_SIGNATURE → SIGNE → ENGAGEMENT_VALIDE → EN_LIVRAISON → LIVRE → CLOTURE (table de
+ * transitions de {@link StatutContrat}). La signature se fait en deux temps (CSE puis fournisseur
+ * sur le portail) ; la livraison ne démarre qu'après validation de l'engagement par la DAF (R06),
+ * normalement sur déclaration d'expédition du fournisseur.
  */
 public final class ContratAchat {
 
@@ -54,6 +56,11 @@ public final class ContratAchat {
   private final List<Jalon> jalons;
   private BigDecimal penalitesRetard;
   private LocalDate dateDerniereAlerteRetard;
+  private Signature signatureCse;
+  private Signature signatureFournisseur;
+  private String motifRefusSignature;
+  private LocalDate dateExpedition;
+  private String commentaireExpedition;
   private final long version;
 
   /**
@@ -86,6 +93,11 @@ public final class ContratAchat {
    * @param jalons jalons
    * @param penalitesRetard pénalités de retard calculées
    * @param dateDerniereAlerteRetard date de la dernière alerte de retard
+   * @param signatureCse signature du CSE (responsable des achats)
+   * @param signatureFournisseur signature du fournisseur (portail)
+   * @param motifRefusSignature motif du dernier refus de signature du fournisseur
+   * @param dateExpedition date d'expédition déclarée par le fournisseur
+   * @param commentaireExpedition commentaire du fournisseur sur l'expédition
    * @param version version de verrou optimiste
    */
   public ContratAchat(
@@ -116,6 +128,11 @@ public final class ContratAchat {
       List<Jalon> jalons,
       BigDecimal penalitesRetard,
       LocalDate dateDerniereAlerteRetard,
+      Signature signatureCse,
+      Signature signatureFournisseur,
+      String motifRefusSignature,
+      LocalDate dateExpedition,
+      String commentaireExpedition,
       long version) {
     this.id = Objects.requireNonNull(id, "id");
     this.numero = Objects.requireNonNull(numero, "numero");
@@ -144,6 +161,11 @@ public final class ContratAchat {
     this.jalons = new ArrayList<>(jalons == null ? List.of() : jalons);
     this.penalitesRetard = penalitesRetard == null ? BigDecimal.ZERO : penalitesRetard;
     this.dateDerniereAlerteRetard = dateDerniereAlerteRetard;
+    this.signatureCse = signatureCse;
+    this.signatureFournisseur = signatureFournisseur;
+    this.motifRefusSignature = motifRefusSignature;
+    this.dateExpedition = dateExpedition;
+    this.commentaireExpedition = commentaireExpedition;
     this.version = version;
   }
 
@@ -214,6 +236,11 @@ public final class ContratAchat {
         List.of(),
         BigDecimal.ZERO,
         null,
+        null,
+        null,
+        null,
+        null,
+        null,
         0);
   }
 
@@ -254,16 +281,65 @@ public final class ContratAchat {
   }
 
   /**
-   * Signe le contrat : l'échéance de livraison est fixée et un engagement est demandé à la DAF.
+   * Signature du CSE : les clauses sont figées et le contrat est soumis à la signature du
+   * fournisseur (BROUILLON → EN_ATTENTE_SIGNATURE). Le motif d'un refus précédent reste visible
+   * jusqu'à la signature du fournisseur.
    *
+   * @param signataire responsable des achats
    * @param maintenant instant de signature
+   * @throws ConflictException si le contrat n'est pas en brouillon
    */
-  public void signer(Instant maintenant) {
+  public void signerPourLeCse(Acteur signataire, Instant maintenant) {
+    statut.exigerTransition(StatutContrat.EN_ATTENTE_SIGNATURE);
+    statut = StatutContrat.EN_ATTENTE_SIGNATURE;
+    signatureCse = Signature.par(signataire, maintenant);
+  }
+
+  /**
+   * Signature du fournisseur sur le portail : le contrat entre en vigueur (SIGNE), l'échéance de
+   * livraison est fixée et un engagement est demandé à la DAF (R06).
+   *
+   * @param signataire représentant du fournisseur
+   * @param maintenant instant de signature
+   * @throws ConflictException si le contrat n'attend pas la signature du fournisseur
+   */
+  public void signerPourLeFournisseur(Acteur signataire, Instant maintenant) {
     statut.exigerTransition(StatutContrat.SIGNE);
     statut = StatutContrat.SIGNE;
+    signatureFournisseur = Signature.par(signataire, maintenant);
+    motifRefusSignature = null;
     dateSignature = LocalDate.ofInstant(maintenant, ZoneOffset.UTC);
     dateLivraisonPrevue = dateSignature.plusDays(delaiLivraisonJours);
     engagement = Engagement.demander(montant, maintenant);
+  }
+
+  /**
+   * Refus de signature du fournisseur : le contrat revient en BROUILLON pour renégociation, la
+   * signature du CSE est annulée et le motif conservé à l'intention du responsable des achats.
+   *
+   * @param motif motif du refus (obligatoire)
+   * @throws ConflictException si le contrat n'attend pas la signature du fournisseur
+   * @throws sn.cse.common.exception.BusinessRuleException si le motif est absent
+   */
+  public void refuserSignature(String motif) {
+    // SIGNE → BROUILLON existe aussi (refus DAF) : seul un contrat en attente de signature est
+    // visé.
+    if (statut != StatutContrat.EN_ATTENTE_SIGNATURE) {
+      throw new ConflictException(
+          CodesErreur.TRANSITION_INTERDITE,
+          "Le contrat "
+              + numero
+              + " n'attend pas la signature du fournisseur (statut "
+              + statut
+              + ").");
+    }
+    Regles.exiger(
+        motif != null && !motif.isBlank(),
+        CodesErreur.MOTIF_OBLIGATOIRE,
+        "Le motif du refus de signature est obligatoire.");
+    statut = StatutContrat.BROUILLON;
+    signatureCse = null;
+    motifRefusSignature = motif.trim();
   }
 
   /**
@@ -288,8 +364,11 @@ public final class ContratAchat {
     statut.exigerTransition(cible);
     statut = cible;
     if (!approuve) {
+      // Renégociation : les deux parties devront signer à nouveau.
       dateSignature = null;
       dateLivraisonPrevue = null;
+      signatureCse = null;
+      signatureFournisseur = null;
     }
   }
 
@@ -302,11 +381,78 @@ public final class ContratAchat {
   public void demarrerLivraison() {
     // Règle R06 : pas de livraison sans engagement validé par la DAF.
     Regles.exiger(
-        statut != StatutContrat.BROUILLON && statut != StatutContrat.SIGNE,
+        !statut.estAvantEngagementValide(),
         CodesErreur.ENGAGEMENT_NON_VALIDE,
         "La livraison ne peut démarrer qu'après validation de l'engagement par la DAF (R06).");
     statut.exigerTransition(StatutContrat.EN_LIVRAISON);
     statut = StatutContrat.EN_LIVRAISON;
+  }
+
+  /**
+   * Expédition déclarée par le fournisseur sur le portail : la livraison démarre (mêmes règles que
+   * {@link #demarrerLivraison()}, R06) et la date d'expédition est conservée.
+   *
+   * @param date date d'expédition
+   * @param commentaire commentaire facultatif (transporteur, numéro de suivi...)
+   * @param aujourdhui date du jour
+   * @throws sn.cse.common.exception.BusinessRuleException R06 si l'engagement n'est pas validé, ou
+   *     date d'expédition future ou antérieure à la signature
+   */
+  public void declarerExpedition(LocalDate date, String commentaire, LocalDate aujourdhui) {
+    // Règle R06 vérifiée en premier : un fournisseur ne peut pas expédier sans engagement validé.
+    Regles.exiger(
+        !statut.estAvantEngagementValide(),
+        CodesErreur.ENGAGEMENT_NON_VALIDE,
+        "L'expédition ne peut être déclarée qu'après validation de l'engagement par la DAF (R06).");
+    Regles.exiger(
+        date != null && !date.isAfter(aujourdhui),
+        CodesErreur.DATE_FUTURE,
+        "La date d'expédition ne peut pas être dans le futur.");
+    Regles.exiger(
+        dateSignature == null || !date.isBefore(dateSignature),
+        CodesErreur.DATE_EXPEDITION_INVALIDE,
+        "La date d'expédition ne peut pas précéder la signature du contrat.");
+    demarrerLivraison();
+    dateExpedition = date;
+    commentaireExpedition = Regles.facultatif(commentaire);
+  }
+
+  /**
+   * Jalon renseigné par le fournisseur : uniquement une fois l'expédition déclarée (EN_LIVRAISON).
+   *
+   * @param jalonId jalon
+   * @param dateReelle date de réalisation
+   * @param aujourdhui date du jour
+   * @throws ConflictException si le contrat n'est pas en livraison
+   */
+  public void enregistrerJalonDuFournisseur(
+      UUID jalonId, LocalDate dateReelle, LocalDate aujourdhui) {
+    if (statut != StatutContrat.EN_LIVRAISON) {
+      throw new ConflictException(
+          CodesErreur.CONTRAT_NON_EN_LIVRAISON,
+          "Le fournisseur ne renseigne ses jalons qu'une fois l'expédition déclarée (contrat "
+              + numero
+              + " au statut "
+              + statut
+              + ").");
+    }
+    enregistrerJalon(jalonId, dateReelle, aujourdhui);
+  }
+
+  /**
+   * Portail : le fournisseur ne facture qu'un contrat livré (ou clôturé).
+   *
+   * @throws sn.cse.common.exception.BusinessRuleException sinon
+   */
+  public void exigerLivrePourFacturationFournisseur() {
+    Regles.exiger(
+        statut == StatutContrat.LIVRE || statut == StatutContrat.CLOTURE,
+        CodesErreur.CONTRAT_NON_LIVRE,
+        "Une facture ne peut être déposée qu'une fois la livraison du contrat "
+            + numero
+            + " confirmée (statut actuel "
+            + statut
+            + ").");
   }
 
   /**
@@ -555,6 +701,26 @@ public final class ContratAchat {
 
   public LocalDate getDateDerniereAlerteRetard() {
     return dateDerniereAlerteRetard;
+  }
+
+  public Optional<Signature> getSignatureCse() {
+    return Optional.ofNullable(signatureCse);
+  }
+
+  public Optional<Signature> getSignatureFournisseur() {
+    return Optional.ofNullable(signatureFournisseur);
+  }
+
+  public String getMotifRefusSignature() {
+    return motifRefusSignature;
+  }
+
+  public LocalDate getDateExpedition() {
+    return dateExpedition;
+  }
+
+  public String getCommentaireExpedition() {
+    return commentaireExpedition;
   }
 
   public long getVersion() {

@@ -33,6 +33,7 @@ import org.springframework.web.client.RestClient;
 import sn.cse.auth.application.exception.CompteIdentiteIntrouvableException;
 import sn.cse.auth.application.exception.IdentiteIndisponibleException;
 import sn.cse.auth.application.port.out.CompteIdentite;
+import sn.cse.auth.application.port.out.LienActivation;
 import sn.cse.auth.application.port.out.NouveauCompte;
 import sn.cse.auth.application.port.out.ProfilIdentite;
 import sn.cse.auth.domain.exception.EmailDejaUtiliseException;
@@ -248,6 +249,142 @@ class KeycloakAdminAdapterTest {
     keycloak.verify(
         putRequestedFor(urlEqualTo(ADMIN + "/users/" + ID))
             .withRequestBody(matchingJsonPath("$.requiredActions[0]", equalTo("CONFIGURE_TOTP"))));
+  }
+
+  // --- Comptes du portail fournisseur ---
+
+  private static final UUID FOURNISSEUR = UUID.fromString("f0000000-0000-0000-0000-000000000007");
+
+  @Test
+  void should_creer_un_compte_sans_mot_de_passe_when_activation_par_e_mail() {
+    keycloak.stubFor(
+        post(urlEqualTo(ADMIN + "/users"))
+            .willReturn(
+                aResponse().withStatus(201).withHeader("Location", ADMIN + "/users/" + ID)));
+
+    adapter.creerCompte(
+        new NouveauCompte(
+            new Identite("contact@baobab.sn", "Contact", "Baobab Logistique", null),
+            Role.FOURNISSEUR,
+            new AttributsProfil(null, null, null, null, FOURNISSEUR),
+            null,
+            false));
+
+    keycloak.verify(
+        postRequestedFor(urlEqualTo(ADMIN + "/users"))
+            .withRequestBody(matchingJsonPath("$.username", equalTo("contact@baobab.sn")))
+            .withRequestBody(matchingJsonPath("$.enabled", equalTo("true")))
+            .withRequestBody(
+                matchingJsonPath("$.attributes.fournisseur_id[0]", equalTo(FOURNISSEUR.toString())))
+            .withRequestBody(
+                matchingJsonPath("$.requiredActions", equalToJson("[\"UPDATE_PASSWORD\"]")))
+            .withRequestBody(
+                com.github.tomakehurst.wiremock.client.WireMock.notContaining("credentials")));
+  }
+
+  @Test
+  void should_envoyer_execute_actions_email_avec_client_retour_et_duree() {
+    String chemin = ADMIN + "/users/" + ID + "/execute-actions-email";
+    keycloak.stubFor(put(urlPathEqualTo(chemin)).willReturn(aResponse().withStatus(204)));
+
+    adapter.envoyerEmailActivation(
+        ID,
+        new LienActivation(
+            "cse-portail-fournisseur", "http://localhost:5174/", Duration.ofHours(72)));
+
+    keycloak.verify(
+        putRequestedFor(urlPathEqualTo(chemin))
+            .withHeader("Authorization", equalTo("Bearer jeton-1"))
+            .withQueryParam("client_id", equalTo("cse-portail-fournisseur"))
+            .withQueryParam("redirect_uri", equalTo("http://localhost:5174/"))
+            .withQueryParam("lifespan", equalTo("259200"))
+            .withRequestBody(equalToJson("[\"UPDATE_PASSWORD\"]")));
+  }
+
+  @Test
+  void should_propager_l_echec_smtp_when_execute_actions_email_refuse() {
+    keycloak.stubFor(
+        put(urlPathEqualTo(ADMIN + "/users/" + ID + "/execute-actions-email"))
+            .willReturn(
+                aResponse()
+                    .withStatus(500)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody("{\"errorMessage\":\"Failed to send execute actions email\"}")));
+    LienActivation lien =
+        new LienActivation(
+            "cse-portail-fournisseur", "http://localhost:5174/", Duration.ofHours(1));
+    assertThatThrownBy(() -> adapter.envoyerEmailActivation(ID, lien))
+        .isInstanceOf(IdentiteIndisponibleException.class);
+  }
+
+  @Test
+  void should_trouver_le_compte_par_e_mail_avec_ses_roles_cse() {
+    keycloak.stubFor(
+        get(urlPathEqualTo(ADMIN + "/users"))
+            .withQueryParam("email", equalTo("contact@baobab.sn"))
+            .withQueryParam("exact", equalTo("true"))
+            .willReturn(okJson("[{\"id\":\"" + ID + "\",\"email\":\"Contact@Baobab.sn\"}]")));
+    keycloak.stubFor(
+        get(urlEqualTo(ADMIN + "/users/" + ID + "/role-mappings/realm"))
+            .willReturn(
+                okJson(
+                    "[{\"id\":\"r0\",\"name\":\"default-roles-cse\"},"
+                        + "{\"id\":\"r7\",\"name\":\"FOURNISSEUR\"}]")));
+    keycloak.stubFor(
+        get(urlEqualTo(ADMIN + "/users/" + ID))
+            .willReturn(
+                okJson(
+                    "{\"id\":\""
+                        + ID
+                        + "\",\"email\":\"contact@baobab.sn\",\"firstName\":\"Contact\","
+                        + "\"lastName\":\"Baobab\",\"enabled\":true,"
+                        + "\"attributes\":{\"fournisseur_id\":[\""
+                        + FOURNISSEUR
+                        + "\"]}}")));
+    keycloak.stubFor(
+        get(urlEqualTo(ADMIN + "/users/" + ID + "/credentials"))
+            .willReturn(okJson("[{\"type\":\"password\"}]")));
+
+    CompteIdentite compte = adapter.compteParEmail("contact@baobab.sn").orElseThrow();
+
+    assertThat(compte.id()).isEqualTo(ID);
+    assertThat(compte.roles()).containsExactly("FOURNISSEUR");
+    assertThat(compte.attributs().fournisseurId()).isEqualTo(FOURNISSEUR);
+    assertThat(compte.otpConfigure()).isFalse();
+    assertThat(adapter.motDePasseDefini(ID)).isTrue();
+  }
+
+  @Test
+  void should_renvoyer_vide_when_aucun_compte_pour_l_e_mail() {
+    keycloak.stubFor(
+        get(urlPathEqualTo(ADMIN + "/users"))
+            .willReturn(okJson("[{\"id\":\"" + ID + "\",\"email\":\"autre@baobab.sn\"}]")));
+    assertThat(adapter.compteParEmail("contact@baobab.sn")).isEmpty();
+    keycloak.stubFor(
+        get(urlEqualTo(ADMIN + "/users/" + ID + "/credentials")).willReturn(okJson("[]")));
+    assertThat(adapter.motDePasseDefini(ID)).isFalse();
+  }
+
+  @Test
+  void should_rattacher_le_fournisseur_en_preservant_les_autres_attributs() {
+    keycloak.stubFor(
+        get(urlEqualTo(ADMIN + "/users/" + ID))
+            .willReturn(
+                okJson(
+                    "{\"id\":\""
+                        + ID
+                        + "\",\"enabled\":true,\"attributes\":{\"locale\":[\"fr\"]}}")));
+    keycloak.stubFor(
+        put(urlEqualTo(ADMIN + "/users/" + ID)).willReturn(aResponse().withStatus(204)));
+
+    adapter.rattacherFournisseur(ID, FOURNISSEUR);
+
+    keycloak.verify(
+        putRequestedFor(urlEqualTo(ADMIN + "/users/" + ID))
+            .withRequestBody(matchingJsonPath("$.attributes.locale[0]", equalTo("fr")))
+            .withRequestBody(
+                matchingJsonPath(
+                    "$.attributes.fournisseur_id[0]", equalTo(FOURNISSEUR.toString()))));
   }
 
   @Test

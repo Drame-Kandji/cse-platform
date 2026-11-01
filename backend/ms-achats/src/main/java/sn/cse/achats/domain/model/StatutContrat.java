@@ -8,14 +8,18 @@ import sn.cse.achats.domain.exception.CodesErreur;
 import sn.cse.common.exception.ConflictException;
 
 /**
- * Cycle de vie d'un contrat d'achat : BROUILLON → SIGNE → ENGAGEMENT_VALIDE → EN_LIVRAISON → LIVRE
- * → CLOTURE. Seule exception au sens unique : un engagement refusé par la DAF renvoie le contrat
- * signé en BROUILLON pour renégociation (sinon le contrat resterait bloqué).
+ * Cycle de vie d'un contrat d'achat : BROUILLON → EN_ATTENTE_SIGNATURE → SIGNE → ENGAGEMENT_VALIDE
+ * → EN_LIVRAISON → LIVRE → CLOTURE. La signature se fait en deux temps : le CSE signe (clauses
+ * figées) puis le fournisseur signe sur le portail. Deux retours en arrière sont prévus pour
+ * renégocier : le fournisseur refuse de signer (EN_ATTENTE_SIGNATURE → BROUILLON) ou la DAF refuse
+ * l'engagement (SIGNE → BROUILLON) ; sans eux le contrat resterait bloqué.
  */
 public enum StatutContrat {
   /** Contrat généré, clauses modifiables. */
   BROUILLON,
-  /** Signé, engagement financier en attente de la DAF. */
+  /** Signé par le CSE, clauses figées, en attente de la signature du fournisseur. */
+  EN_ATTENTE_SIGNATURE,
+  /** Signé par les deux parties, engagement financier en attente de la DAF. */
   SIGNE,
   /** Engagement validé par la DAF (R06). */
   ENGAGEMENT_VALIDE,
@@ -30,7 +34,8 @@ public enum StatutContrat {
       new EnumMap<>(StatutContrat.class);
 
   static {
-    TRANSITIONS.put(BROUILLON, EnumSet.of(SIGNE));
+    TRANSITIONS.put(BROUILLON, EnumSet.of(EN_ATTENTE_SIGNATURE));
+    TRANSITIONS.put(EN_ATTENTE_SIGNATURE, EnumSet.of(SIGNE, BROUILLON));
     TRANSITIONS.put(SIGNE, EnumSet.of(ENGAGEMENT_VALIDE, BROUILLON));
     TRANSITIONS.put(ENGAGEMENT_VALIDE, EnumSet.of(EN_LIVRAISON));
     TRANSITIONS.put(EN_LIVRAISON, EnumSet.of(LIVRE));
@@ -63,6 +68,13 @@ public enum StatutContrat {
    */
   public boolean estEnExecution() {
     return this == SIGNE || this == ENGAGEMENT_VALIDE || this == EN_LIVRAISON;
+  }
+
+  /**
+   * @return vrai tant que l'engagement n'a pas été validé par la DAF (livraison interdite, R06)
+   */
+  public boolean estAvantEngagementValide() {
+    return this == BROUILLON || this == EN_ATTENTE_SIGNATURE || this == SIGNE;
   }
 
   /**

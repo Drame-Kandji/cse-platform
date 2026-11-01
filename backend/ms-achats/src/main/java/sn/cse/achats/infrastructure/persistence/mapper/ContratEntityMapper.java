@@ -1,5 +1,6 @@
 package sn.cse.achats.infrastructure.persistence.mapper;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -11,6 +12,7 @@ import sn.cse.achats.domain.model.ClausesContrat;
 import sn.cse.achats.domain.model.ContratAchat;
 import sn.cse.achats.domain.model.Engagement;
 import sn.cse.achats.domain.model.Jalon;
+import sn.cse.achats.domain.model.Signature;
 import sn.cse.achats.infrastructure.persistence.entity.ContratAchatEntity;
 import sn.cse.achats.infrastructure.persistence.entity.JalonEntity;
 
@@ -71,7 +73,19 @@ public final class ContratEntityMapper {
         jalons,
         e.getPenalitesRetard(),
         e.getDateDerniereAlerteRetard(),
+        signature(e.getSignatureCseParId(), e.getSignatureCseParNom(), e.getSignatureCseDate()),
+        signature(
+            e.getSignatureFournisseurParId(),
+            e.getSignatureFournisseurParNom(),
+            e.getSignatureFournisseurDate()),
+        e.getMotifRefusSignature(),
+        e.getDateExpedition(),
+        e.getCommentaireExpedition(),
         e.getVersion() == null ? 0 : e.getVersion());
+  }
+
+  private static Signature signature(UUID parId, String parNom, Instant date) {
+    return parNom == null || date == null ? null : new Signature(parId, parNom, date);
   }
 
   /**
@@ -116,6 +130,17 @@ public final class ContratEntityMapper {
     e.setEngagementCommentaire(en == null ? null : en.commentaire());
     e.setPenalitesRetard(c.getPenalitesRetard());
     e.setDateDerniereAlerteRetard(c.getDateDerniereAlerteRetard());
+    Signature cse = c.getSignatureCse().orElse(null);
+    e.setSignatureCseParId(cse == null ? null : cse.parId());
+    e.setSignatureCseParNom(cse == null ? null : cse.parNom());
+    e.setSignatureCseDate(cse == null ? null : cse.date());
+    Signature fournisseur = c.getSignatureFournisseur().orElse(null);
+    e.setSignatureFournisseurParId(fournisseur == null ? null : fournisseur.parId());
+    e.setSignatureFournisseurParNom(fournisseur == null ? null : fournisseur.parNom());
+    e.setSignatureFournisseurDate(fournisseur == null ? null : fournisseur.date());
+    e.setMotifRefusSignature(c.getMotifRefusSignature());
+    e.setDateExpedition(c.getDateExpedition());
+    e.setCommentaireExpedition(c.getCommentaireExpedition());
     copierJalons(c, e);
   }
 

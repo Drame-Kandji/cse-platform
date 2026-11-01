@@ -696,6 +696,99 @@
         }
       }
     },
+    "/api/portail/inscription" : {
+      "post" : {
+        "tags" : [ "Portail fournisseur" ],
+        "summary" : "S'inscrire comme fournisseur",
+        "description" : "Route publique (sans jeton, limitée par adresse IP à la passerelle). Le fournisseur est créé EN_ATTENTE_VALIDATION et l'événement FOURNISSEUR_INSCRIT est publié. Après validation par le Responsable des Achats, un compte du portail est créé et un e-mail de définition du mot de passe est envoyé à l'adresse indiquée.",
+        "operationId" : "inscrire",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/InscriptionRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Inscription enregistrée",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/InscriptionDto"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "NINEA ou e-mail déjà connu",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                },
+                "examples" : {
+                  "FOURNISSEUR_EXISTANT" : {
+                    "description" : "FOURNISSEUR_EXISTANT",
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Conflit",
+                      "status" : 409,
+                      "detail" : "Un fournisseur est déjà enregistré avec ce NINEA ou cette adresse e-mail. Contactez le service des achats de la CSE.",
+                      "code" : "FOURNISSEUR_EXISTANT",
+                      "traceId" : "4bf92f3577b34da6a3ce929d0e0e4736",
+                      "timestamp" : "2026-10-30T09:15:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                },
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Requête invalide",
+                  "status" : 400,
+                  "detail" : "Certains champs du formulaire sont invalides.",
+                  "code" : "VALIDATION",
+                  "traceId" : "4bf92f3577b34da6a3ce929d0e0e4736",
+                  "timestamp" : "2026-10-30T09:15:00Z"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Règle de gestion non respectée",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                },
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Règle de gestion non respectée",
+                  "status" : 422,
+                  "detail" : "Le motif est obligatoire.",
+                  "code" : "MOTIF_OBLIGATOIRE",
+                  "traceId" : "4bf92f3577b34da6a3ce929d0e0e4736",
+                  "timestamp" : "2026-10-30T09:15:00Z"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ ]
+      }
+    },
     "/api/fournisseurs" : {
       "get" : {
         "tags" : [ "Fournisseurs" ],
@@ -3571,6 +3664,115 @@
             "type" : "string",
             "format" : "date-time",
             "example" : "2026-09-01T08:00:00Z"
+          }
+        }
+      },
+      "InscriptionRequest" : {
+        "type" : "object",
+        "description" : "Demande d'inscription d'un fournisseur sur le portail",
+        "properties" : {
+          "raisonSociale" : {
+            "type" : "string",
+            "description" : "Raison sociale",
+            "example" : "Baobab Logistique SARL",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "ninea" : {
+            "type" : "string",
+            "description" : "NINEA (7 à 9 chiffres + code 3 caractères)",
+            "example" : "008789012 2E7",
+            "minLength" : 1,
+            "pattern" : "^[0-9]{7,9} ?[0-9A-Za-z]{3}$"
+          },
+          "rccm" : {
+            "type" : "string",
+            "description" : "Numéro RCCM",
+            "example" : "SN-THS-2019-B-04567",
+            "maxLength" : 50,
+            "minLength" : 0
+          },
+          "adresse" : {
+            "type" : "string",
+            "description" : "Adresse",
+            "example" : "Route de Mbour, zone industrielle",
+            "maxLength" : 255,
+            "minLength" : 0
+          },
+          "ville" : {
+            "type" : "string",
+            "description" : "Ville",
+            "example" : "Thiès",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "pays" : {
+            "type" : "string",
+            "description" : "Pays",
+            "example" : "Sénégal",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "telephone" : {
+            "type" : "string",
+            "description" : "Téléphone",
+            "example" : "+221 33 951 22 10",
+            "pattern" : "^\\+?[0-9 ]{7,20}$"
+          },
+          "email" : {
+            "type" : "string",
+            "description" : "E-mail de contact : il deviendra l'identifiant de connexion au portail et recevra le lien de définition du mot de passe après validation",
+            "example" : "contact@baobab-logistique.sn",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "contactNom" : {
+            "type" : "string",
+            "description" : "Interlocuteur",
+            "example" : "Seynabou Gueye",
+            "maxLength" : 150,
+            "minLength" : 0
+          },
+          "contactFonction" : {
+            "type" : "string",
+            "description" : "Fonction de l'interlocuteur",
+            "example" : "Gérante",
+            "maxLength" : 150,
+            "minLength" : 0
+          },
+          "specialites" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "MATERIEL_ROULANT", "OUTILLAGE", "EQUIPEMENT_INFORMATIQUE", "CONSOMMABLE" ],
+              "example" : "CONSOMMABLE"
+            },
+            "minItems" : 1,
+            "uniqueItems" : true
+          }
+        },
+        "required" : [ "contactNom", "email", "ninea", "pays", "raisonSociale", "specialites" ]
+      },
+      "InscriptionDto" : {
+        "type" : "object",
+        "description" : "Inscription enregistrée, en attente de validation par le service des achats",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Identifiant",
+            "example" : "f0000000-0000-0000-0000-000000000007"
+          },
+          "raisonSociale" : {
+            "type" : "string",
+            "description" : "Raison sociale",
+            "example" : "Baobab Logistique SARL"
+          },
+          "statut" : {
+            "type" : "string",
+            "description" : "Statut",
+            "enum" : [ "EN_ATTENTE_VALIDATION", "ACTIF", "SUSPENDU", "BLACKLISTE" ],
+            "example" : "EN_ATTENTE_VALIDATION"
           }
         }
       },

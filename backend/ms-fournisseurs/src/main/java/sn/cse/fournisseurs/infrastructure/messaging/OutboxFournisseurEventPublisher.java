@@ -41,7 +41,8 @@ public class OutboxFournisseurEventPublisher implements FournisseurEventPublishe
             specialites,
             fournisseur.getStatut().name(),
             fournisseur.getPerformance().scorePerformance(),
-            motif);
+            motif,
+            fournisseur.getProfil().contactNom());
     String resume =
         fournisseur.getProfil().raisonSociale()
             + " ("

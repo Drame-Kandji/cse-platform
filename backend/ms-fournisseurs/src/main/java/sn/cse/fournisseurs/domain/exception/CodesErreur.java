@@ -33,6 +33,9 @@ public final class CodesErreur {
   /** NINEA déjà utilisé par un autre fournisseur (409). */
   public static final String NINEA_DEJA_UTILISE = "NINEA_DEJA_UTILISE";
 
+  /** Inscription publique : NINEA ou e-mail déjà connu (409, contrat §13). */
+  public static final String FOURNISSEUR_EXISTANT = "FOURNISSEUR_EXISTANT";
+
   /** Version obsolète (verrou optimiste, 409). */
   public static final String CONFLIT_CONCURRENCE = "CONFLIT_CONCURRENCE";
 

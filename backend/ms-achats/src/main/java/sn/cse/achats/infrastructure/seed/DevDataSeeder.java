@@ -49,11 +49,14 @@ import sn.cse.events.EventTypes;
 
 /**
  * Historique d'achats de démonstration (profil {@code dev}) sur les neuf derniers mois, relatif à
- * l'horloge : 12 appels d'offres dans tous les statuts (dont 9 issus des besoins EN_ACHAT de
- * ms-besoins), 8 contrats couvrant tout le cycle de vie, engagements, livraisons à l'heure et en
- * retard, 12 factures. Tout passe par les agrégats et l'outbox afin que reporting, notification et
- * audit reçoivent de vrais événements. Idempotent : ne fait rien si des appels d'offres existent
- * déjà. Identifiants partagés : API_CONTRACT §12.
+ * l'horloge : 13 appels d'offres dans tous les statuts (dont 9 issus des besoins EN_ACHAT de
+ * ms-besoins), 9 contrats couvrant tout le cycle de vie (signature en deux temps CSE puis
+ * fournisseur, expéditions déclarées sur le portail), engagements, livraisons à l'heure et en
+ * retard, 11 factures. Le fournisseur 1 (compte portail de démonstration) dispose d'un appel
+ * d'offres ouvert sans offre, d'un contrat à signer, d'un contrat prêt à expédier, d'un contrat
+ * livré à facturer et de factures RECUE, MANDATEE et PAYEE. Tout passe par les agrégats et l'outbox
+ * afin que reporting, notification et audit reçoivent de vrais événements. Idempotent : ne fait
+ * rien si des appels d'offres existent déjà. Identifiants partagés : API_CONTRACT §12.
  */
 @Component
 @Profile("dev")
@@ -66,6 +69,10 @@ public class DevDataSeeder implements ApplicationRunner {
   static final Acteur RM = new Acteur(id("00000000-0000-0000-0000-000000000201"), "Ibrahima Fall");
   static final Acteur DAF = new Acteur(id("00000000-0000-0000-0000-000000000401"), "Ousmane Ba");
   static final Acteur DG = new Acteur(id("00000000-0000-0000-0000-000000000501"), "Aminata Sow");
+
+  /** Compte portail de démonstration du fournisseur 1 (fournisseur@cse.sn). */
+  static final Acteur PORTAIL_SAHEL =
+      new Acteur(id("00000000-0000-0000-0000-000000000701"), "Moussa Kane");
 
   static final FournisseurConnu SAHEL = fournisseur(1, "Sahel Engins SA", StatutFournisseur.ACTIF);
   static final FournisseurConnu TERANGA =
@@ -321,7 +328,7 @@ public class DevDataSeeder implements ApplicationRunner {
       return;
     }
     transaction.executeWithoutResult(s -> semer());
-    LOG.info("Jeu de démonstration ms-achats créé (12 appels d'offres, 8 contrats, 12 factures)");
+    LOG.info("Jeu de démonstration ms-achats créé (13 appels d'offres, 9 contrats, 11 factures)");
   }
 
   private void semer() {
@@ -370,7 +377,7 @@ public class DevDataSeeder implements ApplicationRunner {
     ContratAchat c1 = contrat(ao1, 225, "24", 60, "Livraison franco sur le chantier de Diamniadio");
     c1 = signer(c1, 215);
     c1 = engagement(c1, true, "Crédits disponibles sur la ligne investissements 2026", 213);
-    c1 = demarrer(c1);
+    c1 = expedier(c1, 165, "Convoi exceptionnel depuis le port autonome de Dakar");
     c1 = jalons(c1, 208, 165);
     c1 = livrer(c1, 158, "BL-SE-2026-0112");
     Facture f = facture(c1, "FA-SE-2026-041", "120000000", 156);
@@ -410,7 +417,7 @@ public class DevDataSeeder implements ApplicationRunner {
         contrat(ao2, 196, "24", 50, "Mise à l'eau sur le chantier du pont de la lagune");
     c2 = signer(c2, 190);
     c2 = engagement(c2, true, null, 188);
-    c2 = demarrer(c2);
+    c2 = expedier(c2, 130, "Barge remorquée depuis Dakar, pousseur par voie routière");
     c2 = jalons(c2, 180, 130);
     c2 = livrer(c2, 128, "BL-SE-2026-0187");
     f = facture(c2, "FA-SE-2026-079", "80000000", 126);
@@ -420,7 +427,8 @@ public class DevDataSeeder implements ApplicationRunner {
     mandater(f, "MDT-2026-0131", 12);
     facture(c2, "FA-SE-2026-133", "10000000", 5);
 
-    // AO-003 : demande de prix groupes électrogènes (sans besoin), sous le seuil, livré à l'heure.
+    // AO-003 : demande de prix groupes électrogènes (sans besoin), sous le seuil, livré à l'heure
+    // (livraison démarrée par le RA, hors portail).
     AppelOffre ao3 =
         publier(
             205,
@@ -450,7 +458,8 @@ public class DevDataSeeder implements ApplicationRunner {
     rejeter(f, "Facture en doublon des frais de transport déjà inclus.");
     facture(c3, "TEB-FAC-2026-0298", "5500000", 70);
 
-    // AO-004 : portables de chantier (besoin 18), livraison en retard en cours (alerte).
+    // AO-004 : portables de chantier (besoin 18), livraison en retard en cours (alerte), démarrée
+    // hors portail.
     AppelOffre ao4 =
         publier(
             120,
@@ -481,7 +490,7 @@ public class DevDataSeeder implements ApplicationRunner {
     facture(c4, "CVI-2026-0119", "2500000", 50);
     retard(c4);
 
-    // AO-005 : finisseur d'enrobés (besoin 15), DG, engagement validé (livraison à venir).
+    // AO-005 : finisseur d'enrobés (besoin 15), DG, engagement validé : prêt à expédier (portail).
     AppelOffre ao5 =
         publier(
             100,
@@ -508,7 +517,6 @@ public class DevDataSeeder implements ApplicationRunner {
         contrat(ao5, 64, "24", 75, "Livraison sur le chantier du contournement de Thiès");
     c5 = signer(c5, 35);
     c5 = engagement(c5, true, "Engagement imputé au budget du chantier de Thiès", 33);
-    facture(c5, "FA-SE-2026-188", "40000000", 10);
     rejeter(facture(c5, "FA-SE-2026-176", "10000000", 20), "Avance non prévue au contrat.");
 
     // AO-006 : gilets de sauvetage (besoin 22), contrat signé, engagement en attente de la DAF.
@@ -528,7 +536,8 @@ public class DevDataSeeder implements ApplicationRunner {
     ContratAchat c6 = contrat(ao6, 27, null, 10, "Livraison au chantier du pont de la lagune");
     signer(c6, 12);
 
-    // AO-007 : camions malaxeurs (besoin 16), sous le seuil, contrat signé, engagement en attente.
+    // AO-007 : camions malaxeurs (besoin 16), sous le seuil. Le fournisseur a refusé une première
+    // version (pénalités) ; le RA a revu la clause et re-signé : en attente de signature (portail).
     AppelOffre ao7 =
         publier(
             70,
@@ -544,7 +553,21 @@ public class DevDataSeeder implements ApplicationRunner {
     ao7 = cloturer(ao7);
     ao7 = attribuer(ao7, SAHEL, "Délai de livraison décisif pour la saison sèche.", 40, 38, 0);
     ContratAchat c7 = contrat(ao7, 37, "12", 30, "Livraison au chantier Kaolack-Fatick");
-    signer(c7, 6);
+    c7 = envoyerEnSignature(c7, 8);
+    c7 =
+        refuserSignature(
+            c7,
+            "Le taux de pénalité de 0,1 % par jour dépasse nos conditions générales ; nous"
+                + " proposons 0,05 %.");
+    c7.modifierClauses(
+        new ClausesContrat(
+            c7.getClauses().garantieMois(),
+            c7.getClauses().conditionsMaintenance(),
+            c7.getClauses().conditionsLivraison(),
+            new BigDecimal("0.05")),
+        c7.getDelaiLivraisonJours(),
+        List.of());
+    envoyerEnSignature(c7, 3);
 
     // AO-008 : outillage (sans besoin) attribué, contrat BROUILLON à rédiger.
     AppelOffre ao8 =
@@ -665,11 +688,12 @@ public class DevDataSeeder implements ApplicationRunner {
         DAKAR_OUTILLAGE,
         Map.of(CritereEvaluation.QUALITE_TECHNIQUE, 70, CritereEvaluation.REFERENCES, 60));
 
-    // AO-012 : porte-char (besoin 19), publié (date limite à venir), offres anonymisées (R10).
+    // AO-012 : porte-char (besoin 19), publié (date limite dans 17 jours), offre anonymisée (R10).
+    // Sahel Engins (invité) n'a pas encore soumissionné : dépôt possible depuis le portail.
     AppelOffre ao12 =
         publier(
             8,
-            20,
+            25,
             "Acquisition d'un porte-char 50 t",
             TypeAppelOffre.APPEL_OFFRES,
             "110000000",
@@ -684,9 +708,32 @@ public class DevDataSeeder implements ApplicationRunner {
                 CritereEvaluation.SAV,
                 15),
             List.of(SAHEL, TERANGA));
-    ao12 =
-        offre(ao12, SAHEL, "98000000", 75, 24, "Tracteur Volvo FH16 et semi-remorque Nooteboom", 5);
     offre(ao12, TERANGA, "102000000", 60, 24, "Tracteur Mercedes Actros et semi Goldhofer", 3);
+
+    // AO-013 : chargeuses (sans besoin), sous le seuil, expédiées par le fournisseur sur le
+    // portail et livrées à l'heure ; aucune facture encore déposée.
+    AppelOffre ao13 =
+        publier(
+            80,
+            14,
+            "Acquisition de deux chargeuses sur pneus 3 m³",
+            TypeAppelOffre.DEMANDE_PRIX,
+            CategorieMateriel.MATERIEL_ROULANT,
+            2,
+            "90000000",
+            null,
+            criteres(CritereEvaluation.PRIX, 60, CritereEvaluation.DELAI, 40),
+            List.of(SAHEL, TERANGA));
+    ao13 = offre(ao13, SAHEL, "84000000", 40, 12, "Deux Caterpillar 950 GC, godet 3,1 m³", 74);
+    ao13 = offre(ao13, TERANGA, "88500000", 45, 12, "Deux Volvo L120H", 72);
+    ao13 = cloturer(ao13);
+    ao13 = attribuer(ao13, SAHEL, "Meilleur prix et meilleur délai.", 60, 58, 0);
+    ContratAchat c13 = contrat(ao13, 57, "12", 40, "Livraison au parc matériel de Dakar");
+    c13 = signer(c13, 50);
+    c13 = engagement(c13, true, null, 48);
+    c13 = expedier(c13, 16, "Acheminement par porte-char depuis l'entrepôt de Rufisque");
+    c13 = jalons(c13, 40, 16);
+    livrer(c13, 11, "BL-SE-2026-0301");
   }
 
   // --------------------------------------------------------------------------- appels d'offres
@@ -831,8 +878,17 @@ public class DevDataSeeder implements ApplicationRunner {
     return publierContrat(EventTypes.CONTRAT_GENERE, c);
   }
 
+  /** Signature en deux temps : le CSE la veille, le fournisseur le jour {@code jours}. */
   private ContratAchat signer(ContratAchat c, int jours) {
-    // Jalons planifiés relativement à la date de signature prévue.
+    ContratAchat envoye = envoyerEnSignature(c, jours + 1);
+    envoye.signerPourLeFournisseur(representant(envoye), ilYA(jours, 10));
+    ContratAchat signe = publierContrat(EventTypes.CONTRAT_SIGNE, envoye);
+    evenements.contrat(EventTypes.ENGAGEMENT_DEMANDE, signe);
+    return signe;
+  }
+
+  /** Signature du CSE (jalons planifiés relativement à la date de signature prévue). */
+  private ContratAchat envoyerEnSignature(ContratAchat c, int jours) {
     LocalDate signature = date(jours);
     int delai = c.getDelaiLivraisonJours();
     c.modifierClauses(
@@ -843,10 +899,20 @@ public class DevDataSeeder implements ApplicationRunner {
             new NouveauJalon(
                 "Expédition du matériel", signature.plusDays(delai - Math.max(2, delai / 10))),
             new NouveauJalon("Livraison sur chantier", signature.plusDays(delai))));
-    c.signer(ilYA(jours, 10));
-    ContratAchat signe = publierContrat(EventTypes.CONTRAT_SIGNE, c);
-    evenements.contrat(EventTypes.ENGAGEMENT_DEMANDE, signe);
-    return signe;
+    c.signerPourLeCse(RA, ilYA(jours, 16));
+    return publierContrat(EventTypes.CONTRAT_ENVOYE_SIGNATURE, c);
+  }
+
+  private ContratAchat refuserSignature(ContratAchat c, String motif) {
+    c.refuserSignature(motif);
+    return publierContrat(EventTypes.CONTRAT_SIGNATURE_REFUSEE, c);
+  }
+
+  /** Signataire côté fournisseur : le compte portail de démonstration pour Sahel Engins. */
+  private static Acteur representant(ContratAchat c) {
+    return SAHEL.id().equals(c.getFournisseurId())
+        ? PORTAIL_SAHEL
+        : new Acteur(null, c.getFournisseurNom());
   }
 
   private ContratAchat engagement(ContratAchat c, boolean approuve, String commentaire, int jours) {
@@ -855,8 +921,15 @@ public class DevDataSeeder implements ApplicationRunner {
         approuve ? EventTypes.ENGAGEMENT_VALIDE : EventTypes.ENGAGEMENT_REJETE, c);
   }
 
+  /** Démarrage de la livraison par le RA (secours hors portail). */
   private ContratAchat demarrer(ContratAchat c) {
     c.demarrerLivraison();
+    return publierContrat(EventTypes.LIVRAISON_DEMARREE, c);
+  }
+
+  /** Expédition déclarée par le fournisseur sur le portail. */
+  private ContratAchat expedier(ContratAchat c, int jours, String commentaire) {
+    c.declarerExpedition(date(jours), commentaire, LocalDate.now(clock));
     return publierContrat(EventTypes.LIVRAISON_DEMARREE, c);
   }
 

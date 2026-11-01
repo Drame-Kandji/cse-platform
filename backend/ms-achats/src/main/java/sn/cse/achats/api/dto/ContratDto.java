@@ -36,6 +36,11 @@ import sn.cse.achats.domain.model.StatutContrat;
  * @param engagement engagement DAF
  * @param jalons jalons
  * @param penalitesRetard pénalités de retard
+ * @param signatureCse signature du CSE
+ * @param signatureFournisseur signature du fournisseur
+ * @param motifRefusSignature motif du dernier refus de signature du fournisseur
+ * @param dateExpedition date d'expédition déclarée par le fournisseur
+ * @param commentaireExpedition commentaire d'expédition
  * @param version version
  */
 @Schema(name = "Contrat", description = "Contrat d'achat")
@@ -66,4 +71,14 @@ public record ContratDto(
     List<JalonDto> jalons,
     @Schema(description = "Pénalités de retard en FCFA", example = "855000")
         BigDecimal penalitesRetard,
+    SignatureDto signatureCse,
+    SignatureDto signatureFournisseur,
+    @Schema(
+            description = "Motif du dernier refus de signature du fournisseur",
+            example = "Le taux de pénalité de 0,1 % par jour dépasse nos conditions générales.")
+        String motifRefusSignature,
+    @Schema(description = "Date d'expédition déclarée par le fournisseur", example = "2026-11-02")
+        LocalDate dateExpedition,
+    @Schema(example = "Départ du port de Dakar par porte-char, arrivée prévue sous 48 h")
+        String commentaireExpedition,
     @Schema(example = "4") long version) {}

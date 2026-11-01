@@ -57,6 +57,14 @@ cse:
       relance: ${AUTH_SYNC_RELANCE:PT30S}
       periodique: ${AUTH_SYNC_PERIODIQUE:true}
       intervalle: ${AUTH_SYNC_INTERVALLE:PT15M}
+    # Comptes du portail fournisseur créés à la validation d'une inscription (FOURNISSEUR_VALIDE).
+    portail-fournisseur:
+      client-id: ${AUTH_PORTAIL_CLIENT_ID:cse-portail-fournisseur}
+      redirect-uri: ${AUTH_PORTAIL_REDIRECT_URI:http://localhost:5174/}
+      # Validité du lien « définir votre mot de passe » envoyé par Keycloak.
+      validite-lien: ${AUTH_PORTAIL_VALIDITE_LIEN:PT72H}
+      # FournisseurPayload ne porte pas le nom de l'interlocuteur : prénom affiché + raison sociale.
+      prenom-contact: ${AUTH_PORTAIL_PRENOM_CONTACT:Contact}
     keycloak:
       url: ${KEYCLOAK_ADMIN_URL:http://localhost:8180}
       realm: ${KEYCLOAK_REALM:cse}

@@ -10,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -29,6 +30,7 @@ import sn.cse.auth.application.exception.CompteIdentiteIntrouvableException;
 import sn.cse.auth.application.exception.IdentiteIndisponibleException;
 import sn.cse.auth.application.port.out.CompteIdentite;
 import sn.cse.auth.application.port.out.IdentityProviderPort;
+import sn.cse.auth.application.port.out.LienActivation;
 import sn.cse.auth.application.port.out.NouveauCompte;
 import sn.cse.auth.application.port.out.ProfilIdentite;
 import sn.cse.auth.domain.exception.EmailDejaUtiliseException;
@@ -48,6 +50,7 @@ public class KeycloakAdminAdapter implements IdentityProviderPort {
   static final String UPDATE_PASSWORD = "UPDATE_PASSWORD";
   static final String CONFIGURE_TOTP = "CONFIGURE_TOTP";
   static final String TYPE_OTP = "otp";
+  static final String TYPE_MOT_DE_PASSE = "password";
 
   private static final Logger LOG = LoggerFactory.getLogger(KeycloakAdminAdapter.class);
   private static final ParameterizedTypeReference<Map<String, Object>> OBJET =
@@ -95,10 +98,13 @@ public class KeycloakAdminAdapter implements IdentityProviderPort {
     representation.put("enabled", true);
     representation.put("emailVerified", true);
     representation.put("attributes", KeycloakAttributs.versKeycloak(compte.attributs()));
-    representation.put(
-        "credentials",
-        List.of(
-            Map.of("type", "password", "value", compte.motDePasseTemporaire(), "temporary", true)));
+    if (compte.motDePasseTemporaire() != null) {
+      representation.put(
+          "credentials",
+          List.of(
+              Map.of(
+                  "type", "password", "value", compte.motDePasseTemporaire(), "temporary", true)));
+    }
     representation.put(
         "requiredActions",
         compte.otpObligatoire()
@@ -186,17 +192,7 @@ public class KeycloakAdminAdapter implements IdentityProviderPort {
   @Override
   public void assignerRole(UUID id, Role role) {
     String mappings = utilisateur(id) + "/role-mappings/realm";
-    List<RoleRepresentation> actuels =
-        Objects.requireNonNullElse(
-            executer(
-                jeton ->
-                    http.get()
-                        .uri(mappings)
-                        .headers(h -> h.setBearerAuth(jeton))
-                        .retrieve()
-                        .body(ROLES),
-                id),
-            List.of());
+    List<RoleRepresentation> actuels = rolesRealm(id);
     List<RoleRepresentation> aRetirer =
         actuels.stream()
             .filter(r -> Role.depuisCode(r.name()).isPresent() && !role.code().equals(r.name()))
@@ -251,17 +247,7 @@ public class KeycloakAdminAdapter implements IdentityProviderPort {
 
   @Override
   public boolean otpConfigure(UUID id) {
-    List<Map<String, Object>> credentials =
-        executer(
-            jeton ->
-                http.get()
-                    .uri(utilisateur(id) + "/credentials")
-                    .headers(h -> h.setBearerAuth(jeton))
-                    .retrieve()
-                    .body(LISTE),
-            id);
-    return credentials != null
-        && credentials.stream().anyMatch(c -> TYPE_OTP.equals(c.get("type")));
+    return credentials(id).stream().anyMatch(c -> TYPE_OTP.equals(c.get("type")));
   }
 
   @Override
@@ -283,6 +269,96 @@ public class KeycloakAdminAdapter implements IdentityProviderPort {
           }
         });
     return comptes;
+  }
+
+  @Override
+  public Optional<CompteIdentite> compteParEmail(String email) {
+    List<Map<String, Object>> trouves =
+        executer(
+            jeton ->
+                http.get()
+                    .uri(properties.adminBase() + "/users?email={email}&exact=true", email)
+                    .headers(h -> h.setBearerAuth(jeton))
+                    .retrieve()
+                    .body(LISTE),
+            null);
+    Optional<UUID> id =
+        Objects.requireNonNullElse(trouves, List.<Map<String, Object>>of()).stream()
+            .filter(u -> email.equalsIgnoreCase(texte(u, "email")))
+            .map(u -> UUID.fromString(String.valueOf(u.get("id"))))
+            .findFirst();
+    if (id.isEmpty()) {
+      return Optional.empty();
+    }
+    Set<String> roles = new LinkedHashSet<>();
+    rolesRealm(id.get()).stream()
+        .map(RoleRepresentation::name)
+        .filter(nom -> Role.depuisCode(nom).isPresent())
+        .forEach(roles::add);
+    return Optional.of(compte(id.get(), roles));
+  }
+
+  @Override
+  public void rattacherFournisseur(UUID id, UUID fournisseurId) {
+    Map<String, Object> representation = lireUtilisateur(id);
+    Map<String, Object> attributs = new LinkedHashMap<>();
+    if (representation.get("attributes") instanceof Map<?, ?> existants) {
+      existants.forEach((cle, valeur) -> attributs.put(String.valueOf(cle), valeur));
+    }
+    attributs.put(KeycloakAttributs.FOURNISSEUR_ID, List.of(fournisseurId.toString()));
+    representation.put("attributes", attributs);
+    ecrireUtilisateur(id, representation);
+  }
+
+  @Override
+  public boolean motDePasseDefini(UUID id) {
+    return credentials(id).stream().anyMatch(c -> TYPE_MOT_DE_PASSE.equals(c.get("type")));
+  }
+
+  @Override
+  public void envoyerEmailActivation(UUID id, LienActivation lien) {
+    executer(
+        jeton ->
+            http.put()
+                .uri(
+                    utilisateur(id)
+                        + "/execute-actions-email?client_id={client}&redirect_uri={retour}"
+                        + "&lifespan={duree}",
+                    lien.clientId(),
+                    lien.redirectUri(),
+                    lien.validite().toSeconds())
+                .headers(h -> h.setBearerAuth(jeton))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(List.of(UPDATE_PASSWORD))
+                .retrieve()
+                .toBodilessEntity(),
+        id);
+  }
+
+  private List<RoleRepresentation> rolesRealm(UUID id) {
+    return Objects.requireNonNullElse(
+        executer(
+            jeton ->
+                http.get()
+                    .uri(utilisateur(id) + "/role-mappings/realm")
+                    .headers(h -> h.setBearerAuth(jeton))
+                    .retrieve()
+                    .body(ROLES),
+            id),
+        List.of());
+  }
+
+  private List<Map<String, Object>> credentials(UUID id) {
+    return Objects.requireNonNullElse(
+        executer(
+            jeton ->
+                http.get()
+                    .uri(utilisateur(id) + "/credentials")
+                    .headers(h -> h.setBearerAuth(jeton))
+                    .retrieve()
+                    .body(LISTE),
+            id),
+        List.of());
   }
 
   private List<UUID> membres(Role role) {

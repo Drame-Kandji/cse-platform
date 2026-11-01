@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import reactor.core.publisher.Mono;
+import sn.cse.gateway.filter.IpClientKeyResolver;
 
 /**
  * Table de routage construite depuis {@link GatewayProperties} : une route par service
@@ -29,6 +30,12 @@ public class RoutesConfiguration {
 
   /** Ordre de la route SSE : évaluée avant la route générale de son service. */
   static final int ORDRE_SSE = -10;
+
+  /** Ordre des routes publiques : évaluées avant la route générale de leur service. */
+  static final int ORDRE_PUBLIC = -5;
+
+  /** Infixe de l'identifiant des routes publiques ({@code <service>-public-<segment>}). */
+  public static final String INFIXE_PUBLIC = "-public-";
 
   /** Suffixe de l'identifiant des routes de documentation. */
   public static final String SUFFIXE_DOCUMENTATION = "-api-docs";
@@ -79,6 +86,23 @@ public class RoutesConfiguration {
     for (Map.Entry<String, GatewayProperties.Service> entree : properties.services().entrySet()) {
       String nom = entree.getKey();
       GatewayProperties.Service service = entree.getValue();
+      for (GatewayProperties.RoutePublique publique : service.publiques()) {
+        String id = idPublique(nom, publique);
+        routes.route(
+            id,
+            r ->
+                r.order(ORDRE_PUBLIC)
+                    .path(publique.chemin())
+                    .and()
+                    .method(publique.methodeHttp())
+                    .filters(
+                        f ->
+                            coupeCircuit(
+                                limiterParIp(f, properties, limiteur, id, publique),
+                                properties,
+                                nom))
+                    .uri(service.url()));
+      }
       routes.route(
           nom,
           r ->
@@ -119,6 +143,52 @@ public class RoutesConfiguration {
                 .setKeyResolver(cle)
                 .setDenyEmptyKey(false)
                 .setStatusCode(HttpStatus.TOO_MANY_REQUESTS));
+  }
+
+  /**
+   * @param service nom du service
+   * @param publique route publique
+   * @return identifiant de route (ex. {@code ms-fournisseurs-public-inscription})
+   */
+  public static String idPublique(String service, GatewayProperties.RoutePublique publique) {
+    String chemin = publique.chemin();
+    return service + INFIXE_PUBLIC + chemin.substring(chemin.lastIndexOf('/') + 1);
+  }
+
+  /**
+   * Limitation par adresse IP d'une route publique : même limiteur Redis, configuration propre à la
+   * route et clé distincte. {@code n} requêtes par minute = recharge d'un jeton par seconde, coût
+   * de {@code ceil(60/n)} jetons par requête et capacité de {@code n} requêtes.
+   */
+  private static GatewayFilterSpec limiterParIp(
+      GatewayFilterSpec f,
+      GatewayProperties properties,
+      ObjectProvider<RedisRateLimiter> limiteur,
+      String route,
+      GatewayProperties.RoutePublique publique) {
+    RedisRateLimiter redis = limiteur.getIfAvailable();
+    if (!properties.limiteDebit().actif() || redis == null) {
+      return f;
+    }
+    redis.getConfig().put(route, configurationParMinute(publique.requetesParMinute()));
+    return f.requestRateLimiter(
+        c ->
+            c.setRateLimiter(redis)
+                .setKeyResolver(new IpClientKeyResolver(route))
+                .setDenyEmptyKey(false)
+                .setStatusCode(HttpStatus.TOO_MANY_REQUESTS));
+  }
+
+  /**
+   * @param requetesParMinute requêtes autorisées par minute (1 à 60)
+   * @return configuration du seau à jetons Redis équivalente
+   */
+  static RedisRateLimiter.Config configurationParMinute(int requetesParMinute) {
+    int cout = (int) Math.ceil(60.0 / requetesParMinute);
+    return new RedisRateLimiter.Config()
+        .setReplenishRate(1)
+        .setRequestedTokens(cout)
+        .setBurstCapacity(cout * requetesParMinute);
   }
 
   private static GatewayFilterSpec coupeCircuit(

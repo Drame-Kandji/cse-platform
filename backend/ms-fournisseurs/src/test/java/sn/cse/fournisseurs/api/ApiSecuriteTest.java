@@ -33,6 +33,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import sn.cse.common.config.CseCoreAutoConfiguration;
 import sn.cse.common.exception.BusinessRuleException;
+import sn.cse.common.exception.ConflictException;
 import sn.cse.common.pagination.PageResponse;
 import sn.cse.common.security.CseSecurityAutoConfiguration;
 import sn.cse.common.security.Roles;
@@ -41,6 +42,7 @@ import sn.cse.common.web.CseWebAutoConfiguration;
 import sn.cse.fournisseurs.api.controller.CatalogueController;
 import sn.cse.fournisseurs.api.controller.EvaluationController;
 import sn.cse.fournisseurs.api.controller.FournisseurController;
+import sn.cse.fournisseurs.api.controller.InscriptionController;
 import sn.cse.fournisseurs.api.controller.LitigeController;
 import sn.cse.fournisseurs.api.controller.PortailController;
 import sn.cse.fournisseurs.application.port.in.EvaluerFournisseurUseCase;
@@ -48,12 +50,14 @@ import sn.cse.fournisseurs.application.port.in.GererCatalogueUseCase;
 import sn.cse.fournisseurs.application.port.in.GererCycleVieUseCase;
 import sn.cse.fournisseurs.application.port.in.GererLitigesUseCase;
 import sn.cse.fournisseurs.application.port.in.GererReferentielUseCase;
+import sn.cse.fournisseurs.application.port.in.InscrireFournisseurUseCase;
 import sn.cse.fournisseurs.application.port.in.PortailFournisseurUseCase;
 import sn.cse.fournisseurs.application.port.out.FournisseurRepository;
 import sn.cse.fournisseurs.application.port.out.LitigeRepository;
 import sn.cse.fournisseurs.application.query.FournisseurVue;
 import sn.cse.fournisseurs.application.service.ChargeurFournisseur;
 import sn.cse.fournisseurs.application.service.ConsultationService;
+import sn.cse.fournisseurs.domain.exception.CodesErreur;
 import sn.cse.fournisseurs.domain.exception.TransitionInterditeException;
 import sn.cse.fournisseurs.domain.model.Auteur;
 import sn.cse.fournisseurs.domain.model.CategorieMateriel;
@@ -74,7 +78,8 @@ import sn.cse.fournisseurs.support.Fixtures;
       EvaluationController.class,
       CatalogueController.class,
       LitigeController.class,
-      PortailController.class
+      PortailController.class,
+      InscriptionController.class
     })
 @ImportAutoConfiguration({
   CseCoreAutoConfiguration.class,
@@ -98,6 +103,7 @@ class ApiSecuriteTest {
   @MockitoBean private FournisseurRepository fournisseurs;
   @MockitoBean private LitigeRepository litigeRepository;
   @MockitoBean private PortailFournisseurUseCase portail;
+  @MockitoBean private InscrireFournisseurUseCase inscription;
 
   private Fournisseur fournisseurConnu() {
     Fournisseur f = Fixtures.actif();
@@ -525,6 +531,75 @@ class ApiSecuriteTest {
                     "{\"reference\":\"PH20\",\"designation\":\"Pelle\",\"categorie\":\"MATERIEL_ROULANT\",\"prixUnitaire\":10,\"unite\":\"unité\",\"delaiLivraisonJours\":4}"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.reference").value("PH20"));
+  }
+
+  // --- Inscription publique (contrat §13) ---
+
+  @Test
+  void should_accepter_l_inscription_sans_jeton_et_repondre_201() throws Exception {
+    when(inscription.inscrire(any())).thenReturn(Fixtures.enAttente());
+    mvc.perform(
+            post("/api/portail/inscription")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(corpsInscriptionValide()))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.id").isNotEmpty())
+        .andExpect(jsonPath("$.raisonSociale").value("Baobab Logistique"))
+        .andExpect(jsonPath("$.statut").value("EN_ATTENTE_VALIDATION"))
+        .andExpect(header().doesNotExist("Location"));
+  }
+
+  @Test
+  void should_repondre_400_par_champ_when_inscription_invalide() throws Exception {
+    mvc.perform(
+            post("/api/portail/inscription")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    corpsInscriptionValide()
+                        .replace("008789012 2E7", "12-AB")
+                        .replace("contact@baobab-logistique.sn", "pas-un-email")
+                        .replace("[\"CONSOMMABLE\"]", "[]")
+                        .replace("Seynabou Gueye", " ")))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentTypeCompatibleWith(PROBLEM))
+        .andExpect(jsonPath("$.errors", hasSize(4)));
+  }
+
+  @Test
+  void should_repondre_409_fournisseur_existant_when_ninea_ou_email_connu() throws Exception {
+    when(inscription.inscrire(any()))
+        .thenThrow(new ConflictException(CodesErreur.FOURNISSEUR_EXISTANT, "Déjà enregistré."));
+    mvc.perform(
+            post("/api/portail/inscription")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(corpsInscriptionValide()))
+        .andExpect(status().isConflict())
+        .andExpect(content().contentTypeCompatibleWith(PROBLEM))
+        .andExpect(jsonPath("$.code").value("FOURNISSEUR_EXISTANT"));
+  }
+
+  @Test
+  void should_garder_le_reste_du_portail_authentifie_when_inscription_publique() throws Exception {
+    mvc.perform(get("/api/portail/profil"))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.code").value("NON_AUTHENTIFIE"));
+    mvc.perform(put("/api/portail/catalogue").contentType(MediaType.APPLICATION_JSON).content("{}"))
+        .andExpect(status().isUnauthorized());
+    mvc.perform(
+            post("/api/fournisseurs")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(corpsFournisseurValide()))
+        .andExpect(status().isUnauthorized());
+    mvc.perform(get("/api/portail/profil").with(CseJwt.as(USER, Roles.RESPONSABLE_ACHATS)))
+        .andExpect(status().isForbidden());
+  }
+
+  private static String corpsInscriptionValide() {
+    return """
+        {"raisonSociale":"Baobab Logistique","ninea":"008789012 2E7","pays":"Sénégal",\
+        "ville":"Thiès","telephone":"+221 33 951 22 10","email":"contact@baobab-logistique.sn",\
+        "contactNom":"Seynabou Gueye","contactFonction":"Gérante","specialites":["CONSOMMABLE"]}
+        """;
   }
 
   private static String corpsFournisseurValide() {

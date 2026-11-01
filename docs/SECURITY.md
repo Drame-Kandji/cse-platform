@@ -22,6 +22,20 @@ voir [OPERATIONS.md](OPERATIONS.md) §9).
 | Politique de mot de passe | `length(8) and notUsername` |
 | Protection force brute | activée (`bruteForceProtected`) |
 | Connexion par e-mail | oui ; e-mails uniques ; réinitialisation de mot de passe autorisée |
+| SMTP (`smtpServer`) | MailHog en dev (`mailhog:1025`, sans authentification ni TLS), expéditeur `noreply@cse.sn` « CSE Plateforme » ; e-mails visibles sur http://localhost:8025. **En production : relais SMTP authentifié avec TLS.** |
+
+### Activation des comptes du portail fournisseur
+
+Aucun mot de passe n'est choisi ni transmis par la CSE : à la validation d'une inscription par le RA
+(`FOURNISSEUR_VALIDE`), ms-auth crée le compte Keycloak **sans mot de passe** (identifiant = e-mail, rôle
+`FOURNISSEUR`, attribut `fournisseur_id`, action requise `UPDATE_PASSWORD`) puis appelle
+`execute-actions-email` : Keycloak envoie un lien signé à usage unique, valable `AUTH_PORTAIL_VALIDITE_LIEN`
+(72 h par défaut), qui ramène sur le portail (`client_id=cse-portail-fournisseur`,
+`redirect_uri=AUTH_PORTAIL_REDIRECT_URI`, autorisée par le client). Le compte de service `cse-admin-api`
+n'a besoin que de `manage-users` (déjà attribué). Un compte existant portant un rôle interne n'est jamais
+converti en compte fournisseur (journalisé, arbitrage manuel par l'administrateur). Lien expiré : la DLT
+ou un rejeu de l'événement renvoie un e-mail tant qu'aucun mot de passe n'est défini ; l'administrateur
+peut aussi utiliser « Réinitialiser le mot de passe ».
 
 ### Clients
 
@@ -86,16 +100,20 @@ sequenceDiagram
 1. **Passerelle** (`ms-gateway/.../SecurityConfiguration`, WebFlux) : `/api/**` exige un JWT valide ;
    `/api/portail/**` exige `FOURNISSEUR` ; `/api/plateforme/**` exige un rôle interne ; tout autre chemin est
    refusé (`denyAll`). Publics : `/actuator/health/**`, `/actuator/info`, `/actuator/prometheus`, Swagger UI,
-   `/v3/api-docs/**`. Erreurs 401 `NON_AUTHENTIFIE` / 403 `ACCES_REFUSE` au format RFC 7807.
+   `/v3/api-docs/**` et la seule route métier publique **`POST /api/portail/inscription`** (méthode et chemin
+   exacts, déclarés dans `cse.gateway.services.ms-fournisseurs.publiques` ; `GET`/`PUT` sur ce chemin restent
+   soumis au rôle `FOURNISSEUR`). Erreurs 401 `NON_AUTHENTIFIE` / 403 `ACCES_REFUSE` au format RFC 7807.
 2. **Chaque service** (`CseSecurityAutoConfiguration`) : chaîne sans état (`STATELESS`), `@EnableMethodSecurity`,
    `@PreAuthorize` sur **chaque** méthode de contrôleur (constantes regroupées dans une classe `Acces` par
-   service). Les mêmes chemins techniques sont publics. Un service ne fait jamais confiance à la passerelle.
+   service). Les mêmes chemins techniques sont publics, plus `cse.security.public-paths` : seul ms-fournisseurs
+   en déclare un (`/api/portail/inscription`, contrôleur `POST` seul, `@PreAuthorize(Acces.PUBLIC)`). Un service
+   ne fait jamais confiance à la passerelle.
 3. **Règles « données »** dans les cas d'utilisation (via `CurrentUser`), voir §5.
 
 Le front (`app/access.ts`, `RequireRole`, `<Can>`) ne fait que masquer menus et boutons : ce n'est pas une
 barrière de sécurité.
 
-## 4. Matrice d'accès complète (124 opérations)
+## 4. Matrice d'accès complète (125 opérations)
 
 Générée à partir des `@PreAuthorize` des contrôleurs (`backend/ms-*/src/main/java/**/api/**`).
 Légende : CHEF = Chef de chantier, RM = Responsable Matériel, RA = Responsable Achats, DAF, DG = Direction
@@ -230,6 +248,7 @@ Générale, ADMIN = Administrateur système, FOURN = Fournisseur. Toute case `·
 | PUT | `/api/portail/profil` | · | · | · | · | · | · | ✅ | limité au claim `fournisseur_id` |
 | GET | `/api/portail/catalogue` | · | · | · | · | · | · | ✅ | limité au claim `fournisseur_id` |
 | PUT | `/api/portail/catalogue` | · | · | · | · | · | · | ✅ | limité au claim `fournisseur_id` |
+| POST | `/api/portail/inscription` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | **public** : aussi sans jeton, 5 requêtes/min par IP à la passerelle ; NINEA ou e-mail connu → 409 `FOURNISSEUR_EXISTANT` (message identique pour les deux) |
 
 #### ms-gateway
 
@@ -354,6 +373,11 @@ ms-fournisseurs **refusent de démarrer** sans clé valide (`cse.crypto.key` abs
   `GATEWAY_RATE_LIMIT_REPLENISH` = 20 jetons/s, `GATEWAY_RATE_LIMIT_BURST` = 40 ; dépassement → 429
   `TROP_DE_REQUETES` (ProblemDetail). `GATEWAY_RATE_LIMIT_ENABLED=false` n'existe que pour les tests ; ne
   jamais désactiver en production (voir `tests/perf/README.md`).
+- **Inscription publique** (`POST /api/portail/inscription`) : même limiteur Redis, configuration propre à la
+  route et clé distincte `public:<route>:ip:<adresse>` (toujours l'IP, même avec un jeton) :
+  `GATEWAY_INSCRIPTION_RATE_LIMIT_PER_MINUTE` = 5 requêtes/min, rafale comprise (recharge 1 jeton/s, coût
+  12 jetons, capacité 60) → 429 `TROP_DE_REQUETES`. `X-Forwarded-For` est ignoré (falsifiable) : derrière un
+  proxy, l'adresse vue est celle du proxy, à configurer (`forwarded` de confiance) avant la production.
 - **Assistant** : seau de jetons par utilisateur (`CHATBOT_RATE_CAPACITE` = 10 questions par
   `CHATBOT_RATE_PERIODE` = 1 min) → 429 ; question ≤ 1000 caractères, contexte ≤ 6000 caractères.
 - **Coupe-circuit** Resilience4j par route (délai 20 s, repli 503 `SERVICE_INDISPONIBLE`) et sur les appels
@@ -398,7 +422,7 @@ chiffrés** (passerelle → services, services → PostgreSQL/Kafka/Redis/Keyclo
 
 | Risque | Mesures en place | Écarts / à faire |
 |---|---|---|
-| **A01 Contrôle d'accès défaillant** | RBAC à la passerelle **et** dans chaque service (`@PreAuthorize` sur 124 opérations) ; règles de périmètre dans les cas d'utilisation ; tests `@WebMvcTest` 401/403 par service ; `denyAll` par défaut à la passerelle | l'UI masque mais ne protège pas (normal) ; le portail fournisseur n'a pas de front testé |
+| **A01 Contrôle d'accès défaillant** | RBAC à la passerelle **et** dans chaque service (`@PreAuthorize` sur 125 opérations) ; règles de périmètre dans les cas d'utilisation ; tests `@WebMvcTest` 401/403 par service ; `denyAll` par défaut à la passerelle | l'UI masque mais ne protège pas (normal) ; le portail fournisseur n'a pas de front testé |
 | **A02 Défaillances cryptographiques** | AES-256-GCM (IV aléatoire) sur IBAN et montants ; TLS 1.2/1.3 + HSTS au frontal ; mots de passe uniquement dans Keycloak (ADR-0012) | TLS interne non activé ; pas de rotation de clé outillée ; montants en clair dans Kafka et reporting |
 | **A03 Injection** | JPA/JDBC paramétrés partout (pas de concaténation SQL) ; `LIKE` échappé (ms-audit) ; tri en liste blanche ; Bean Validation sur tous les DTO ; assistant : délimiteurs, assainissement des données, aucun gabarit sur l'entrée utilisateur (anti-injection de prompt) | - |
 | **A04 Conception non sécurisée** | règles métier dans le domaine (machines à états, séparation des pouvoirs R09/R11/R13) ; verrou optimiste `@Version` ; index unique anti-double affectation ; outbox (pas d'état incohérent) | - |

@@ -48,6 +48,7 @@ import sn.cse.achats.application.service.ClotureAppelOffreService;
 import sn.cse.achats.application.service.ConsultationAppelsOffresService;
 import sn.cse.achats.application.service.ConsultationContratsService;
 import sn.cse.achats.application.service.ConsultationFinanceService;
+import sn.cse.achats.application.service.ContratsPortailService;
 import sn.cse.achats.application.service.DepotOffreService;
 import sn.cse.achats.application.service.EngagementService;
 import sn.cse.achats.application.service.EvaluationOffresService;
@@ -142,6 +143,7 @@ class CasUtilisationAchatsTest {
   private ConsultationFinanceService finance;
   private ProjectionsService projections;
   private PortailFournisseurService portail;
+  private ContratsPortailService contratsPortail;
 
   @BeforeEach
   void preparer() {
@@ -184,6 +186,7 @@ class CasUtilisationAchatsTest {
     finance = new ConsultationFinanceService(factures, contrats, horloge);
     projections = new ProjectionsService(ports.besoinRepository(), ports.projectionRepository());
     portail = new PortailFournisseurService(aos, contrats, factures, depot, facturation, horloge);
+    contratsPortail = new ContratsPortailService(contrats, ports.publisher(), horloge);
     ports.distants.put(F1.id(), F1);
     ports.distants.put(F2.id(), F2);
     ports.distants.put(SUSPENDU.id(), SUSPENDU);
@@ -259,10 +262,24 @@ class CasUtilisationAchatsTest {
     return ports.contrats.values().iterator().next();
   }
 
+  /** Signature en deux temps : le RA pour le CSE, puis le fournisseur sur le portail. */
+  private ContratAchat signer(ContratAchat c) {
+    execution.signer(c.getId(), RA);
+    return contratsPortail.signer(PORTAIL_F1, c.getId());
+  }
+
   private ContratAchat contratEngage() {
     ContratAchat c = contratGenere();
-    execution.signer(c.getId());
+    signer(c);
     return engagements.decider(new DecisionCommand(c.getId(), true, "OK", DAF));
+  }
+
+  private ContratAchat contratLivre() {
+    ContratAchat c = contratEngage();
+    LocalDate jour = LocalDate.ofInstant(horloge.instant(), ZoneOffset.UTC);
+    contratsPortail.expedier(PORTAIL_F1, c.getId(), jour, null);
+    return execution.confirmerLivraison(
+        new ConfirmerLivraisonCommand(c.getId(), jour, "BL-1", null));
   }
 
   @Nested
@@ -592,12 +609,24 @@ class CasUtilisationAchatsTest {
               20,
               List.of(new NouveauJalon("Expédition", LocalDate.of(2026, 10, 25)))));
 
-      ContratAchat signe = execution.signer(c.getId());
+      ContratAchat envoye = execution.signer(c.getId(), RA);
+
+      assertThat(envoye.getStatut()).isEqualTo(StatutContrat.EN_ATTENTE_SIGNATURE);
+      assertThat(envoye.getSignatureCse().orElseThrow().parNom()).isEqualTo("Fatou Sarr");
+      assertThat(ports.evenements).endsWith(EventTypes.CONTRAT_ENVOYE_SIGNATURE);
+      assertThat(consultationContrats.engagements(StatutApprobation.EN_ATTENTE, PAGE).content())
+          .isEmpty();
+
+      ContratAchat signe = contratsPortail.signer(PORTAIL_F1, c.getId());
 
       assertThat(signe.getStatut()).isEqualTo(StatutContrat.SIGNE);
+      assertThat(signe.getSignatureFournisseur().orElseThrow().parNom()).isEqualTo("Moussa Kane");
       assertThat(signe.getJalons()).hasSize(1);
       assertThat(ports.evenements)
-          .containsSubsequence(EventTypes.CONTRAT_SIGNE, EventTypes.ENGAGEMENT_DEMANDE);
+          .containsSubsequence(
+              EventTypes.CONTRAT_ENVOYE_SIGNATURE,
+              EventTypes.CONTRAT_SIGNE,
+              EventTypes.ENGAGEMENT_DEMANDE);
       assertThat(consultationContrats.engagements(StatutApprobation.EN_ATTENTE, PAGE).content())
           .hasSize(1);
       assertThat(consultationContrats.detail(c.getId()).getNumero()).isEqualTo("CTR-2026-001");
@@ -606,7 +635,7 @@ class CasUtilisationAchatsTest {
     @Test
     void should_refuser_livraison_tant_que_engagement_non_valide_R06() {
       ContratAchat c = contratGenere();
-      execution.signer(c.getId());
+      signer(c);
 
       assertThatThrownBy(() -> execution.demarrerLivraison(c.getId()))
           .isInstanceOf(BusinessRuleException.class)
@@ -634,12 +663,14 @@ class CasUtilisationAchatsTest {
     @Test
     void should_renvoyer_en_brouillon_et_publier_rejet_engagement() {
       ContratAchat c = contratGenere();
-      execution.signer(c.getId());
+      signer(c);
 
       ContratAchat rejete =
           engagements.decider(new DecisionCommand(c.getId(), false, "Budget", DAF));
 
       assertThat(rejete.getStatut()).isEqualTo(StatutContrat.BROUILLON);
+      assertThat(rejete.getSignatureCse()).isEmpty();
+      assertThat(rejete.getSignatureFournisseur()).isEmpty();
       assertThat(ports.evenements).contains(EventTypes.ENGAGEMENT_REJETE);
     }
 
@@ -652,7 +683,7 @@ class CasUtilisationAchatsTest {
               c.getClauses(),
               20,
               List.of(new NouveauJalon("Expédition", LocalDate.of(2026, 10, 25)))));
-      execution.signer(c.getId());
+      signer(c);
       UUID jalon = ports.contrats.get(c.getId()).getJalons().get(0).id();
 
       ContratAchat apres =
@@ -787,8 +818,29 @@ class CasUtilisationAchatsTest {
     }
 
     @Test
-    void should_lister_marches_et_factures_du_fournisseur_et_accepter_sa_facture() {
+    void should_refuser_facture_du_fournisseur_when_contrat_non_livre() {
       ContratAchat c = contratEngage();
+      LocalDate jour = LocalDate.ofInstant(horloge.instant(), ZoneOffset.UTC);
+
+      assertThatThrownBy(
+              () ->
+                  portail.deposerFacture(
+                      new RecevoirFactureCommand(
+                          c.getId(),
+                          "FA-P-0",
+                          new BigDecimal("1000"),
+                          BigDecimal.ZERO,
+                          jour,
+                          jour,
+                          PORTAIL_F1)))
+          .isInstanceOf(BusinessRuleException.class)
+          .satisfies(e -> assertThat(code(e)).isEqualTo(CodesErreur.CONTRAT_NON_LIVRE));
+      assertThat(ports.factures).isEmpty();
+    }
+
+    @Test
+    void should_lister_marches_et_factures_du_fournisseur_et_accepter_sa_facture() {
+      ContratAchat c = contratLivre();
       LocalDate jour = LocalDate.ofInstant(horloge.instant(), ZoneOffset.UTC);
 
       Facture f =
@@ -813,6 +865,129 @@ class CasUtilisationAchatsTest {
                   portail.deposerFacture(
                       new RecevoirFactureCommand(
                           c.getId(), "FA-P-2", BigDecimal.TEN, BigDecimal.ZERO, jour, jour, autre)))
+          .isInstanceOf(ResourceNotFoundException.class);
+    }
+  }
+
+  @Nested
+  class PortailContrats {
+
+    private final CurrentUser portailF2 =
+        new CurrentUser(
+            UUID.randomUUID(), "Awa Diallo", null, Set.of(Roles.FOURNISSEUR), Set.of(), F2.id());
+
+    private LocalDate aujourdhui() {
+      return LocalDate.ofInstant(horloge.instant(), ZoneOffset.UTC);
+    }
+
+    @Test
+    void should_lister_et_consulter_uniquement_ses_contrats() {
+      ContratAchat c = contratGenere();
+      execution.signer(c.getId(), RA);
+
+      assertThat(contratsPortail.contrats(PORTAIL_F1, null, PAGE).content())
+          .extracting(ContratAchat::getId)
+          .containsExactly(c.getId());
+      assertThat(
+              contratsPortail
+                  .contrats(PORTAIL_F1, StatutContrat.EN_ATTENTE_SIGNATURE, PAGE)
+                  .content())
+          .hasSize(1);
+      assertThat(contratsPortail.contrats(PORTAIL_F1, StatutContrat.SIGNE, PAGE).content())
+          .isEmpty();
+      assertThat(contratsPortail.contrats(portailF2, null, PAGE).content()).isEmpty();
+      assertThat(contratsPortail.contrat(PORTAIL_F1, c.getId()).getNumero())
+          .isEqualTo("CTR-2026-001");
+      // Contrat d'un autre fournisseur : 404, jamais 403.
+      assertThatThrownBy(() -> contratsPortail.contrat(portailF2, c.getId()))
+          .isInstanceOf(ResourceNotFoundException.class);
+      assertThatThrownBy(() -> contratsPortail.contrat(PORTAIL_F1, UUID.randomUUID()))
+          .isInstanceOf(ResourceNotFoundException.class);
+      assertThatThrownBy(() -> contratsPortail.contrats(PORTAIL_SANS_FOURNISSEUR, null, PAGE))
+          .isInstanceOf(ForbiddenOperationException.class)
+          .satisfies(e -> assertThat(code(e)).isEqualTo(CodesErreur.COMPTE_NON_RATTACHE));
+    }
+
+    @Test
+    void should_refuser_toute_action_sur_le_contrat_d_un_autre_fournisseur() {
+      ContratAchat c = contratGenere();
+      execution.signer(c.getId(), RA);
+      UUID id = c.getId();
+      LocalDate jour = aujourdhui();
+
+      assertThatThrownBy(() -> contratsPortail.signer(portailF2, id))
+          .isInstanceOf(ResourceNotFoundException.class);
+      assertThatThrownBy(() -> contratsPortail.refuser(portailF2, id, "Non"))
+          .isInstanceOf(ResourceNotFoundException.class);
+      assertThatThrownBy(() -> contratsPortail.expedier(portailF2, id, jour, null))
+          .isInstanceOf(ResourceNotFoundException.class);
+      assertThatThrownBy(() -> contratsPortail.enregistrerJalon(portailF2, id, id, jour))
+          .isInstanceOf(ResourceNotFoundException.class);
+      assertThat(ports.contrats.get(id).getStatut()).isEqualTo(StatutContrat.EN_ATTENTE_SIGNATURE);
+    }
+
+    @Test
+    void should_revenir_en_brouillon_et_publier_refus_de_signature() {
+      ContratAchat c = contratGenere();
+      execution.signer(c.getId(), RA);
+
+      ContratAchat refuse =
+          contratsPortail.refuser(PORTAIL_F1, c.getId(), "Délai de livraison irréaliste");
+
+      assertThat(refuse.getStatut()).isEqualTo(StatutContrat.BROUILLON);
+      assertThat(refuse.getSignatureCse()).isEmpty();
+      assertThat(refuse.getMotifRefusSignature()).isEqualTo("Délai de livraison irréaliste");
+      assertThat(ports.evenements).endsWith(EventTypes.CONTRAT_SIGNATURE_REFUSEE);
+      assertThatThrownBy(() -> contratsPortail.signer(PORTAIL_F1, c.getId()))
+          .isInstanceOf(ConflictException.class)
+          .satisfies(e -> assertThat(code(e)).isEqualTo(CodesErreur.TRANSITION_INTERDITE));
+    }
+
+    @Test
+    void should_expedier_puis_renseigner_jalon_apres_engagement_R06() {
+      ContratAchat c = contratGenere();
+      execution.modifierClauses(
+          new ModifierClausesCommand(
+              c.getId(),
+              c.getClauses(),
+              20,
+              List.of(new NouveauJalon("Expédition", LocalDate.of(2026, 10, 25)))));
+      signer(c);
+      LocalDate jour = aujourdhui();
+      UUID jalon = ports.contrats.get(c.getId()).getJalons().get(0).id();
+
+      assertThatThrownBy(() -> contratsPortail.expedier(PORTAIL_F1, c.getId(), jour, null))
+          .isInstanceOf(BusinessRuleException.class)
+          .satisfies(e -> assertThat(code(e)).isEqualTo(CodesErreur.ENGAGEMENT_NON_VALIDE));
+      engagements.decider(new DecisionCommand(c.getId(), true, null, DAF));
+      assertThatThrownBy(() -> contratsPortail.enregistrerJalon(PORTAIL_F1, c.getId(), jalon, jour))
+          .satisfies(e -> assertThat(code(e)).isEqualTo(CodesErreur.CONTRAT_NON_EN_LIVRAISON));
+
+      ContratAchat expedie =
+          contratsPortail.expedier(PORTAIL_F1, c.getId(), jour, "Porte-char, suivi 4521");
+
+      assertThat(expedie.getStatut()).isEqualTo(StatutContrat.EN_LIVRAISON);
+      assertThat(expedie.getDateExpedition()).isEqualTo(jour);
+      assertThat(ports.evenements).endsWith(EventTypes.LIVRAISON_DEMARREE);
+      ContratAchat apres = contratsPortail.enregistrerJalon(PORTAIL_F1, c.getId(), jalon, jour);
+      assertThat(apres.getJalons().get(0).dateReelle()).isEqualTo(jour);
+    }
+
+    @Test
+    void should_consulter_un_appel_d_offres_avec_le_filtre_de_la_liste() {
+      projections.fournisseurObserve(
+          new FournisseurObserveCommand(F1.id(), F1.raisonSociale(), StatutFournisseur.ACTIF, T0));
+      AppelOffre ouvert = publierAo();
+      AppelOffre restreint =
+          publication.publier(commande(null, TypeAppelOffre.DEMANDE_PRIX, List.of(F2.id())));
+
+      assertThat(portail.appelOffre(PORTAIL_F1, ouvert.getId()).getId()).isEqualTo(ouvert.getId());
+      assertThatThrownBy(() -> portail.appelOffre(PORTAIL_F1, restreint.getId()))
+          .isInstanceOf(ResourceNotFoundException.class);
+      assertThatThrownBy(() -> portail.appelOffre(PORTAIL_F1, UUID.randomUUID()))
+          .isInstanceOf(ResourceNotFoundException.class);
+      horloge.regler(ouvert.getDateLimite());
+      assertThatThrownBy(() -> portail.appelOffre(PORTAIL_F1, ouvert.getId()))
           .isInstanceOf(ResourceNotFoundException.class);
     }
   }

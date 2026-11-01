@@ -12,6 +12,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,7 @@ class ContratApiEtDonneesDemoIntegrationTest extends IntegrationTestBase {
   private static final Path INSTANTANE = Path.of("src/test/resources/openapi.json");
   private static final UUID DG = UUID.fromString("00000000-0000-0000-0000-000000000501");
   private static final UUID BESOIN_13 = UUID.fromString("b0000000-0000-0000-0000-000000000013");
+  private static final UUID F1 = UUID.fromString("f0000000-0000-0000-0000-000000000001");
 
   @Autowired AppelOffreRepository appelsOffres;
   @Autowired ContratRepository contrats;
@@ -104,11 +107,11 @@ class ContratApiEtDonneesDemoIntegrationTest extends IntegrationTestBase {
     seeder.run(null);
     seeder.run(null);
 
-    assertThat(compter("SELECT count(*) FROM appel_offre")).isEqualTo(12);
+    assertThat(compter("SELECT count(*) FROM appel_offre")).isEqualTo(13);
     assertThat(compter("SELECT count(DISTINCT statut) FROM appel_offre")).isEqualTo(3);
-    assertThat(compter("SELECT count(*) FROM contrat_achat")).isEqualTo(8);
-    assertThat(compter("SELECT count(DISTINCT statut) FROM contrat_achat")).isEqualTo(6);
-    assertThat(compter("SELECT count(*) FROM facture")).isEqualTo(12);
+    assertThat(compter("SELECT count(*) FROM contrat_achat")).isEqualTo(9);
+    assertThat(compter("SELECT count(DISTINCT statut) FROM contrat_achat")).isEqualTo(7);
+    assertThat(compter("SELECT count(*) FROM facture")).isEqualTo(11);
     assertThat(compter("SELECT count(DISTINCT statut) FROM facture")).isEqualTo(4);
     assertThat(compter("SELECT count(*) FROM besoin_a_acheter")).isEqualTo(11);
     assertThat(compter("SELECT count(*) FROM besoin_a_acheter WHERE appel_offre_id IS NULL"))
@@ -140,14 +143,24 @@ class ContratApiEtDonneesDemoIntegrationTest extends IntegrationTestBase {
     assertThat(compter("SELECT count(*) FROM appel_offre WHERE covalidation_statut = 'EN_ATTENTE'"))
         .isEqualTo(1);
     assertThat(compter("SELECT count(*) FROM contrat_achat WHERE engagement_statut = 'EN_ATTENTE'"))
-        .isEqualTo(2);
+        .isEqualTo(1);
+    // Signatures en deux temps : tout contrat signé porte les deux signatures.
+    assertThat(
+            compter(
+                "SELECT count(*) FROM contrat_achat WHERE date_signature IS NOT NULL AND"
+                    + " (signature_cse_par_nom IS NULL OR signature_fournisseur_par_nom IS NULL)"))
+        .isZero();
+    assertThat(
+            compter(
+                "SELECT count(*) FROM outbox_event WHERE event_type = 'CONTRAT_SIGNATURE_REFUSEE'"))
+        .isEqualTo(1);
     assertThat(
             compter(
                 "SELECT count(*) FROM outbox_event WHERE event_type = 'ALERTE_RETARD_LIVRAISON'"))
         .isEqualTo(1);
     assertThat(
             compter("SELECT count(*) FROM outbox_event WHERE event_type = 'LIVRAISON_EFFECTUEE'"))
-        .isEqualTo(3);
+        .isEqualTo(4);
     assertThat(
             compter(
                 "SELECT count(*) FROM appel_offre WHERE date_publication < TIMESTAMPTZ '2026-10-30' - INTERVAL '8 months'"))
@@ -156,14 +169,53 @@ class ContratApiEtDonneesDemoIntegrationTest extends IntegrationTestBase {
     mvc.perform(get("/api/finance/synthese").with(CseJwt.as(DG, Roles.DIRECTION_GENERALE)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.facturesEnRetard").value(2))
-        .andExpect(jsonPath("$.engagementsEnAttente").value(2));
+        .andExpect(jsonPath("$.engagementsEnAttente").value(1));
     mvc.perform(
             get("/api/appels-offres?statut=PUBLIE").with(CseJwt.as(DG, Roles.DIRECTION_GENERALE)))
         // Les séquences de référence ne sont pas réinitialisées par TRUNCATE : seul l'objet est
         // figé.
         .andExpect(jsonPath("$.content[0].objet").value("Acquisition d'un porte-char 50 t"))
         .andExpect(jsonPath("$.content[0].besoinReference").value("BES-2026-0020"))
-        .andExpect(jsonPath("$.content[0].nombreOffres").value(2));
+        .andExpect(jsonPath("$.content[0].nombreOffres").value(1));
+
+    // Portail du fournisseur 1 (compte de démonstration fournisseur@cse.sn).
+    var portailF1 =
+        CseJwt.avecClaims(
+            UUID.fromString("00000000-0000-0000-0000-000000000701"),
+            Map.of("fournisseur_id", F1.toString()),
+            Roles.FOURNISSEUR);
+    mvc.perform(get("/api/portail/appels-offres").with(portailF1))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.content[?(@.objet==\"Acquisition d'un porte-char 50 t\")].invite")
+                .value(true))
+        .andExpect(
+            jsonPath("$.content[?(@.objet==\"Acquisition d'un porte-char 50 t\")].offreDeposee")
+                .value(false));
+    assertThat(
+            compter(
+                "SELECT count(*) FROM appel_offre WHERE statut = 'PUBLIE' AND date_limite >"
+                    + " TIMESTAMPTZ '2026-10-30 08:00:00+00' + INTERVAL '10 days'"))
+        .isEqualTo(1);
+    for (String statut : List.of("EN_ATTENTE_SIGNATURE", "ENGAGEMENT_VALIDE", "LIVRE")) {
+      mvc.perform(get("/api/portail/contrats?statut=" + statut).with(portailF1))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.totalElements").isNotEmpty())
+          .andExpect(jsonPath("$.content[0].fournisseurId").value(F1.toString()));
+    }
+    assertThat(
+            compter(
+                "SELECT count(*) FROM contrat_achat c WHERE c.fournisseur_id = '"
+                    + F1
+                    + "' AND c.statut = 'LIVRE' AND NOT EXISTS (SELECT 1 FROM facture f WHERE"
+                    + " f.contrat_id = c.id)"))
+        .isEqualTo(1);
+    assertThat(
+            compter(
+                "SELECT count(DISTINCT f.statut) FROM facture f WHERE f.fournisseur_id = '"
+                    + F1
+                    + "' AND f.statut IN ('RECUE', 'MANDATEE', 'PAYEE')"))
+        .isEqualTo(3);
   }
 
   @Test

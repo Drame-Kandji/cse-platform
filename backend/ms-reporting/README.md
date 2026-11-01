@@ -24,7 +24,7 @@ Message illisible / valeur d'énumération inconnue → DLT sans rejeu ; erreur 
 | `cse.fournisseurs.events` | `FOURNISSEUR_INSCRIT`, `_VALIDE`, `_MODIFIE`, `_SUSPENDU`, `_REACTIVE`, `_BLACKLISTAGE_DEMANDE`, `_BLACKLISTAGE_REFUSE`, `_BLACKLISTE`, `SCORE_RECALCULE`, `DOCUMENT_EXPIRE` | `FournisseurPayload` | `fournisseurs` |
 | | `LITIGE_OUVERT`, `LITIGE_RESOLU` (aussi émis pour un litige classé, `statut=CLASSE`) | `LitigePayload` | `litiges` |
 | `cse.achats.events` | `AO_PUBLIE`, `OFFRE_DEPOSEE`, `AO_CLOTURE`, `ATTRIBUTION_PROPOSEE`, `ATTRIBUTION_REFUSEE`, `MARCHE_ATTRIBUE` | `AppelOffrePayload` | `appels_offres` |
-| | `CONTRAT_GENERE`, `CONTRAT_SIGNE`, `ENGAGEMENT_DEMANDE`, `ENGAGEMENT_VALIDE`, `ENGAGEMENT_REJETE`, `LIVRAISON_DEMARREE`, `LIVRAISON_EFFECTUEE`, `ALERTE_RETARD_LIVRAISON`, `CONTRAT_CLOTURE` | `ContratPayload` | `contrats` |
+| | `CONTRAT_GENERE`, `CONTRAT_ENVOYE_SIGNATURE`, `CONTRAT_SIGNATURE_REFUSEE`, `CONTRAT_SIGNE`, `ENGAGEMENT_DEMANDE`, `ENGAGEMENT_VALIDE`, `ENGAGEMENT_REJETE`, `LIVRAISON_DEMARREE`, `LIVRAISON_EFFECTUEE`, `ALERTE_RETARD_LIVRAISON`, `CONTRAT_CLOTURE` | `ContratPayload` | `contrats` |
 | | `FACTURE_RECUE`, `FACTURE_MANDATEE`, `FACTURE_PAYEE`, `FACTURE_REJETEE` | `FacturePayload` | `factures` |
 
 ## Vues (read models) et ordre des événements
@@ -92,7 +92,7 @@ Montants FCFA entiers ; taux en % à une décimale ; un taux de dénominateur nu
 - **Besoins** (soumis dans P, statut courant) : comptes par statut et priorité ;
   `delaiMoyenTraitementHeures` = moyenne (décision − soumission).
 - **Achats** : `aoPublies` / `aoClotures` / `aoAttribues` = AO publiés dans P par statut courant ;
-  `contratsEnCours` = BROUILLON..EN_LIVRAISON ; `livraisonsEnRetard` = non livrés, prévue < aujourd'hui ;
+  `contratsEnCours` = BROUILLON..EN_LIVRAISON (dont EN_ATTENTE_SIGNATURE, migration V2) ; `livraisonsEnRetard` = non livrés, prévue < aujourd'hui ;
   `delaiMoyenApprovisionnementJours` = moyenne (livraison réelle − publication de l'AO) des contrats livrés
   dans P ; `tauxLivraisonALHeure` = livrés à la date prévue ou avant / livrés avec date prévue.
 - **Fournisseurs** : actifs, score moyen des actifs, litiges ouverts (OUVERT, EN_COURS) ; `top` = 5 actifs

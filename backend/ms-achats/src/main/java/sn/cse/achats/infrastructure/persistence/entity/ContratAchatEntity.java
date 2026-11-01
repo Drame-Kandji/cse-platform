@@ -115,6 +115,21 @@ public class ContratAchatEntity extends VersionedEntity {
 
   private LocalDate dateDerniereAlerteRetard;
 
+  private UUID signatureCseParId;
+  private String signatureCseParNom;
+  private Instant signatureCseDate;
+  private UUID signatureFournisseurParId;
+  private String signatureFournisseurParNom;
+  private Instant signatureFournisseurDate;
+
+  @Column(columnDefinition = "text")
+  private String motifRefusSignature;
+
+  private LocalDate dateExpedition;
+
+  @Column(columnDefinition = "text")
+  private String commentaireExpedition;
+
   @OneToMany(mappedBy = "contrat", cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy("ordre ASC")
   @BatchSize(size = 50)

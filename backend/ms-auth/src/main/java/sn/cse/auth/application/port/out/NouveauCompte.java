@@ -10,7 +10,8 @@ import sn.cse.auth.domain.model.Utilisateur.Identite;
  * @param identite identité (l'e-mail sert d'identifiant de connexion)
  * @param role rôle prévu (attribué ensuite par {@link IdentityProviderPort#assignerRole})
  * @param attributs attributs spécifiques
- * @param motDePasseTemporaire mot de passe temporaire (jamais conservé par ms-auth)
+ * @param motDePasseTemporaire mot de passe temporaire (jamais conservé par ms-auth) ; {@code null}
+ *     pour un compte sans mot de passe, activé par l'e-mail « définir votre mot de passe »
  * @param otpObligatoire vrai si la configuration TOTP doit être exigée
  */
 public record NouveauCompte(

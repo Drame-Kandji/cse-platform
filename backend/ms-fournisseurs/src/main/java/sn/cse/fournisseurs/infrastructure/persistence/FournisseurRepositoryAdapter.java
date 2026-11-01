@@ -70,6 +70,11 @@ public class FournisseurRepositoryAdapter implements FournisseurRepository {
   }
 
   @Override
+  public boolean emailUtilise(String email) {
+    return jpa.existsByEmailIgnoreCase(email);
+  }
+
+  @Override
   public PageResponse<Fournisseur> rechercher(CriteresFournisseurs criteres, PageQuery page) {
     return Pages.versReponse(
         jpa.findAll(specification(criteres), PageableFactory.toPageable(page)),

@@ -3,7 +3,7 @@
 Microservice (port **8083**, schéma PostgreSQL `achats`, utilisateur `ms_achats`) qui couvre la mise en
 concurrence et l'exécution des achats : appels d'offres, offres, évaluation multicritère, attribution,
 contrats, engagements DAF, livraisons, factures, synthèse financière et portail fournisseur.
-Contrat d'API : `docs/API_CONTRACT.md` §5 ; événements : §11.
+Contrat d'API : `docs/API_CONTRACT.md` §5 et §13 (portail fournisseur) ; événements : §11.
 
 ## Architecture (hexagonale)
 
@@ -24,7 +24,7 @@ sn.cse.achats
 |---|---|---|
 | R02 | `AppelOffre.deposerOffre` | aucune offre après `dateLimite` → 422 `DATE_LIMITE_DEPASSEE` |
 | R03 | `ContratAchat.generer` | contrat uniquement depuis un AO `ATTRIBUE` → 422 `AO_NON_ATTRIBUE` ; un seul contrat par AO (409) |
-| R06 | `ContratAchat.demarrerLivraison` | engagement DAF validé requis → 422 `ENGAGEMENT_NON_VALIDE` |
+| R06 | `ContratAchat.demarrerLivraison`, `declarerExpedition` | engagement DAF validé requis → 422 `ENGAGEMENT_NON_VALIDE` |
 | R10 | `AppelOffre.estAnonyme`, mapper | offres anonymisées (`codeAnonyme`, fournisseur null, aucune note) tant que `PUBLIE` |
 | R11 | `AppelOffre.proposer/coValider/approuverAttribution` | co-validation RM toujours ; DG si montant > `cse.achats.seuil-delegation` ; refus = proposition supprimée ; toutes approbations → `ATTRIBUE` + contrat `BROUILLON` |
 | R14 | `FournisseurConnu.exigerEligible` | seul un fournisseur `ACTIF` est invité ou soumissionne → 422 `FOURNISSEUR_NON_ELIGIBLE` |
@@ -35,9 +35,30 @@ sn.cse.achats
 Lien AO → contrat : `AppelOffre.contratId` expose le contrat généré une fois l'AO `ATTRIBUE` (une requête
 groupée par page) ; `GET /api/contrats?appelOffreId=` filtre les contrats par AO d'origine.
 
-Contrat : `BROUILLON → SIGNE → ENGAGEMENT_VALIDE → EN_LIVRAISON → LIVRE → CLOTURE` (+ `SIGNE → BROUILLON`
-quand la DAF refuse l'engagement). Pénalités = montant × `penaliteRetardPctParJour` × jours de retard,
-plafonnées à `plafond-penalites-pct`. Clôture refusée si des factures restent à payer (409 `FACTURES_EN_COURS`).
+Contrat : `BROUILLON → EN_ATTENTE_SIGNATURE → SIGNE → ENGAGEMENT_VALIDE → EN_LIVRAISON → LIVRE → CLOTURE`,
+avec deux retours en `BROUILLON` pour renégocier : le fournisseur refuse de signer (`EN_ATTENTE_SIGNATURE → BROUILLON`,
+signature CSE annulée, `motifRefusSignature` conservé jusqu'à sa signature) ou la DAF refuse l'engagement
+(`SIGNE → BROUILLON`, les deux signatures annulées). Toute autre transition : 409 `TRANSITION_INTERDITE`.
+Pénalités = montant × `penaliteRetardPctParJour` × jours de retard, plafonnées à `plafond-penalites-pct`.
+Clôture refusée si des factures restent à payer (409 `FACTURES_EN_COURS`).
+
+## Signature en deux temps et portail fournisseur (§13)
+
+| Étape | Route | Effet |
+|---|---|---|
+| Signature du CSE (RA) | `POST /api/contrats/{id}/signer` | `BROUILLON → EN_ATTENTE_SIGNATURE`, clauses figées (409 `CONTRAT_NON_MODIFIABLE`), `signatureCse {parNom, date}`, publie `CONTRAT_ENVOYE_SIGNATURE` |
+| Signature du fournisseur | `POST /api/portail/contrats/{id}/signer` | `→ SIGNE`, `signatureFournisseur`, échéance de livraison fixée, engagement `EN_ATTENTE` ; publie `CONTRAT_SIGNE` puis `ENGAGEMENT_DEMANDE` |
+| Refus du fournisseur | `POST /api/portail/contrats/{id}/refuser {motif}` | `→ BROUILLON`, publie `CONTRAT_SIGNATURE_REFUSEE` (payload enrichi de `motif`) |
+| Expédition | `POST /api/portail/contrats/{id}/expedier {dateExpedition, commentaire?}` | R06 puis `→ EN_LIVRAISON`, `dateExpedition` (ni future : 422 `DATE_FUTURE`, ni avant la signature : 422 `DATE_EXPEDITION_INVALIDE`) ; publie `LIVRAISON_DEMARREE` (payload enrichi de `dateExpedition`, `commentaireExpedition`) |
+| Jalons | `PATCH /api/portail/contrats/{id}/jalons/{jalonId} {dateReelle}` | contrat `EN_LIVRAISON` requis (409 `CONTRAT_NON_EN_LIVRAISON`) |
+| Facture | `POST /api/portail/factures` | contrat `LIVRE` requis (422 `CONTRAT_NON_LIVRE`) ; un contrat `CLOTURE` est soldé (422 `CONTRAT_NON_FACTURABLE`) |
+
+Lectures : `GET /api/portail/contrats?statut&page&size&sort`, `GET /api/portail/contrats/{id}`,
+`GET /api/portail/appels-offres/{id}` (même filtre que la liste). `AppelOffrePortail` expose `invite`,
+`offreDeposee`, `monOffreId`, `chantierNom` ; `OffrePortail` expose `resultat` (`EN_COURS`, puis `RETENUE` ou
+`NON_RETENUE` une fois l'AO `ATTRIBUE`). Toute ressource d'un autre fournisseur renvoie **404** (jamais 403) ;
+compte sans claim `fournisseur_id` : 403 `COMPTE_NON_RATTACHE`. `POST /api/contrats/{id}/livraison/demarrer`
+(RA) reste disponible en secours « hors portail » (sans `dateExpedition`).
 
 ## Vérification des fournisseurs
 
@@ -50,7 +71,7 @@ retry + circuit breaker `fournisseurs`). En cas d'échec : repli sur la projecti
 
 - Produits (outbox, `cse.achats.events`, + entrée `AUDIT`) : `AO_PUBLIE`, `OFFRE_DEPOSEE`, `AO_CLOTURE`,
   `ATTRIBUTION_PROPOSEE`, `ATTRIBUTION_REFUSEE`, `MARCHE_ATTRIBUE` (`AppelOffrePayload`) ; `CONTRAT_GENERE`,
-  `CONTRAT_SIGNE`, `ENGAGEMENT_DEMANDE`, `ENGAGEMENT_VALIDE`, `ENGAGEMENT_REJETE`, `LIVRAISON_DEMARREE`,
+  `CONTRAT_ENVOYE_SIGNATURE`, `CONTRAT_SIGNATURE_REFUSEE`, `CONTRAT_SIGNE`, `ENGAGEMENT_DEMANDE`, `ENGAGEMENT_VALIDE`, `ENGAGEMENT_REJETE`, `LIVRAISON_DEMARREE`,
   `LIVRAISON_EFFECTUEE`, `ALERTE_RETARD_LIVRAISON`, `CONTRAT_CLOTURE` (`ContratPayload`, avec
   `tarifJournalierEstime` = prix unitaire × `taux-tarif-journalier`) ; `FACTURE_*` (`FacturePayload`, avec les dates métier
   `dateEmission`, `dateMandatement`, `datePaiement` pour dater mandats et paiements côté reporting).
@@ -80,10 +101,22 @@ et budgets chiffrés au repos (sommes calculées en Java, jamais en SQL).
 
 ## Données de démonstration (profil `dev`)
 
-`DevDataSeeder` (idempotent, via agrégats + outbox, dates relatives à l'horloge sur 9 mois) : 12 AO
-(PUBLIE/CLOTURE/ATTRIBUE, dont un en attente DG et un en attente de co-validation RM), 8 contrats couvrant
-tous les statuts (livraisons à l'heure, en retard avec pénalités, retard en cours alerté), 12 factures
-(RECUE/MANDATEE/PAYEE/REJETEE, 2 en retard), fournisseurs et chantiers §12.
+`DevDataSeeder` (idempotent, via agrégats + outbox, dates relatives à l'horloge sur 9 mois) : 13 AO
+(PUBLIE/CLOTURE/ATTRIBUE, dont un en attente DG et un en attente de co-validation RM), 9 contrats couvrant
+tous les statuts (signature en deux temps CSE puis fournisseur, un refus de signature, expéditions déclarées
+sur le portail ou démarrées hors portail, livraisons à l'heure, en retard avec pénalités, retard en cours
+alerté), 11 factures (RECUE/MANDATEE/PAYEE/REJETEE, 2 en retard), fournisseurs et chantiers §12.
+
+Portail du fournisseur 1 (Sahel Engins SA, compte `fournisseur@cse.sn`), numéros obtenus sur une base vide :
+
+| Élément | Statut | Pour la démonstration |
+|---|---|---|
+| `AO-2026-012` porte-char 50 t | `PUBLIE`, invité, date limite à J+17, aucune offre de F1 | déposer une offre |
+| `CTR-2026-007` camions malaxeurs | `EN_ATTENTE_SIGNATURE` (refusé une fois : pénalités, clause revue puis re-signée par le RA) | signer ou refuser |
+| `CTR-2026-005` finisseur d'enrobés | `ENGAGEMENT_VALIDE` (facture d'avance `FA-SE-2026-176` rejetée) | déclarer l'expédition, puis les jalons |
+| `CTR-2026-009` chargeuses sur pneus (`AO-2026-013`) | `LIVRE`, aucune facture | déposer une facture |
+| `CTR-2026-002` barge de travaux | `LIVRE` : `FA-SE-2026-079` `PAYEE`, `FA-SE-2026-102` `MANDATEE`, `FA-SE-2026-133` `RECUE` | suivre les factures |
+| `CTR-2026-001` grue mobile | `CLOTURE` : `FA-SE-2026-041` et `FA-SE-2026-057` `PAYEE` | historique |
 
 Cohérence inter-services : les 11 projections `BesoinAAcheter` sont les besoins **EN_ACHAT 13 à 23** du seed
 de ms-besoins (mêmes identifiants, désignation, catégorie, quantité, priorité, chantier, spécifications ; la
@@ -99,6 +132,10 @@ cd backend && flock /tmp/cse-maven.lock env MAVEN_OPTS=-Xmx768m mvn -o -q -pl ms
 # régénérer volontairement l'instantané OpenAPI :  ... verify -Dcse.openapi.regenerer=true
 ```
 
-Tests : domaine (règles `_R02`…`_R14`, stratégies), cas d'utilisation sur ports en mémoire, `@WebMvcTest`
-sécurité/ProblemDetail, WireMock de l'adaptateur ms-fournisseurs, ArchUnit, 2 classes Testcontainers
+Migrations : `V1__schema_achats.sql`, `V2__signature_fournisseur_et_expedition.sql` (valeur
+`EN_ATTENTE_SIGNATURE` du type `statut_contrat`, colonnes de signatures, motif de refus et expédition).
+
+Tests : domaine (règles `_R02`…`_R14`, stratégies, signature en deux temps, expédition), cas d'utilisation sur
+ports en mémoire, `@WebMvcTest` sécurité/ProblemDetail (dont `PortailContratsApiTest` : 401, 403 rôles internes,
+404 autre fournisseur sur chaque route du portail), WireMock de l'adaptateur ms-fournisseurs, ArchUnit, 2 classes Testcontainers
 (cycle complet, instantané OpenAPI + seed). Configuration de test : `application-test.yml` (profil `test`).

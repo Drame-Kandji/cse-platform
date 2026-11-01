@@ -64,6 +64,9 @@ class ReglesConfigurationTest {
             EventTypes.AO_PUBLIE,
             EventTypes.ATTRIBUTION_PROPOSEE,
             EventTypes.MARCHE_ATTRIBUE,
+            EventTypes.CONTRAT_SIGNE,
+            EventTypes.CONTRAT_SIGNATURE_REFUSEE,
+            EventTypes.LIVRAISON_DEMARREE,
             EventTypes.ENGAGEMENT_DEMANDE,
             EventTypes.ENGAGEMENT_VALIDE,
             EventTypes.ENGAGEMENT_REJETE,
@@ -82,6 +85,8 @@ class ReglesConfigurationTest {
     "ALERTE_MAINTENANCE,RESPONSABLE_MATERIEL",
     "MATERIEL_REFORME_DEMANDEE,DIRECTION_GENERALE",
     "MARCHE_ATTRIBUE,RESPONSABLE_ACHATS",
+    "CONTRAT_SIGNE,RESPONSABLE_ACHATS",
+    "CONTRAT_SIGNATURE_REFUSEE,RESPONSABLE_ACHATS",
     "ENGAGEMENT_DEMANDE,DAF",
     "ENGAGEMENT_VALIDE,RESPONSABLE_ACHATS",
     "ENGAGEMENT_REJETE,RESPONSABLE_ACHATS",
@@ -200,6 +205,73 @@ class ReglesConfigurationTest {
         .anySatisfy(p -> assertThat(p.chantierPourChefs()).hasToString(chantier));
     assertThat(moteur.router(evt("FIN_AFFECTATION_PROCHAINE", Map.of("chantierId", chantier))))
         .hasSize(2);
+  }
+
+  @Test
+  void should_notify_ra_of_supplier_signature_refusal_with_motif() {
+    NotificationPlanifiee refus =
+        moteur
+            .router(
+                evt(
+                    "CONTRAT_SIGNATURE_REFUSEE",
+                    Map.of(
+                        "contratId",
+                        "k1",
+                        "numero",
+                        "CTR-2026-007",
+                        "fournisseurNom",
+                        "Sahel Engins SA",
+                        "designation",
+                        "Camion malaxeur 8 m³",
+                        "statut",
+                        "BROUILLON",
+                        "motif",
+                        "Pénalités trop élevées")))
+            .get(0);
+    assertThat(refus.roles()).containsExactly("RESPONSABLE_ACHATS");
+    assertThat(refus.niveau()).isEqualTo(NiveauNotification.ALERTE);
+    assertThat(refus.titre()).isEqualTo("Signature refusée : CTR-2026-007");
+    assertThat(refus.message())
+        .contains("Sahel Engins SA a refusé de signer le contrat CTR-2026-007")
+        .contains("Motif : Pénalités trop élevées");
+    assertThat(refus.lien()).isEqualTo("/contrats/k1");
+    assertThat(refus.email()).isTrue();
+    // L'envoi en signature concerne le fournisseur (portail) : aucune notification interne.
+    assertThat(moteur.router(evt(EventTypes.CONTRAT_ENVOYE_SIGNATURE, Map.of()))).isEmpty();
+  }
+
+  @Test
+  void should_notify_ra_and_rm_only_when_supplier_declares_shipment() {
+    assertThat(moteur.router(evt("LIVRAISON_DEMARREE", Map.of("contratId", "k1")))).isEmpty();
+    List<NotificationPlanifiee> expedition =
+        moteur.router(
+            evt(
+                "LIVRAISON_DEMARREE",
+                Map.of(
+                    "contratId",
+                    "k1",
+                    "numero",
+                    "CTR-2026-005",
+                    "fournisseurNom",
+                    "Sahel Engins SA",
+                    "quantite",
+                    1,
+                    "designation",
+                    "Finisseur d'enrobés",
+                    "dateExpedition",
+                    "2026-11-02",
+                    "dateLivraisonPrevue",
+                    "2026-11-20")));
+    assertThat(expedition)
+        .hasSize(2)
+        .flatExtracting(p -> List.copyOf(p.roles()))
+        .containsExactlyInAnyOrder("RESPONSABLE_ACHATS", "RESPONSABLE_MATERIEL");
+    assertThat(expedition)
+        .allSatisfy(
+            p ->
+                assertThat(p.message())
+                    .contains("le 02/11/2026 (contrat CTR-2026-005)")
+                    .contains("Livraison prévue le 20/11/2026"));
   }
 
   private static EvenementMetier evt(String type, Map<String, Object> donnees) {

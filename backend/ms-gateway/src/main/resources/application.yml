@@ -61,6 +61,8 @@ cse:
           - /api/portail/attributions/**
           - /api/portail/factures
           - /api/portail/factures/**
+          - /api/portail/contrats
+          - /api/portail/contrats/**
       ms-fournisseurs:
         url: ${MS_FOURNISSEURS_URL:http://localhost:8084}
         chemins:
@@ -78,6 +80,11 @@ cse:
           - /api/portail/inscription/**
           - /api/portail/litiges
           - /api/portail/litiges/**
+        # Routes sans jeton (méthode + chemin exacts), limitées par adresse IP client (contrat §13).
+        publiques:
+          - chemin: /api/portail/inscription
+            methode: POST
+            requetes-par-minute: ${GATEWAY_INSCRIPTION_RATE_LIMIT_PER_MINUTE:5}
       ms-suivi:
         url: ${MS_SUIVI_URL:http://localhost:8085}
         chemins:

@@ -1,5 +1,7 @@
 package sn.cse.achats.infrastructure.messaging;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 import sn.cse.achats.application.port.out.AchatsEventPublisher;
@@ -11,6 +13,7 @@ import sn.cse.achats.domain.model.Facture;
 import sn.cse.achats.domain.model.FournisseurInvite;
 import sn.cse.achats.domain.model.Offre;
 import sn.cse.common.outbox.OutboxWriter;
+import sn.cse.events.EventTypes;
 import sn.cse.events.Topics;
 import sn.cse.events.payload.AppelOffrePayload;
 import sn.cse.events.payload.ContratPayload;
@@ -19,6 +22,11 @@ import sn.cse.events.payload.FacturePayload;
 /**
  * Publie les événements de ms-achats via l'outbox transactionnelle (topic {@code
  * cse.achats.events}) ; l'entrée d'audit correspondante est produite par l'{@link OutboxWriter}.
+ *
+ * <p>Les événements du portail fournisseur enrichissent l'instantané {@link ContratPayload} de
+ * champs facultatifs (ajout compatible : les consommateurs ignorent les champs inconnus) : {@code
+ * motif} pour CONTRAT_SIGNATURE_REFUSEE, {@code dateExpedition} et {@code commentaireExpedition}
+ * pour LIVRAISON_DEMARREE lorsque l'expédition est déclarée par le fournisseur.
  */
 @Component
 public class OutboxAchatsEventPublisher implements AchatsEventPublisher {
@@ -26,17 +34,24 @@ public class OutboxAchatsEventPublisher implements AchatsEventPublisher {
   static final String AGREGAT_AO = "AppelOffre";
   static final String AGREGAT_CONTRAT = "ContratAchat";
   static final String AGREGAT_FACTURE = "Facture";
+  static final String CHAMP_MOTIF = "motif";
+  static final String CHAMP_DATE_EXPEDITION = "dateExpedition";
+  static final String CHAMP_COMMENTAIRE_EXPEDITION = "commentaireExpedition";
 
   private final OutboxWriter outbox;
   private final ParametresAchats parametres;
+  private final ObjectMapper mapper;
 
   /**
    * @param outbox écrivain d'outbox
    * @param parametres taux du tarif journalier estimé
+   * @param mapper sérialiseur JSON (enrichissement des instantanés)
    */
-  public OutboxAchatsEventPublisher(OutboxWriter outbox, ParametresAchats parametres) {
+  public OutboxAchatsEventPublisher(
+      OutboxWriter outbox, ParametresAchats parametres, ObjectMapper mapper) {
     this.outbox = outbox;
     this.parametres = parametres;
+    this.mapper = mapper;
   }
 
   @Override
@@ -89,7 +104,33 @@ public class OutboxAchatsEventPublisher implements AchatsEventPublisher {
             c.getDateLivraisonReelle(),
             c.tarifJournalierEstime(parametres.contrat().tauxTarifJournalier()));
     outbox.publier(
-        Topics.ACHATS, type, AGREGAT_CONTRAT, c.getId(), payload, c.getNumero() + " : " + type);
+        Topics.ACHATS,
+        type,
+        AGREGAT_CONTRAT,
+        c.getId(),
+        enrichir(type, c, payload),
+        c.getNumero() + " : " + type);
+  }
+
+  private Object enrichir(String type, ContratAchat c, ContratPayload payload) {
+    boolean refus =
+        EventTypes.CONTRAT_SIGNATURE_REFUSEE.equals(type) && c.getMotifRefusSignature() != null;
+    boolean expedition =
+        EventTypes.LIVRAISON_DEMARREE.equals(type) && c.getDateExpedition() != null;
+    if (!refus && !expedition) {
+      return payload;
+    }
+    ObjectNode noeud = mapper.valueToTree(payload);
+    if (refus) {
+      noeud.put(CHAMP_MOTIF, c.getMotifRefusSignature());
+    }
+    if (expedition) {
+      noeud.put(CHAMP_DATE_EXPEDITION, c.getDateExpedition().toString());
+      if (c.getCommentaireExpedition() != null) {
+        noeud.put(CHAMP_COMMENTAIRE_EXPEDITION, c.getCommentaireExpedition());
+      }
+    }
+    return noeud;
   }
 
   @Override

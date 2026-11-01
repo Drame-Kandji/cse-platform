@@ -260,6 +260,44 @@ cse:
         entite: APPEL_OFFRE
         entite-id: appelOffreId
         email: true
+      # Portail fournisseur (§13) : signature, refus de signature, expédition déclarée.
+      - evenement: CONTRAT_SIGNE
+        roles: [RESPONSABLE_ACHATS]
+        niveau: SUCCES
+        titre: "Contrat {numero} signé par le fournisseur"
+        message: "{fournisseurNom} a signé le contrat {numero} ({designation}, {montant} FCFA) sur le portail ({acteurNom}). L'engagement est transmis à la DAF."
+        lien: /contrats/{contratId}
+        entite: CONTRAT
+        entite-id: contratId
+      - evenement: CONTRAT_SIGNATURE_REFUSEE
+        roles: [RESPONSABLE_ACHATS]
+        niveau: ALERTE
+        titre: "Signature refusée : {numero}"
+        message: "{fournisseurNom} a refusé de signer le contrat {numero} ({designation}). Motif : {motif}. Le contrat est revenu en brouillon pour renégociation."
+        lien: /contrats/{contratId}
+        entite: CONTRAT
+        entite-id: contratId
+        email: true
+      # Expédition déclarée par le fournisseur (dateExpedition absente si le RA démarre la
+      # livraison hors portail : pas de notification).
+      - evenement: LIVRAISON_DEMARREE
+        roles: [RESPONSABLE_ACHATS]
+        condition: { champ: dateExpedition, operateur: PRESENT }
+        niveau: INFO
+        titre: "Expédition déclarée : {numero}"
+        message: "{fournisseurNom} a expédié {quantite} × {designation} le {dateExpedition} (contrat {numero}). Livraison prévue le {dateLivraisonPrevue}."
+        lien: /contrats/{contratId}
+        entite: CONTRAT
+        entite-id: contratId
+      - evenement: LIVRAISON_DEMARREE
+        roles: [RESPONSABLE_MATERIEL]
+        condition: { champ: dateExpedition, operateur: PRESENT }
+        niveau: INFO
+        titre: "Matériel expédié : {designation}"
+        message: "{fournisseurNom} a expédié {quantite} × {designation} le {dateExpedition} (contrat {numero}). Livraison prévue le {dateLivraisonPrevue} : préparez la réception."
+        lien: /contrats/{contratId}
+        entite: CONTRAT
+        entite-id: contratId
       - evenement: ENGAGEMENT_DEMANDE
         roles: [DAF]
         niveau: ALERTE
@@ -323,6 +361,8 @@ cse:
       # --- ms-fournisseurs ---
       - evenement: FOURNISSEUR_INSCRIT
         roles: [RESPONSABLE_ACHATS]
+        # Inscription publique du portail uniquement (un fournisseur créé par le RA est déjà ACTIF).
+        condition: { champ: statut, operateur: EGAL, valeur: EN_ATTENTE_VALIDATION }
         niveau: INFO
         titre: "Nouvelle inscription fournisseur : {raisonSociale}"
         message: "{raisonSociale} s'est inscrit sur le portail fournisseur et attend la validation de son compte."

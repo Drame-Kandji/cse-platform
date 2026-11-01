@@ -40,6 +40,8 @@ public class ProjectionAchatsService implements ProjeterAchatsUseCase {
   private static final Set<String> CONTRAT =
       Set.of(
           EventTypes.CONTRAT_GENERE,
+          EventTypes.CONTRAT_ENVOYE_SIGNATURE,
+          EventTypes.CONTRAT_SIGNATURE_REFUSEE,
           EventTypes.CONTRAT_SIGNE,
           EventTypes.ENGAGEMENT_DEMANDE,
           EventTypes.ENGAGEMENT_VALIDE,

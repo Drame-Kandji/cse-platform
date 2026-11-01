@@ -28,7 +28,11 @@ public class UtilisateurOuIpKeyResolver implements KeyResolver {
         .switchIfEmpty(Mono.fromSupplier(() -> PREFIXE_IP + adresse(exchange)));
   }
 
-  private static String adresse(ServerWebExchange exchange) {
+  /**
+   * @param exchange échange courant
+   * @return adresse IP du pair TCP, {@code inconnu} à défaut
+   */
+  static String adresse(ServerWebExchange exchange) {
     return Optional.ofNullable(exchange.getRequest().getRemoteAddress())
         .map(InetSocketAddress::getAddress)
         .map(a -> a.getHostAddress())

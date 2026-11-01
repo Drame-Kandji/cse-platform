@@ -22,6 +22,9 @@ Les chemins ne sont pas réécrits (les services exposent eux-mêmes `/api/...`)
 ## Sécurité
 - `/api/**` : JWT Keycloak obligatoire (`JWK_SET_URI` + `JWT_ISSUER_URI`), rôles `realm_access.roles` via
   `KeycloakJwtConverter` (cse-common) adapté en réactif. Les services revérifient les rôles.
+- Routes publiques par service (`cse.gateway.services.<service>.publiques` : `chemin`, `methode`, `requetes-par-minute`) :
+  seule `POST /api/portail/inscription` (ms-fournisseurs) est ouverte sans jeton, avant la règle du portail ; une route
+  dédiée (`ms-fournisseurs-public-inscription`, ordre -5) lui applique sa limitation par IP.
 - `/api/portail/**` : rôle `FOURNISSEUR` (exceptions configurables : `cse.gateway.securite.portail-sans-role-fournisseur`).
 - `/api/plateforme/**` : tout rôle interne.
 - Publics : `/actuator/health/**`, `/actuator/info`, `/actuator/prometheus`, Swagger UI, `/v3/api-docs/**`.
@@ -36,6 +39,8 @@ Les chemins ne sont pas réécrits (les services exposent eux-mêmes `/api/...`)
   relayée et à la réponse ; sert de `traceId`.
 - **Limitation de débit** : `RequestRateLimiter` Redis, clé = `sub` du JWT (à défaut IP client) ;
   `GATEWAY_RATE_LIMIT_REPLENISH` (20/s), `GATEWAY_RATE_LIMIT_BURST` (40), désactivable (`GATEWAY_RATE_LIMIT_ENABLED=false`).
+  Routes publiques : même limiteur, configuration propre à la route et clé `public:<route>:ip:<adresse>` ;
+  `GATEWAY_INSCRIPTION_RATE_LIMIT_PER_MINUTE` (5/min, rafale comprise : 1 jeton/s, coût `ceil(60/n)`, capacité `n` requêtes).
 - **Coupe-circuit** Resilience4j par route (délai `GATEWAY_CIRCUIT_BREAKER_TIMEOUT`=20 s) avec repli 503 `SERVICE_INDISPONIBLE`.
 
 ## Documentation et supervision
@@ -49,7 +54,7 @@ Les chemins ne sont pas réécrits (les services exposent eux-mêmes `/api/...`)
 cd backend && flock /tmp/cse-maven.lock env MAVEN_OPTS=-Xmx768m mvn -o -q -pl ms-gateway spotless:apply verify
 ```
 `GatewayIntegrationTest` (`@SpringBootTest` + WireMock + jetons RS256 de test) : table de routage du contrat, 401 sans jeton,
-403 portail sans FOURNISSEUR, relais du jeton et de la corrélation, repli du coupe-circuit, 404, CORS, sonde, Swagger agrégé.
+403 portail sans FOURNISSEUR, inscription publique (POST anonyme relayé, GET/PUT anonymes 401, rôle interne 403), relais du jeton et de la corrélation, repli du coupe-circuit, 404, CORS, sonde, Swagger agrégé.
 Tests unitaires : clé de limitation, ProblemDetail 429, gestionnaire d'erreurs, corrélation. Redis n'est pas requis
 (limitation désactivée dans le profil `test`).
 

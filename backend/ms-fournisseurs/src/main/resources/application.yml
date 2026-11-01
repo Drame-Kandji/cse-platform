@@ -45,6 +45,11 @@ cse:
       Référentiel des fournisseurs de la CSE : cycle de vie (EN_ATTENTE_VALIDATION → ACTIF ⇄ SUSPENDU
       → BLACKLISTE), blacklistage en deux étapes (R09), documents administratifs, évaluations et score
       de performance (R07), catalogue de prix avec historique, comparaison de prix et litiges.
+  security:
+    # Seule route accessible sans jeton : l'auto-inscription du portail (contrat §13). Le contrôleur
+    # n'expose que POST ; la passerelle n'ouvre que POST et limite le débit par adresse IP.
+    public-paths:
+      - /api/portail/inscription
   crypto:
     # Clé AES-256 (Base64, 32 octets) chiffrant les coordonnées bancaires : obligatoire.
     key: ${CSE_CRYPTO_KEY:}

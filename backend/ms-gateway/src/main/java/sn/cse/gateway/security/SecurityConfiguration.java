@@ -27,8 +27,10 @@ import sn.cse.gateway.web.Problemes;
 
 /**
  * Sécurité réactive de la passerelle : toute route {@code /api/**} exige un JWT Keycloak valide
- * (signature JWKS + émetteur) ; le portail exige le rôle FOURNISSEUR ; les services revérifient les
- * rôles. API sans état : pas de session, CSRF désactivé (jeton porté par en-tête, ADR-0006).
+ * (signature JWKS + émetteur), sauf les routes publiques déclarées par service ({@code
+ * cse.gateway.services.<service>.publiques}) ; le portail exige le rôle FOURNISSEUR ; les services
+ * revérifient les rôles. API sans état : pas de session, CSRF désactivé (jeton porté par en-tête,
+ * ADR-0006).
  */
 @Configuration(proxyBeanMethods = false)
 @EnableWebFluxSecurity
@@ -101,6 +103,15 @@ public class SecurityConfiguration {
             a -> {
               a.pathMatchers(HttpMethod.OPTIONS, "/**").permitAll();
               a.pathMatchers(CHEMINS_PUBLICS).permitAll();
+              // Routes publiques (ex. POST /api/portail/inscription) : méthode et chemin exacts,
+              // évaluées avant la règle FOURNISSEUR du portail.
+              properties
+                  .routesPubliques()
+                  .values()
+                  .forEach(
+                      liste ->
+                          liste.forEach(
+                              p -> a.pathMatchers(p.methodeHttp(), p.chemin()).permitAll()));
               if (!portailOuvert.isEmpty()) {
                 a.pathMatchers(portailOuvert.toArray(String[]::new)).authenticated();
               }

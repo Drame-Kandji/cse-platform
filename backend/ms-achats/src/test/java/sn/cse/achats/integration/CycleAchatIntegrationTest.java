@@ -30,8 +30,10 @@ import sn.cse.events.Topics;
 
 /**
  * Cycle d'achat complet par l'API : besoin reçu → AO → offres (R10, R14, R02) → clôture automatique
- * → évaluation → attribution RA/RM/DG (R11) → contrat (R03) → signature → engagement DAF (R06) →
- * livraison → facture, avec vérification de l'outbox et du chiffrement au repos.
+ * → évaluation → attribution RA/RM/DG (R11) → contrat (R03) → signature du CSE → refus puis
+ * signature du fournisseur (portail) → engagement DAF (R06) → expédition déclarée par le
+ * fournisseur → jalon → livraison → facture déposée sur le portail, avec vérification de l'outbox
+ * et du chiffrement au repos.
  */
 class CycleAchatIntegrationTest extends IntegrationTestBase {
 
@@ -324,12 +326,65 @@ class CycleAchatIntegrationTest extends IntegrationTestBase {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.statut").value("BROUILLON"))
         .andExpect(jsonPath("$.designation").value("Pelle hydraulique 20 t"));
+    // Signature en deux temps (§13) : le CSE signe (clauses figées), le fournisseur signe ou
+    // refuse.
+    RequestPostProcessor portailF1 =
+        CseJwt.avecClaims(
+            UUID.randomUUID(), Map.of("fournisseur_id", F1.toString()), Roles.FOURNISSEUR);
+    RequestPostProcessor portailF2 =
+        CseJwt.avecClaims(
+            UUID.randomUUID(), Map.of("fournisseur_id", F2.toString()), Roles.FOURNISSEUR);
+    mvc.perform(
+            post("/api/contrats/{id}/signer", contratId).with(role(RA, Roles.RESPONSABLE_ACHATS)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.statut").value("EN_ATTENTE_SIGNATURE"))
+        .andExpect(jsonPath("$.signatureCse.parNom").value("Utilisateur Test"))
+        .andExpect(jsonPath("$.engagement").doesNotExist());
+    mvc.perform(
+            corps(
+                    put("/api/contrats/{id}/clauses", contratId),
+                    "{'delaiLivraisonJours':30,'jalons':[]}")
+                .with(role(RA, Roles.RESPONSABLE_ACHATS)))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("CONTRAT_NON_MODIFIABLE"));
+    // Contrat d'un autre fournisseur : 404 (jamais 403) sur toutes les routes du portail.
+    mvc.perform(get("/api/portail/contrats/{id}", contratId).with(portailF2))
+        .andExpect(status().isNotFound());
+    mvc.perform(post("/api/portail/contrats/{id}/signer", contratId).with(portailF2))
+        .andExpect(status().isNotFound());
+    mvc.perform(get("/api/portail/contrats").with(portailF2))
+        .andExpect(jsonPath("$.content[?(@.id=='" + contratId + "')]").isEmpty());
+    mvc.perform(get("/api/portail/contrats?statut=EN_ATTENTE_SIGNATURE").with(portailF1))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.content[?(@.id=='" + contratId + "')].statut")
+                .value("EN_ATTENTE_SIGNATURE"));
+    mvc.perform(corps(post("/api/portail/contrats/{id}/refuser", contratId), "{}").with(portailF1))
+        .andExpect(status().isBadRequest());
+    mvc.perform(
+            corps(
+                    post("/api/portail/contrats/{id}/refuser", contratId),
+                    "{'motif':'Pénalité journalière trop élevée'}")
+                .with(portailF1))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.statut").value("BROUILLON"))
+        .andExpect(jsonPath("$.signatureCse").doesNotExist())
+        .andExpect(jsonPath("$.motifRefusSignature").value("Pénalité journalière trop élevée"));
+    mvc.perform(post("/api/portail/contrats/{id}/signer", contratId).with(portailF1))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("TRANSITION_INTERDITE"));
+    mvc.perform(
+            post("/api/contrats/{id}/signer", contratId).with(role(RA, Roles.RESPONSABLE_ACHATS)))
+        .andExpect(jsonPath("$.statut").value("EN_ATTENTE_SIGNATURE"))
+        .andExpect(jsonPath("$.motifRefusSignature").value("Pénalité journalière trop élevée"));
     JsonNode signe =
         json(
-            mvc.perform(
-                    post("/api/contrats/{id}/signer", contratId)
-                        .with(role(RA, Roles.RESPONSABLE_ACHATS)))
+            mvc.perform(post("/api/portail/contrats/{id}/signer", contratId).with(portailF1))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.statut").value("SIGNE"))
+                .andExpect(jsonPath("$.signatureCse.parNom").value("Utilisateur Test"))
+                .andExpect(jsonPath("$.signatureFournisseur.parNom").isNotEmpty())
+                .andExpect(jsonPath("$.motifRefusSignature").doesNotExist())
                 .andExpect(jsonPath("$.engagement.statut").value("EN_ATTENTE"))
                 .andExpect(jsonPath("$.dateLivraisonPrevue").value("2026-12-11")));
     mvc.perform(get("/api/engagements?statut=EN_ATTENTE").with(role(DAF, Roles.DAF)))
@@ -337,7 +392,14 @@ class CycleAchatIntegrationTest extends IntegrationTestBase {
         .andExpect(
             jsonPath("$.content[?(@.contratId=='" + contratId + "')].montant").value(298000000));
 
-    // R06 : pas de livraison avant la validation de l'engagement par la DAF.
+    // R06 : ni expédition (portail) ni démarrage hors portail avant la validation DAF.
+    mvc.perform(
+            corps(
+                    post("/api/portail/contrats/{id}/expedier", contratId),
+                    "{'dateExpedition':'2026-10-12'}")
+                .with(portailF1))
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(jsonPath("$.code").value("ENGAGEMENT_NON_VALIDE"));
     mvc.perform(
             post("/api/contrats/{id}/livraison/demarrer", contratId)
                 .with(role(RA, Roles.RESPONSABLE_ACHATS)))
@@ -348,32 +410,53 @@ class CycleAchatIntegrationTest extends IntegrationTestBase {
                 .with(role(DAF, Roles.DAF)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.statut").value("ENGAGEMENT_VALIDE"));
+    String factureFournisseur =
+        "{'contratId':'"
+            + contratId
+            + "','numero':'FA-SE-2026-901','montantHt':120000000,'tva':21600000,"
+            + "'dateEmission':'2026-12-05','dateEcheance':'2027-01-04'}";
+    mvc.perform(corps(post("/api/portail/factures"), factureFournisseur).with(portailF1))
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(jsonPath("$.code").value("CONTRAT_NON_LIVRE"));
     mvc.perform(
-            post("/api/contrats/{id}/livraison/demarrer", contratId)
-                .with(role(RA, Roles.RESPONSABLE_ACHATS)))
+            corps(
+                    post("/api/portail/contrats/{id}/expedier", contratId),
+                    "{'dateExpedition':'2026-10-12','commentaire':'Convoi exceptionnel depuis le port de Dakar'}")
+                .with(portailF1))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.statut").value("EN_LIVRAISON"));
+        .andExpect(jsonPath("$.statut").value("EN_LIVRAISON"))
+        .andExpect(jsonPath("$.dateExpedition").value("2026-10-12"))
+        .andExpect(
+            jsonPath("$.commentaireExpedition")
+                .value("Convoi exceptionnel depuis le port de Dakar"));
     String jalonId = signe.get("jalons").get(0).get("id").asText();
     horloge.regler(Instant.parse("2026-12-05T09:00:00Z"));
     mvc.perform(
             corps(
-                    patch("/api/contrats/{id}/jalons/{j}", contratId, jalonId),
+                    patch("/api/portail/contrats/{id}/jalons/{j}", contratId, jalonId),
                     "{'dateReelle':'2026-12-01'}")
-                .with(role(RA, Roles.RESPONSABLE_ACHATS)))
+                .with(portailF2))
+        .andExpect(status().isNotFound());
+    mvc.perform(
+            corps(
+                    patch("/api/portail/contrats/{id}/jalons/{j}", contratId, jalonId),
+                    "{'dateReelle':'2026-12-01'}")
+                .with(portailF1))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.jalons[0].statut").value("ATTEINT"));
 
-    // Facture puis livraison.
+    // Livraison confirmée par le RA, puis facture déposée par le fournisseur sur le portail.
+    mvc.perform(
+            corps(
+                    post("/api/contrats/{id}/livraison/confirmer", contratId),
+                    "{'dateLivraisonReelle':'2026-12-04','numeroBonLivraison':'BL-SE-2026-0901'}")
+                .with(role(RA, Roles.RESPONSABLE_ACHATS)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.statut").value("LIVRE"))
+        .andExpect(jsonPath("$.penalitesRetard").value(0));
     JsonNode facture =
         json(
-            mvc.perform(
-                    corps(
-                            post("/api/factures"),
-                            "{'contratId':'"
-                                + contratId
-                                + "','numero':'FA-SE-2026-901','montantHt':120000000,'tva':21600000,"
-                                + "'dateEmission':'2026-12-01','dateEcheance':'2026-12-31'}")
-                        .with(role(DAF, Roles.DAF)))
+            mvc.perform(corps(post("/api/portail/factures"), factureFournisseur).with(portailF1))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.montantTtc").value(141600000))
                 .andExpect(jsonPath("$.enRetard").value(false)));
@@ -386,14 +469,10 @@ class CycleAchatIntegrationTest extends IntegrationTestBase {
     mvc.perform(
             post("/api/factures/{id}/payer", facture.get("id").asText()).with(role(DAF, Roles.DAF)))
         .andExpect(jsonPath("$.statut").value("PAYEE"));
-    mvc.perform(
-            corps(
-                    post("/api/contrats/{id}/livraison/confirmer", contratId),
-                    "{'dateLivraisonReelle':'2026-12-04','numeroBonLivraison':'BL-SE-2026-0901'}")
-                .with(role(RA, Roles.RESPONSABLE_ACHATS)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.statut").value("LIVRE"))
-        .andExpect(jsonPath("$.penalitesRetard").value(0));
+    mvc.perform(get("/api/portail/factures").with(portailF1))
+        .andExpect(
+            jsonPath("$.content[?(@.id=='" + facture.get("id").asText() + "')].statut")
+                .value("PAYEE"));
     mvc.perform(get("/api/finance/synthese").with(role(DG, Roles.DIRECTION_GENERALE)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.montantPaye").isNumber());
@@ -421,6 +500,8 @@ class CycleAchatIntegrationTest extends IntegrationTestBase {
             "ATTRIBUTION_PROPOSEE",
             "MARCHE_ATTRIBUE",
             "CONTRAT_GENERE",
+            "CONTRAT_ENVOYE_SIGNATURE",
+            "CONTRAT_SIGNATURE_REFUSEE",
             "CONTRAT_SIGNE",
             "ENGAGEMENT_DEMANDE",
             "ENGAGEMENT_VALIDE",
@@ -434,6 +515,31 @@ class CycleAchatIntegrationTest extends IntegrationTestBase {
                 String.class,
                 contratId));
     assertThat(livraison.at("/payload/besoinId").asText()).isEqualTo(besoinId.toString());
+    // Événements du portail : instantané enrichi du motif de refus et de la date d'expédition.
+    JsonNode refus =
+        mapper.readTree(
+            jdbc.queryForObject(
+                "SELECT payload FROM outbox_event WHERE event_type = 'CONTRAT_SIGNATURE_REFUSEE'"
+                    + " AND message_key = ?",
+                String.class,
+                contratId));
+    assertThat(refus.at("/payload/motif").asText()).isEqualTo("Pénalité journalière trop élevée");
+    assertThat(refus.at("/payload/statut").asText()).isEqualTo("BROUILLON");
+    JsonNode demarrage =
+        mapper.readTree(
+            jdbc.queryForObject(
+                "SELECT payload FROM outbox_event WHERE event_type = 'LIVRAISON_DEMARREE'"
+                    + " AND message_key = ?",
+                String.class,
+                contratId));
+    assertThat(demarrage.at("/payload/dateExpedition").asText()).isEqualTo("2026-10-12");
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT signature_cse_par_nom || '|' || signature_fournisseur_date::date"
+                    + " FROM contrat_achat WHERE id = ?::uuid",
+                String.class,
+                contratId))
+        .isEqualTo("Utilisateur Test|2026-10-12");
     assertThat(livraison.at("/payload/chantierId").asText())
         .isEqualTo("c0000000-0000-0000-0000-000000000001");
     assertThat(livraison.at("/payload/designation").asText()).isEqualTo("Pelle hydraulique 20 t");

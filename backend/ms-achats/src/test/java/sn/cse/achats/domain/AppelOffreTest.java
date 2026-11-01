@@ -30,6 +30,7 @@ import sn.cse.achats.domain.model.CritereEvaluation;
 import sn.cse.achats.domain.model.NouvelAppelOffre;
 import sn.cse.achats.domain.model.Offre;
 import sn.cse.achats.domain.model.ResultatDecision;
+import sn.cse.achats.domain.model.ResultatOffre;
 import sn.cse.achats.domain.model.StatutAO;
 import sn.cse.achats.domain.model.StatutApprobation;
 import sn.cse.achats.domain.model.TypeAppelOffre;
@@ -509,5 +510,32 @@ class AppelOffreTest {
     assertThat(StatutAO.PUBLIE.peutPasserA(StatutAO.ATTRIBUE)).isFalse();
     assertThatThrownBy(() -> StatutAO.ATTRIBUE.exigerTransition(StatutAO.PUBLIE))
         .satisfies(e -> assertThat(code(e)).isEqualTo(CodesErreur.TRANSITION_INTERDITE));
+  }
+
+  @Test
+  void should_appliquer_le_filtre_du_portail_a_la_consultation() {
+    AppelOffre ouvert = Donnees.aoPublie();
+    AppelOffre restreint =
+        AppelOffre.publier(
+            Donnees.nouvelAo(TypeAppelOffre.DEMANDE_PRIX, List.of(F2)), "AO-2026-002", T0);
+
+    assertThat(ouvert.estConsultableSurPortail(F3.id(), T0)).isTrue();
+    assertThat(ouvert.estConsultableSurPortail(F3.id(), LIMITE)).isFalse();
+    assertThat(restreint.estConsultableSurPortail(F2.id(), T0)).isTrue();
+    assertThat(restreint.estConsultableSurPortail(F1.id(), T0)).isFalse();
+    assertThat(Donnees.aoCloture("100", "110").estConsultableSurPortail(F1.id(), T0)).isFalse();
+  }
+
+  @Test
+  void should_donner_le_resultat_d_une_offre_une_fois_attribue() {
+    AppelOffre cloture = Donnees.aoCloture("100", "110");
+    AppelOffre attribue = Donnees.aoAttribue();
+
+    assertThat(cloture.resultatDe(cloture.offreDu(F1.id()).orElseThrow()))
+        .isEqualTo(ResultatOffre.EN_COURS);
+    assertThat(attribue.resultatDe(attribue.offreDu(F1.id()).orElseThrow()))
+        .isEqualTo(ResultatOffre.RETENUE);
+    assertThat(attribue.resultatDe(attribue.offreDu(F2.id()).orElseThrow()))
+        .isEqualTo(ResultatOffre.NON_RETENUE);
   }
 }

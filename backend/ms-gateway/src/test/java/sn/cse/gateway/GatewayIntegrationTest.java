@@ -115,6 +115,8 @@ class GatewayIntegrationTest {
             Map.entry("/api/portail/offres/mes-offres", "ms-achats"),
             Map.entry("/api/portail/attributions", "ms-achats"),
             Map.entry("/api/portail/factures", "ms-achats"),
+            Map.entry("/api/portail/contrats", "ms-achats"),
+            Map.entry("/api/portail/contrats/1/signer", "ms-achats"),
             Map.entry("/api/portail/profil", "ms-fournisseurs"),
             Map.entry("/api/portail/catalogue/1", "ms-fournisseurs"),
             Map.entry("/api/portail/documents", "ms-fournisseurs"),
@@ -360,8 +362,79 @@ class GatewayIntegrationTest {
         getRequestedFor(urlEqualTo("/v3/api-docs")).withHeader("X-Correlation-Id", matching(".+")));
   }
 
+  @Test
+  void should_router_l_inscription_publique_sans_jeton_vers_ms_fournisseurs() {
+    SERVICES.stubFor(
+        com.github.tomakehurst.wiremock.client.WireMock.post(urlEqualTo("/api/portail/inscription"))
+            .willReturn(
+                com.github.tomakehurst.wiremock.client.WireMock.aResponse()
+                    .withStatus(201)
+                    .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .withBody(
+                        "{\"id\":\"f0000000-0000-0000-0000-000000000099\","
+                            + "\"raisonSociale\":\"Baobab Logistique\","
+                            + "\"statut\":\"EN_ATTENTE_VALIDATION\"}")));
+    client
+        .post()
+        .uri("/api/portail/inscription")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue("{\"raisonSociale\":\"Baobab Logistique\"}")
+        .exchange()
+        .expectStatus()
+        .isCreated()
+        .expectBody()
+        .jsonPath("$.statut")
+        .isEqualTo("EN_ATTENTE_VALIDATION");
+    SERVICES.verify(
+        com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor(
+                urlEqualTo("/api/portail/inscription"))
+            .withoutHeader(HttpHeaders.AUTHORIZATION));
+    assertThat(route(HttpMethod.POST, "/api/portail/inscription").map(Route::getId))
+        .contains("ms-fournisseurs-public-inscription");
+  }
+
+  @Test
+  void should_garder_le_reste_du_portail_reserve_aux_fournisseurs_when_inscription_publique() {
+    client
+        .get()
+        .uri("/api/portail/profil")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized()
+        .expectBody()
+        .jsonPath("$.code")
+        .isEqualTo("NON_AUTHENTIFIE");
+    // Seule la méthode POST est ouverte sur le chemin public.
+    client.get().uri("/api/portail/inscription").exchange().expectStatus().isUnauthorized();
+    client
+        .put()
+        .uri("/api/portail/inscription")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue("{}")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized();
+    client
+        .get()
+        .uri("/api/portail/profil")
+        .header(HttpHeaders.AUTHORIZATION, JetonsDeTest.bearer(SUB, Roles.RESPONSABLE_ACHATS))
+        .exchange()
+        .expectStatus()
+        .isForbidden()
+        .expectBody()
+        .jsonPath("$.code")
+        .isEqualTo("ACCES_REFUSE");
+    SERVICES.verify(0, getRequestedFor(urlEqualTo("/api/portail/profil")));
+    SERVICES.verify(0, getRequestedFor(urlEqualTo("/api/portail/inscription")));
+  }
+
   private Optional<Route> route(String chemin) {
-    MockServerWebExchange echange = MockServerWebExchange.from(MockServerHttpRequest.get(chemin));
+    return route(HttpMethod.GET, chemin);
+  }
+
+  private Optional<Route> route(HttpMethod methode, String chemin) {
+    MockServerWebExchange echange =
+        MockServerWebExchange.from(MockServerHttpRequest.method(methode, chemin));
     return Optional.ofNullable(
         routes
             .getRoutes()

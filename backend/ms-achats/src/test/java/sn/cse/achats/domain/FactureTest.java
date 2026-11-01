@@ -27,7 +27,7 @@ class FactureTest {
 
   static ContratAchat facturable() {
     ContratAchat c = Donnees.contratBrouillon();
-    c.signer(Instant.parse("2026-10-15T10:00:00Z"));
+    Donnees.signer(c, Instant.parse("2026-10-15T10:00:00Z"));
     c.deciderEngagement(true, null, Donnees.DAF, Instant.parse("2026-10-16T10:00:00Z"));
     return c;
   }
@@ -140,7 +140,7 @@ class FactureTest {
   void should_calculer_synthese_financiere_en_memoire() {
     ContratAchat engage = facturable();
     ContratAchat enAttente = Donnees.contratBrouillon();
-    enAttente.signer(Instant.parse("2026-10-15T10:00:00Z"));
+    Donnees.signer(enAttente, Instant.parse("2026-10-15T10:00:00Z"));
     Facture payee = recue(engage, "10000000");
     payee.mandater("M1", EMISSION);
     payee.payer(EMISSION);

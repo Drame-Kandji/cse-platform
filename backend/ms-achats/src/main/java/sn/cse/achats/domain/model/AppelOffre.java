@@ -483,6 +483,31 @@ public final class AppelOffre {
   }
 
   /**
+   * Visibilité sur le portail : appel d'offres publié, date limite non atteinte, procédure ouverte
+   * ou fournisseur invité (même filtre que la liste du portail).
+   *
+   * @param fournisseurId fournisseur du portail
+   * @param maintenant instant courant
+   * @return vrai si le fournisseur peut consulter cet appel d'offres
+   */
+  public boolean estConsultableSurPortail(UUID fournisseurId, Instant maintenant) {
+    return statut == StatutAO.PUBLIE
+        && maintenant.isBefore(dateLimite)
+        && estOuvertAuFournisseur(fournisseurId);
+  }
+
+  /**
+   * @param offre offre déposée sur cet appel d'offres
+   * @return son résultat : EN_COURS tant que le marché n'est pas attribué
+   */
+  public ResultatOffre resultatDe(Offre offre) {
+    if (statut != StatutAO.ATTRIBUE) {
+      return ResultatOffre.EN_COURS;
+    }
+    return offre.getId().equals(offreRetenueId) ? ResultatOffre.RETENUE : ResultatOffre.NON_RETENUE;
+  }
+
+  /**
    * @param fournisseurId fournisseur
    * @return l'offre déposée par ce fournisseur, s'il y en a une
    */

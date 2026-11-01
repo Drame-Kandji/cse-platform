@@ -23,7 +23,10 @@ import sn.cse.achats.domain.model.TypeAppelOffre;
  * @param dateLimite date limite
  * @param statut statut
  * @param criteres critères pondérés
+ * @param chantierNom chantier destinataire
+ * @param invite vrai si le fournisseur connecté est invité
  * @param offreDeposee vrai si le fournisseur connecté a déjà déposé une offre
+ * @param monOffreId offre du fournisseur connecté, s'il en a déposé une
  */
 @Schema(name = "AppelOffrePortail", description = "Appel d'offres ouvert, vu par un fournisseur")
 public record AppelOffrePortailDto(
@@ -39,4 +42,11 @@ public record AppelOffrePortailDto(
     @Schema(example = "2026-11-09T17:00:00Z") Instant dateLimite,
     @Schema(example = "PUBLIE") StatutAO statut,
     List<CriterePondereDto> criteres,
-    @Schema(example = "false") boolean offreDeposee) {}
+    @Schema(example = "Contournement de Thiès RN2") String chantierNom,
+    @Schema(description = "Fournisseur connecté invité à soumissionner", example = "true")
+        boolean invite,
+    @Schema(example = "false") boolean offreDeposee,
+    @Schema(
+            description = "Offre déposée par le fournisseur connecté",
+            example = "6b1f6c1e-2a41-4d63-9a59-1f3e9b7f0c11")
+        UUID monOffreId) {}

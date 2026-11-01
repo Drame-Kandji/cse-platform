@@ -28,5 +28,12 @@ final class Acces {
   /** Comptes du portail fournisseur. */
   static final String FOURNISSEUR = "hasRole('" + Roles.FOURNISSEUR + "')";
 
+  /**
+   * Route publique (inscription du portail) : doit aussi figurer dans {@code
+   * cse.security.public-paths}, sinon la chaîne de filtres exige un jeton avant d'atteindre la
+   * méthode.
+   */
+  static final String PUBLIC = "permitAll()";
+
   private Acces() {}
 }

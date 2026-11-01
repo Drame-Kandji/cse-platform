@@ -15,9 +15,13 @@ import sn.cse.achats.application.port.out.FactureRepository;
 import sn.cse.achats.domain.exception.CodesErreur;
 import sn.cse.achats.domain.model.ContratAchat;
 import sn.cse.common.exception.ConflictException;
+import sn.cse.common.security.CurrentUser;
 import sn.cse.events.EventTypes;
 
-/** Exécution des contrats : clauses, signature, livraison (R06), jalons, clôture. */
+/**
+ * Exécution des contrats côté CSE : clauses, signature du CSE, livraison (R06, démarrage de secours
+ * hors portail), jalons, clôture.
+ */
 @Service
 @Transactional
 public class ExecutionContratService implements ExecuterContratUseCase {
@@ -56,12 +60,12 @@ public class ExecutionContratService implements ExecuterContratUseCase {
   }
 
   @Override
-  public ContratAchat signer(UUID contratId) {
+  public ContratAchat signer(UUID contratId, CurrentUser signataire) {
     ContratAchat contrat = Chargements.contrat(contrats, contratId);
-    contrat.signer(Instant.now(clock));
+    contrat.signerPourLeCse(Acteurs.de(signataire), Instant.now(clock));
     ContratAchat enregistre = contrats.enregistrer(contrat);
-    evenements.contrat(EventTypes.CONTRAT_SIGNE, enregistre);
-    evenements.contrat(EventTypes.ENGAGEMENT_DEMANDE, enregistre);
+    // CONTRAT_SIGNE et ENGAGEMENT_DEMANDE suivront la signature du fournisseur sur le portail.
+    evenements.contrat(EventTypes.CONTRAT_ENVOYE_SIGNATURE, enregistre);
     return enregistre;
   }
 

@@ -15,11 +15,9 @@ import sn.cse.achats.application.port.in.PortailFournisseurUseCase;
 import sn.cse.achats.application.port.out.AppelOffreRepository;
 import sn.cse.achats.application.port.out.ContratRepository;
 import sn.cse.achats.application.port.out.FactureRepository;
-import sn.cse.achats.domain.exception.CodesErreur;
 import sn.cse.achats.domain.model.AppelOffre;
 import sn.cse.achats.domain.model.ContratAchat;
 import sn.cse.achats.domain.model.Facture;
-import sn.cse.common.exception.ForbiddenOperationException;
 import sn.cse.common.exception.ResourceNotFoundException;
 import sn.cse.common.pagination.PageQuery;
 import sn.cse.common.pagination.PageResponse;
@@ -67,6 +65,19 @@ public class PortailFournisseurService implements PortailFournisseurUseCase {
   @Transactional(readOnly = true)
   public PageResponse<AppelOffre> appelsOffresOuverts(CurrentUser fournisseur, PageQuery page) {
     return appelsOffres.ouvertsAuFournisseur(fournisseurDe(fournisseur), Instant.now(clock), page);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public AppelOffre appelOffre(CurrentUser fournisseur, UUID appelOffreId) {
+    UUID id = fournisseurDe(fournisseur);
+    Instant maintenant = Instant.now(clock);
+    return appelsOffres
+        .parId(appelOffreId)
+        // Hors du filtre de la liste (clôturé, échu, restreint à d'autres) : traité comme
+        // inexistant.
+        .filter(ao -> ao.estConsultableSurPortail(id, maintenant))
+        .orElseThrow(() -> new ResourceNotFoundException("AppelOffre", appelOffreId));
   }
 
   @Override
@@ -128,16 +139,11 @@ public class PortailFournisseurService implements PortailFournisseurUseCase {
             .parId(commande.contratId())
             .filter(c -> c.getFournisseurId().equals(id))
             .orElseThrow(() -> new ResourceNotFoundException("Contrat", commande.contratId()));
+    contrat.exigerLivrePourFacturationFournisseur();
     return facturation.recevoir(contrat, commande);
   }
 
   private static UUID fournisseurDe(CurrentUser utilisateur) {
-    return utilisateur
-        .fournisseur()
-        .orElseThrow(
-            () ->
-                new ForbiddenOperationException(
-                    CodesErreur.COMPTE_NON_RATTACHE,
-                    "Ce compte n'est rattaché à aucun fournisseur."));
+    return ComptesPortail.fournisseurDe(utilisateur);
   }
 }

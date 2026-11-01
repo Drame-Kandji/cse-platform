@@ -16,7 +16,8 @@ Port **8084**, schéma PostgreSQL **`fournisseurs`** (utilisateur `ms_fournisseu
 | Classement | fournisseurs **ACTIF** (filtrables par catégorie) par score, ponctualité, nombre d'évaluations |
 | Catalogue | upsert par référence ; prix initial et chaque changement de prix historisés (`PrixHistorique`) ; comparaison multi-fournisseurs (actifs) par catégorie + désignation normalisée |
 | Litiges | référence `LIT-AAAA-NNN` (séquence PostgreSQL par année), chronologie d'actions, `OUVERT → EN_COURS → RESOLU/CLASSE` |
-| Portail (SPEC §B.6) | `GET/PUT /api/portail/profil`, `GET/PUT /api/portail/catalogue`, rôle `FOURNISSEUR`, limité au claim `fournisseur_id` |
+| Portail (SPEC §B.6) | `GET/PUT /api/portail/profil` (`ProfilFournisseur` : fiche, documents, ses propres coordonnées bancaires), `GET/PUT /api/portail/catalogue`, rôle `FOURNISSEUR`, limité au claim `fournisseur_id` |
+| Inscription publique (contrat §13) | `POST /api/portail/inscription` **sans jeton** (`cse.security.public-paths`, `@PreAuthorize(Acces.PUBLIC)`) : fournisseur `EN_ATTENTE_VALIDATION`, interlocuteur obligatoire, `FOURNISSEUR_INSCRIT` ; NINEA ou e-mail (insensible à la casse) déjà connu → **409** `FOURNISSEUR_EXISTANT` (même message pour les deux, pas d'énumération) ; réponse 201 `{id, raisonSociale, statut}` sans en-tête `Location`. La validation RA publie `FOURNISSEUR_VALIDE` (avec l'e-mail) : ms-auth crée alors le compte du portail |
 
 ## Score de performance (R07)
 
@@ -62,6 +63,7 @@ seuil → `SCORE_RECALCULE` avec motif `ALERTE : …`.
 | POST | `/api/fournisseurs/{id}/litiges` | RA, RM |
 | PATCH | `/api/litiges/{id}/action` | RA |
 | GET / PUT | `/api/portail/profil` · `/api/portail/catalogue` | FOURNISSEUR |
+| POST | `/api/portail/inscription` | **public** (limité à 5/min par IP à la passerelle) |
 
 Swagger UI : `http://localhost:8084/swagger-ui.html` ; contrat figé : `src/test/resources/openapi.json`.
 

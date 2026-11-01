@@ -33,6 +33,19 @@ Extension compatible du contrat : `fournisseurId?` accepté en création/modific
 - `UTILISATEUR_SYNCHRONISE` : profil importé ou modifié par la synchronisation Keycloak, ou provisionné par `/api/me`.
 Chaque événement produit aussi son entrée `AUDIT`.
 
+## Comptes du portail fournisseur (contrat §13)
+Consommateur idempotent `cse.fournisseurs.events` / `FOURNISSEUR_VALIDE` (`IdempotentEventHandler`, table
+`processed_event` de `db/common`, rejeu puis DLT `cse.fournisseurs.events.DLT` de cse-common) :
+1. aucun compte Keycloak pour l'e-mail : création **sans mot de passe** (identifiant = e-mail, activé, rôle
+   `FOURNISSEUR`, attribut `fournisseur_id`, action `UPDATE_PASSWORD`), puis `PUT /users/{id}/execute-actions-email`
+   (`client_id`, `redirect_uri`, `lifespan`), profil local `Fournisseur` (SINGLE_TABLE) et `UTILISATEUR_CREE` ;
+2. compte existant : complété seulement (rôle, attribut, e-mail renvoyé tant qu'aucun mot de passe n'est défini,
+   profil local créé ou rattaché) ; un compte portant un **autre rôle CSE** n'est jamais converti (avertissement).
+
+Toute erreur Keycloak est propagée (rejeu, puis DLT) ; un compte créé puis annulé est supprimé (compensation).
+`FournisseurPayload` ne porte pas le nom de l'interlocuteur : le compte est nommé `prenom-contact` + raison
+sociale (caractères refusés par Keycloak retirés). E-mails visibles dans MailHog (http://localhost:8025).
+
 ## Synchronisation Keycloak → profils
 Au démarrage (`ApplicationReadyEvent`) puis périodiquement : lecture des membres de chaque rôle CSE,
 création/mise à jour idempotente des profils (Keycloak fait foi ; le téléphone reste local),
@@ -49,6 +62,10 @@ désactivation des profils dont le compte a disparu. Keycloak injoignable : aver
 | `otp-obligatoire` | `AUTH_OTP_OBLIGATOIRE` | `DAF,DIRECTION_GENERALE,RESPONSABLE_ACHATS,ADMIN_SYSTEME` |
 | `synchronisation.au-demarrage` / `relance` | `AUTH_SYNC_AU_DEMARRAGE` / `AUTH_SYNC_RELANCE` | `true` / `PT30S` |
 | `synchronisation.periodique` / `intervalle` | `AUTH_SYNC_PERIODIQUE` / `AUTH_SYNC_INTERVALLE` | `true` / `PT15M` |
+| `portail-fournisseur.client-id` | `AUTH_PORTAIL_CLIENT_ID` | `cse-portail-fournisseur` |
+| `portail-fournisseur.redirect-uri` | `AUTH_PORTAIL_REDIRECT_URI` | `http://localhost:5174/` |
+| `portail-fournisseur.validite-lien` | `AUTH_PORTAIL_VALIDITE_LIEN` | `PT72H` |
+| `portail-fournisseur.prenom-contact` | `AUTH_PORTAIL_PRENOM_CONTACT` | `Contact` |
 
 Le jeton du compte de service (`client_credentials`) est mis en cache jusqu'à 30 s avant expiration
 et renouvelé automatiquement sur 401.
@@ -57,8 +74,10 @@ et renouvelé automatiquement sur 401.
 ```bash
 cd backend && flock /tmp/cse-maven.lock env MAVEN_OPTS=-Xmx768m mvn -o -q -pl ms-auth spotless:apply verify
 ```
-Tests : domaine et application (unitaires, JaCoCo ≥ 80 %), adaptateur Keycloak (WireMock : jeton,
-cache, renouvellement, création, rôle unique, préservation des attributs, erreurs), sécurité
+Tests : domaine et application (unitaires, JaCoCo ≥ 80 %, activation des comptes fournisseurs), consommateur
+`FOURNISSEUR_VALIDE` (port Keycloak simulé : même événement deux fois → un seul compte, rejeu après erreur),
+adaptateur Keycloak (WireMock : jeton, cache, renouvellement, création avec ou sans mot de passe, rôle unique,
+préservation des attributs, recherche par e-mail, `execute-actions-email`, erreurs), sécurité
 `@WebMvcTest` (401/403/400/409/503), une classe `@SpringBootTest` (Testcontainers PostgreSQL + WireMock :
 synchronisation idempotente, création + changement de rôle SINGLE_TABLE, compensation, `/api/me`,
 instantané OpenAPI `src/test/resources/openapi.json` : régénérer avec `-Dopenapi.snapshot.update=true`),

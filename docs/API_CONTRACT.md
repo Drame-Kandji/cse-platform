@@ -377,13 +377,17 @@ Payloads « instantané » (un record par agrégat, le `type` distingue l'évén
 | `AffectationPayload {affectationId, materielId, materielCode, materielDesignation, categorie, tarifJournalier, chantierId, chantierNom, chefChantierId?, besoinId?, dateDebut, dateFinPrevue, dateFinReelle?, statut, fournisseurId?, contratId?}` | `MATERIEL_AFFECTE`, `RECEPTION_CONFIRMEE`, `AFFECTATION_TERMINEE`, `FIN_AFFECTATION_PROCHAINE` | ms-suivi | besoins, fournisseurs (RECEPTION_CONFIRMEE), reporting, notification |
 | `MaintenancePayload {maintenanceId, numeroOt, materielId, materielDesignation, chantierId?, type, statut, cout?, datePlanifiee, dateDebut?, dateFin?}` | `MAINTENANCE_PLANIFIEE`, `MAINTENANCE_DEMARREE`, `MAINTENANCE_CLOTUREE` | ms-suivi | reporting, notification |
 | `PannePayload {panneId, materielId, materielDesignation, chantierId?, chantierNom?, gravite, description, signaleParId, signaleParNom}` | `PANNE_SIGNALEE` | ms-suivi | reporting, notification |
-| `FournisseurPayload {fournisseurId, raisonSociale, email, specialites[], statut, scorePerformance, motif?}` | `FOURNISSEUR_INSCRIT`, `FOURNISSEUR_VALIDE`, `FOURNISSEUR_SUSPENDU`, `FOURNISSEUR_REACTIVE`, `FOURNISSEUR_BLACKLISTAGE_DEMANDE`, `FOURNISSEUR_BLACKLISTE`, `FOURNISSEUR_BLACKLISTAGE_REFUSE`, `FOURNISSEUR_MODIFIE`, `SCORE_RECALCULE` (motif « ALERTE : … » si score < seuil), `DOCUMENT_EXPIRE` | ms-fournisseurs | achats (statut, R14), reporting, notification |
+| `FournisseurPayload {fournisseurId, raisonSociale, email, specialites[], statut, scorePerformance, motif?, contactNom?}` | `FOURNISSEUR_INSCRIT`, `FOURNISSEUR_VALIDE`, `FOURNISSEUR_SUSPENDU`, `FOURNISSEUR_REACTIVE`, `FOURNISSEUR_BLACKLISTAGE_DEMANDE`, `FOURNISSEUR_BLACKLISTE`, `FOURNISSEUR_BLACKLISTAGE_REFUSE`, `FOURNISSEUR_MODIFIE`, `SCORE_RECALCULE` (motif « ALERTE : … » si score < seuil), `DOCUMENT_EXPIRE` | ms-fournisseurs | achats (statut, R14), reporting, notification |
 | `LitigePayload {litigeId, reference, fournisseurId, raisonSociale, contratId?, objet, gravite, statut}` | `LITIGE_OUVERT`, `LITIGE_RESOLU` | ms-fournisseurs | reporting, notification |
 | `AppelOffrePayload {appelOffreId, reference, objet, type, besoinId?, chantierId?, categorie, quantite, dateLimite, statut, nombreOffres, fournisseurIdsInvites[], offreRetenueId?, fournisseurRetenuId?, montantAttribue?, approbationDgRequise}` | `AO_PUBLIE`, `OFFRE_DEPOSEE`, `AO_CLOTURE`, `ATTRIBUTION_PROPOSEE`, `ATTRIBUTION_REFUSEE`, `MARCHE_ATTRIBUE` | ms-achats | reporting, notification |
 | `ContratPayload {contratId, numero, appelOffreId, besoinId?, chantierId?, chantierNom?, fournisseurId, fournisseurNom, designation, categorie, quantite, montant, statut, dateSignature?, dateLivraisonPrevue?, dateLivraisonReelle?, tarifJournalierEstime?}` | `CONTRAT_GENERE`, `CONTRAT_ENVOYE_SIGNATURE`, `CONTRAT_SIGNATURE_REFUSEE`, `CONTRAT_SIGNE`, `ENGAGEMENT_DEMANDE`, `ENGAGEMENT_VALIDE`, `ENGAGEMENT_REJETE`, `LIVRAISON_DEMARREE`, `LIVRAISON_EFFECTUEE`, `ALERTE_RETARD_LIVRAISON`, `CONTRAT_CLOTURE` | ms-achats | suivi (LIVRAISON_EFFECTUEE), fournisseurs, reporting, notification |
 | `FacturePayload {factureId, numero, contratId, fournisseurId, montantTtc, statut, dateEmission, dateEcheance, dateMandatement?, datePaiement?}` | `FACTURE_RECUE`, `FACTURE_MANDATEE`, `FACTURE_PAYEE`, `FACTURE_REJETEE` | ms-achats | reporting, notification |
 | `UtilisateurPayload {utilisateurId, email, prenom, nom, role, actif, chantierIds[]}` | `UTILISATEUR_CREE`, `UTILISATEUR_MODIFIE`, `UTILISATEUR_SYNCHRONISE` | ms-auth | notification (annuaire e-mails) |
 | `AuditPayload {service, action, entite, entiteId, resume?}` | `AUDIT` | tous (via outbox) | ms-audit |
+
+Événements du portail : `CONTRAT_SIGNATURE_REFUSEE` ajoute `motif` au `ContratPayload`, `LIVRAISON_DEMARREE` déclarée par le
+fournisseur ajoute `dateExpedition` et `commentaireExpedition` (champs JSON optionnels, ignorés par les consommateurs qui ne
+les lisent pas).
 
 ## 12. Jeu de données de démonstration (profil `dev`, partagé entre services)
 
@@ -444,13 +448,13 @@ ProfilFournisseur = Fournisseur (§4, sans coordonnées bancaires d'un autre) + 
 | GET | `/api/portail/offres/mes-offres` | achats | → `Page<OffrePortail>` |
 | GET | `/api/portail/contrats` | achats | `?statut&page&size` → `Page<Contrat>` (§5, ceux du fournisseur) |
 | GET | `/api/portail/contrats/{id}` | achats | → `Contrat` |
-| POST | `/api/portail/contrats/{id}/signer` | achats | `EN_ATTENTE_SIGNATURE → SIGNE` + engagement `EN_ATTENTE` (DAF) ; publie `CONTRAT_SIGNE` puis `ENGAGEMENT_DEMANDE` ; autre statut → 409 `TRANSITION_INVALIDE` |
+| POST | `/api/portail/contrats/{id}/signer` | achats | `EN_ATTENTE_SIGNATURE → SIGNE` + engagement `EN_ATTENTE` (DAF) ; publie `CONTRAT_SIGNE` puis `ENGAGEMENT_DEMANDE` ; autre statut → 409 `TRANSITION_INTERDITE` |
 | POST | `/api/portail/contrats/{id}/refuser` | achats | `{motif}` (obligatoire) : `EN_ATTENTE_SIGNATURE → BROUILLON`, signature CSE annulée ; publie `CONTRAT_SIGNATURE_REFUSEE` |
-| POST | `/api/portail/contrats/{id}/expedier` | achats | `{dateExpedition, commentaire?}` : exige `ENGAGEMENT_VALIDE` (R06, sinon 422 `ENGAGEMENT_NON_VALIDE`) → `EN_LIVRAISON` ; publie `LIVRAISON_DEMARREE` |
-| PATCH | `/api/portail/contrats/{id}/jalons/{jalonId}` | achats | `{dateReelle}` (contrat `EN_LIVRAISON`) → `Contrat` |
+| POST | `/api/portail/contrats/{id}/expedier` | achats | `{dateExpedition, commentaire?}` : exige `ENGAGEMENT_VALIDE` (R06, sinon 422 `ENGAGEMENT_NON_VALIDE`) → `EN_LIVRAISON` ; date antérieure à la signature → 422 `DATE_EXPEDITION_INVALIDE`, date future → 422 `DATE_FUTURE` ; publie `LIVRAISON_DEMARREE` |
+| PATCH | `/api/portail/contrats/{id}/jalons/{jalonId}` | achats | `{dateReelle}` (contrat `EN_LIVRAISON`, sinon 409 `CONTRAT_NON_EN_LIVRAISON`) → `Contrat` |
 | GET | `/api/portail/attributions` | achats | conservé (marchés attribués) |
 | GET | `/api/portail/factures` | achats | → `Page<Facture>` |
-| POST | `/api/portail/factures` | achats | `{contratId,numero,montantHt,tva,dateEmission,dateEcheance}` → 201 ; contrat `LIVRE` ou `CLOTURE` du fournisseur requis (sinon 422 `CONTRAT_NON_LIVRE`) |
+| POST | `/api/portail/factures` | achats | `{contratId,numero,montantHt,tva,dateEmission,dateEcheance}` → 201 ; contrat `LIVRE` du fournisseur requis (sinon 422 `CONTRAT_NON_LIVRE` ; un contrat clôturé est soldé) |
 
 Circuit complet (démonstration) :
 1. **Inscription** publique → `EN_ATTENTE_VALIDATION` ; le RA valide (`PATCH /api/fournisseurs/{id}/valider-inscription`)

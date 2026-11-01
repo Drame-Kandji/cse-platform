@@ -1,6 +1,7 @@
 package sn.cse.auth.application.port.out;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import sn.cse.auth.domain.model.Role;
 
@@ -75,4 +76,36 @@ public interface IdentityProviderPort {
    * @return tous les comptes du realm portant au moins un rôle CSE
    */
   List<CompteIdentite> listerComptes();
+
+  /**
+   * Recherche exacte par adresse e-mail (insensible à la casse).
+   *
+   * @param email adresse e-mail
+   * @return le compte (rôles CSE inclus), s'il existe
+   */
+  Optional<CompteIdentite> compteParEmail(String email);
+
+  /**
+   * Rattache le compte à une fiche fournisseur (attribut {@code fournisseur_id}) sans toucher aux
+   * autres attributs.
+   *
+   * @param id identifiant du compte
+   * @param fournisseurId fiche fournisseur (ms-fournisseurs)
+   */
+  void rattacherFournisseur(UUID id, UUID fournisseurId);
+
+  /**
+   * @param id identifiant du compte
+   * @return vrai si un mot de passe est déjà enregistré pour ce compte
+   */
+  boolean motDePasseDefini(UUID id);
+
+  /**
+   * Demande au fournisseur d'identité d'envoyer l'e-mail « définir votre mot de passe » (action
+   * {@code UPDATE_PASSWORD}) contenant un lien à durée de validité limitée.
+   *
+   * @param id identifiant du compte
+   * @param lien client, adresse de retour et durée de validité du lien
+   */
+  void envoyerEmailActivation(UUID id, LienActivation lien);
 }

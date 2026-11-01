@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import sn.cse.auth.application.port.out.LienActivation;
+import sn.cse.auth.application.service.ParametresPortailFournisseur;
 import sn.cse.auth.domain.model.PolitiqueOtp;
 import sn.cse.auth.infrastructure.keycloak.KeycloakProperties;
 import sn.cse.common.security.CurrentUserProvider;
@@ -29,6 +31,17 @@ public class AuthConfiguration {
   @Bean
   public PolitiqueOtp politiqueOtp(AuthProperties properties) {
     return new PolitiqueOtp(new HashSet<>(properties.otpObligatoire()));
+  }
+
+  /**
+   * @param properties configuration
+   * @return paramètres des comptes du portail fournisseur
+   */
+  @Bean
+  public ParametresPortailFournisseur parametresPortailFournisseur(AuthProperties properties) {
+    AuthProperties.PortailFournisseur p = properties.portailFournisseur();
+    return new ParametresPortailFournisseur(
+        p.prenomContact(), new LienActivation(p.clientId(), p.redirectUri(), p.validiteLien()));
   }
 
   /**

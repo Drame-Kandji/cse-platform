@@ -6,11 +6,13 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.http.HttpMethod;
 import org.springframework.validation.annotation.Validated;
 
 /**
@@ -37,15 +39,57 @@ public record GatewayProperties(
     @NotNull @Valid Securite securite) {
 
   /**
+   * @return routes publiques de tous les services, avec le nom du service
+   */
+  public Map<String, List<RoutePublique>> routesPubliques() {
+    Map<String, List<RoutePublique>> resultat = new java.util.LinkedHashMap<>();
+    services.forEach(
+        (nom, service) -> {
+          if (!service.publiques().isEmpty()) {
+            resultat.put(nom, service.publiques());
+          }
+        });
+    return resultat;
+  }
+
+  /**
    * @param url URL de base du service ({@code MS_<NOM>_URL})
    * @param chemins motifs de chemins routés vers ce service
    * @param documentation expose {@code /v3/api-docs/<service>} dans le Swagger agrégé
+   * @param publiques routes accessibles sans jeton (méthode + chemin exacts), chacune limitée par
+   *     adresse IP client
    */
-  public record Service(@NotNull URI url, @NotEmpty List<String> chemins, Boolean documentation) {
+  public record Service(
+      @NotNull URI url,
+      @NotEmpty List<String> chemins,
+      Boolean documentation,
+      List<@Valid RoutePublique> publiques) {
 
     public Service {
       chemins = chemins == null ? List.of() : List.copyOf(chemins);
       documentation = documentation == null || documentation;
+      publiques = publiques == null ? List.of() : List.copyOf(publiques);
+    }
+  }
+
+  /**
+   * Route publique : seule la méthode indiquée est ouverte sans jeton, avec une limitation de débit
+   * par adresse IP plus stricte que celle des utilisateurs authentifiés.
+   *
+   * @param chemin chemin exact (sans joker)
+   * @param methode méthode HTTP ouverte (ex. {@code POST})
+   * @param requetesParMinute requêtes autorisées par minute et par adresse IP (rafale comprise)
+   */
+  public record RoutePublique(
+      @NotBlank @Pattern(regexp = "^/api/[A-Za-z0-9/_-]+$") String chemin,
+      @NotBlank @Pattern(regexp = "^(GET|POST|PUT|PATCH|DELETE)$") String methode,
+      @Min(1) @Max(60) int requetesParMinute) {
+
+    /**
+     * @return méthode HTTP
+     */
+    public HttpMethod methodeHttp() {
+      return HttpMethod.valueOf(methode);
     }
   }
 

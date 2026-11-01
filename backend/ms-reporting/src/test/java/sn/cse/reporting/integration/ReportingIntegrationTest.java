@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -206,6 +207,13 @@ class ReportingIntegrationTest {
                 null,
                 false),
             ilYa(30)));
+    // Signature en deux temps (portail fournisseur) : nouveau statut et payload enrichi (motif)
+    // lus sans erreur.
+    listener.surAchats(
+        json(EventTypes.CONTRAT_ENVOYE_SIGNATURE, contrat("EN_ATTENTE_SIGNATURE", null), ilYa(17)));
+    ObjectNode refus = mapper.valueToTree(contrat("BROUILLON", null));
+    refus.put("motif", "Pénalités trop élevées");
+    listener.surAchats(json(EventTypes.CONTRAT_SIGNATURE_REFUSEE, refus, ilYa(16)));
     listener.surAchats(
         json(EventTypes.ENGAGEMENT_VALIDE, contrat("ENGAGEMENT_VALIDE", null), ilYa(14)));
     listener.surAchats(

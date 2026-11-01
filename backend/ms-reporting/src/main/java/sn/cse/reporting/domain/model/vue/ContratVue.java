@@ -53,6 +53,7 @@ public record ContratVue(
   private static final Set<StatutContrat> EN_COURS =
       EnumSet.of(
           StatutContrat.BROUILLON,
+          StatutContrat.EN_ATTENTE_SIGNATURE,
           StatutContrat.SIGNE,
           StatutContrat.ENGAGEMENT_VALIDE,
           StatutContrat.EN_LIVRAISON);

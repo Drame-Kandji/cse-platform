@@ -4,6 +4,8 @@ package sn.cse.reporting.domain.model;
 public enum StatutContrat {
   /** Brouillon. */
   BROUILLON("Brouillon"),
+  /** Signé par le CSE, en attente de la signature du fournisseur. */
+  EN_ATTENTE_SIGNATURE("En attente de signature"),
   /** Signé. */
   SIGNE("Signé"),
   /** Engagement validé. */

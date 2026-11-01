@@ -87,6 +87,15 @@ public final class CodesErreur {
   /** Opération réservée à un contrat en cours d'exécution. */
   public static final String CONTRAT_NON_EN_EXECUTION = "CONTRAT_NON_EN_EXECUTION";
 
+  /** Le fournisseur ne renseigne ses jalons qu'une fois l'expédition déclarée. */
+  public static final String CONTRAT_NON_EN_LIVRAISON = "CONTRAT_NON_EN_LIVRAISON";
+
+  /** Portail : une facture n'est déposée que sur un contrat livré (ou clôturé). */
+  public static final String CONTRAT_NON_LIVRE = "CONTRAT_NON_LIVRE";
+
+  /** Date d'expédition antérieure à la signature du contrat. */
+  public static final String DATE_EXPEDITION_INVALIDE = "DATE_EXPEDITION_INVALIDE";
+
   /** Date postérieure à aujourd'hui. */
   public static final String DATE_FUTURE = "DATE_FUTURE";
 

@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static sn.cse.achats.Donnees.DAF;
 import static sn.cse.achats.Donnees.PARAMETRES;
+import static sn.cse.achats.Donnees.RA;
+import static sn.cse.achats.Donnees.REPRESENTANT_F1;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -43,13 +45,23 @@ class ContratAchatTest {
         new ClausesContrat(24, null, "Franco chantier", new BigDecimal("0.1")),
         30,
         List.of(new NouveauJalon("Expédition", JOUR_SIGNATURE.plusDays(20))));
-    c.signer(SIGNATURE);
+    return Donnees.signer(c, SIGNATURE);
+  }
+
+  private static ContratAchat enAttenteSignature() {
+    ContratAchat c = Donnees.contratBrouillon();
+    c.signerPourLeCse(RA, SIGNATURE.minusSeconds(86_400));
+    return c;
+  }
+
+  private static ContratAchat engage() {
+    ContratAchat c = signe();
+    c.deciderEngagement(true, "Crédits disponibles", DAF, SIGNATURE.plusSeconds(3600));
     return c;
   }
 
   private static ContratAchat enLivraison() {
-    ContratAchat c = signe();
-    c.deciderEngagement(true, "Crédits disponibles", DAF, SIGNATURE.plusSeconds(3600));
+    ContratAchat c = engage();
     c.demarrerLivraison();
     return c;
   }
@@ -143,6 +155,157 @@ class ContratAchatTest {
   }
 
   @Test
+  void should_figer_clauses_et_attendre_le_fournisseur_when_cse_signe() {
+    ContratAchat c = enAttenteSignature();
+
+    assertThat(c.getStatut()).isEqualTo(StatutContrat.EN_ATTENTE_SIGNATURE);
+    assertThat(c.getSignatureCse())
+        .get()
+        .satisfies(
+            s -> {
+              assertThat(s.parNom()).isEqualTo("Fatou Sarr");
+              assertThat(s.parId()).isEqualTo(RA.id());
+              assertThat(s.date()).isEqualTo(SIGNATURE.minusSeconds(86_400));
+            });
+    assertThat(c.getSignatureFournisseur()).isEmpty();
+    assertThat(c.getEngagement()).isEmpty();
+    assertThat(c.getDateSignature()).isNull();
+    assertThatThrownBy(() -> c.modifierClauses(c.getClauses(), 10, List.of()))
+        .satisfies(e -> assertThat(code(e)).isEqualTo(CodesErreur.CONTRAT_NON_MODIFIABLE));
+    assertThatThrownBy(() -> c.signerPourLeCse(RA, SIGNATURE))
+        .isInstanceOf(ConflictException.class)
+        .satisfies(e -> assertThat(code(e)).isEqualTo(CodesErreur.TRANSITION_INTERDITE));
+  }
+
+  @Test
+  void should_signer_pour_le_fournisseur_et_demander_engagement() {
+    ContratAchat c = enAttenteSignature();
+
+    c.signerPourLeFournisseur(REPRESENTANT_F1, SIGNATURE);
+
+    assertThat(c.getStatut()).isEqualTo(StatutContrat.SIGNE);
+    assertThat(c.getSignatureFournisseur().orElseThrow().parNom()).isEqualTo("Moussa Kane");
+    assertThat(c.getSignatureCse()).isPresent();
+    assertThat(c.getDateSignature()).isEqualTo(JOUR_SIGNATURE);
+    assertThat(c.getEngagement().orElseThrow().statut()).isEqualTo(StatutApprobation.EN_ATTENTE);
+  }
+
+  @Test
+  void should_refuser_signature_fournisseur_when_contrat_non_envoye() {
+    ContratAchat brouillon = Donnees.contratBrouillon();
+    ContratAchat dejaSigne = signe();
+
+    assertThatThrownBy(() -> brouillon.signerPourLeFournisseur(REPRESENTANT_F1, SIGNATURE))
+        .isInstanceOf(ConflictException.class)
+        .satisfies(e -> assertThat(code(e)).isEqualTo(CodesErreur.TRANSITION_INTERDITE));
+    assertThatThrownBy(() -> dejaSigne.signerPourLeFournisseur(REPRESENTANT_F1, SIGNATURE))
+        .isInstanceOf(ConflictException.class);
+  }
+
+  @Test
+  void should_revenir_en_brouillon_et_conserver_motif_when_fournisseur_refuse() {
+    ContratAchat c = enAttenteSignature();
+
+    c.refuserSignature("  Pénalités trop élevées  ");
+
+    assertThat(c.getStatut()).isEqualTo(StatutContrat.BROUILLON);
+    assertThat(c.getSignatureCse()).isEmpty();
+    assertThat(c.getMotifRefusSignature()).isEqualTo("Pénalités trop élevées");
+    // Renégociation : clauses de nouveau modifiables, nouvelle signature du CSE possible.
+    c.modifierClauses(c.getClauses(), 45, List.of());
+    c.signerPourLeCse(RA, SIGNATURE);
+    assertThat(c.getMotifRefusSignature()).isEqualTo("Pénalités trop élevées");
+    c.signerPourLeFournisseur(REPRESENTANT_F1, SIGNATURE.plusSeconds(60));
+    assertThat(c.getMotifRefusSignature()).isNull();
+  }
+
+  @Test
+  void should_exiger_motif_et_statut_en_attente_when_refus_signature() {
+    ContratAchat c = enAttenteSignature();
+    ContratAchat dejaSigne = signe();
+
+    assertThatThrownBy(() -> c.refuserSignature(" "))
+        .isInstanceOf(BusinessRuleException.class)
+        .satisfies(e -> assertThat(code(e)).isEqualTo(CodesErreur.MOTIF_OBLIGATOIRE));
+    assertThatThrownBy(() -> c.refuserSignature(null)).isInstanceOf(BusinessRuleException.class);
+    assertThatThrownBy(() -> dejaSigne.refuserSignature("Trop tard"))
+        .isInstanceOf(ConflictException.class)
+        .satisfies(e -> assertThat(code(e)).isEqualTo(CodesErreur.TRANSITION_INTERDITE));
+    assertThatThrownBy(() -> Donnees.contratBrouillon().refuserSignature("Non"))
+        .isInstanceOf(ConflictException.class);
+    assertThat(c.getStatut()).isEqualTo(StatutContrat.EN_ATTENTE_SIGNATURE);
+  }
+
+  @Test
+  void should_declarer_expedition_when_engagement_valide_R06() {
+    ContratAchat c = engage();
+    LocalDate aujourdhui = JOUR_SIGNATURE.plusDays(10);
+
+    c.declarerExpedition(JOUR_SIGNATURE.plusDays(9), "  Porte-char, suivi 4521 ", aujourdhui);
+
+    assertThat(c.getStatut()).isEqualTo(StatutContrat.EN_LIVRAISON);
+    assertThat(c.getDateExpedition()).isEqualTo(JOUR_SIGNATURE.plusDays(9));
+    assertThat(c.getCommentaireExpedition()).isEqualTo("Porte-char, suivi 4521");
+    assertThatThrownBy(() -> c.declarerExpedition(aujourdhui, null, aujourdhui))
+        .isInstanceOf(ConflictException.class)
+        .satisfies(e -> assertThat(code(e)).isEqualTo(CodesErreur.TRANSITION_INTERDITE));
+  }
+
+  @Test
+  void should_refuser_expedition_when_engagement_non_valide_R06() {
+    LocalDate aujourdhui = JOUR_SIGNATURE.plusDays(10);
+
+    for (ContratAchat c : List.of(signe(), enAttenteSignature(), Donnees.contratBrouillon())) {
+      assertThatThrownBy(() -> c.declarerExpedition(aujourdhui, null, aujourdhui))
+          .isInstanceOf(BusinessRuleException.class)
+          .satisfies(e -> assertThat(code(e)).isEqualTo(CodesErreur.ENGAGEMENT_NON_VALIDE))
+          .hasMessageContaining("R06");
+    }
+  }
+
+  @Test
+  void should_refuser_date_expedition_future_ou_avant_signature() {
+    ContratAchat c = engage();
+    LocalDate aujourdhui = JOUR_SIGNATURE.plusDays(10);
+
+    assertThatThrownBy(() -> c.declarerExpedition(aujourdhui.plusDays(1), null, aujourdhui))
+        .satisfies(e -> assertThat(code(e)).isEqualTo(CodesErreur.DATE_FUTURE));
+    assertThatThrownBy(() -> c.declarerExpedition(null, null, aujourdhui))
+        .satisfies(e -> assertThat(code(e)).isEqualTo(CodesErreur.DATE_FUTURE));
+    assertThatThrownBy(() -> c.declarerExpedition(JOUR_SIGNATURE.minusDays(1), null, aujourdhui))
+        .satisfies(e -> assertThat(code(e)).isEqualTo(CodesErreur.DATE_EXPEDITION_INVALIDE));
+    assertThat(c.getStatut()).isEqualTo(StatutContrat.ENGAGEMENT_VALIDE);
+  }
+
+  @Test
+  void should_n_ouvrir_les_jalons_au_fournisseur_qu_en_livraison() {
+    ContratAchat c = engage();
+    UUID jalon = c.getJalons().get(0).id();
+    LocalDate aujourdhui = JOUR_SIGNATURE.plusDays(25);
+
+    assertThatThrownBy(() -> c.enregistrerJalonDuFournisseur(jalon, aujourdhui, aujourdhui))
+        .isInstanceOf(ConflictException.class)
+        .satisfies(e -> assertThat(code(e)).isEqualTo(CodesErreur.CONTRAT_NON_EN_LIVRAISON));
+    c.declarerExpedition(JOUR_SIGNATURE.plusDays(20), null, aujourdhui);
+    c.enregistrerJalonDuFournisseur(jalon, JOUR_SIGNATURE.plusDays(21), aujourdhui);
+    assertThat(c.getJalons().get(0).dateReelle()).isEqualTo(JOUR_SIGNATURE.plusDays(21));
+  }
+
+  @Test
+  void should_exiger_livraison_pour_facture_du_fournisseur() {
+    ContratAchat c = enLivraison();
+
+    assertThatThrownBy(c::exigerLivrePourFacturationFournisseur)
+        .isInstanceOf(BusinessRuleException.class)
+        .satisfies(e -> assertThat(code(e)).isEqualTo(CodesErreur.CONTRAT_NON_LIVRE));
+    c.confirmerLivraison(
+        JOUR_SIGNATURE.plusDays(5), "BL-9", null, JOUR_SIGNATURE.plusDays(5), BigDecimal.TEN);
+    c.exigerLivrePourFacturationFournisseur();
+    c.cloturer();
+    c.exigerLivrePourFacturationFournisseur();
+  }
+
+  @Test
   void should_refuser_modification_clauses_when_contrat_signe() {
     ContratAchat c = signe();
 
@@ -198,10 +361,13 @@ class ContratAchatTest {
     assertThat(c.getStatut()).isEqualTo(StatutContrat.BROUILLON);
     assertThat(c.getEngagement().orElseThrow().statut()).isEqualTo(StatutApprobation.REFUSEE);
     assertThat(c.getDateSignature()).isNull();
+    // Les deux signatures sont annulées : la renégociation repasse par les deux parties.
+    assertThat(c.getSignatureCse()).isEmpty();
+    assertThat(c.getSignatureFournisseur()).isEmpty();
     assertThatThrownBy(() -> c.deciderEngagement(true, null, DAF, SIGNATURE))
         .satisfies(e -> assertThat(code(e)).isEqualTo(CodesErreur.ENGAGEMENT_NON_EN_ATTENTE));
     // Après renégociation, une nouvelle signature redemande un engagement.
-    c.signer(SIGNATURE.plusSeconds(86_400));
+    Donnees.signer(c, SIGNATURE.plusSeconds(86_400));
     assertThat(c.getEngagement().orElseThrow().statut()).isEqualTo(StatutApprobation.EN_ATTENTE);
   }
 
@@ -308,8 +474,12 @@ class ContratAchatTest {
 
   @ParameterizedTest(name = "{0} → {1} : {2}")
   @CsvSource({
-    "BROUILLON, SIGNE, true",
+    "BROUILLON, EN_ATTENTE_SIGNATURE, true",
+    "BROUILLON, SIGNE, false",
     "BROUILLON, EN_LIVRAISON, false",
+    "EN_ATTENTE_SIGNATURE, SIGNE, true",
+    "EN_ATTENTE_SIGNATURE, BROUILLON, true",
+    "EN_ATTENTE_SIGNATURE, ENGAGEMENT_VALIDE, false",
     "SIGNE, ENGAGEMENT_VALIDE, true",
     "SIGNE, BROUILLON, true",
     "SIGNE, EN_LIVRAISON, false",
@@ -330,6 +500,10 @@ class ContratAchatTest {
   @Test
   void should_qualifier_statuts_facturables_et_en_execution() {
     assertThat(StatutContrat.SIGNE.estEnExecution()).isTrue();
+    assertThat(StatutContrat.EN_ATTENTE_SIGNATURE.estEnExecution()).isFalse();
+    assertThat(StatutContrat.EN_ATTENTE_SIGNATURE.estFacturable()).isFalse();
+    assertThat(StatutContrat.EN_ATTENTE_SIGNATURE.estAvantEngagementValide()).isTrue();
+    assertThat(StatutContrat.ENGAGEMENT_VALIDE.estAvantEngagementValide()).isFalse();
     assertThat(StatutContrat.LIVRE.estEnExecution()).isFalse();
     assertThat(StatutContrat.SIGNE.estFacturable()).isFalse();
     assertThat(StatutContrat.LIVRE.estFacturable()).isTrue();

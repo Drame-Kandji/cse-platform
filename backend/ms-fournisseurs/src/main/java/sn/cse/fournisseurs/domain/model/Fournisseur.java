@@ -76,7 +76,9 @@ public final class Fournisseur {
   }
 
   /**
-   * Enregistre une inscription en attente de validation (auto-inscription portail, SPEC D7).
+   * Enregistre une inscription en attente de validation (auto-inscription portail, SPEC D7). Le nom
+   * de l'interlocuteur est obligatoire : c'est lui qui recevra le compte du portail après
+   * validation.
    *
    * @param profil informations légales
    * @param coordonneesBancaires coordonnées bancaires (optionnelles)
@@ -89,6 +91,12 @@ public final class Fournisseur {
       CoordonneesBancaires coordonneesBancaires,
       BigDecimal scoreInitial,
       LocalDate dateInscription) {
+    Objects.requireNonNull(profil, "profil");
+    if (profil.contactNom() == null || profil.contactNom().isBlank()) {
+      throw new BusinessRuleException(
+          CodesErreur.DONNEE_INVALIDE,
+          "Le nom de l'interlocuteur est obligatoire pour une inscription.");
+    }
     return nouveau(
         profil,
         coordonneesBancaires,
