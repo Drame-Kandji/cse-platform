@@ -52,7 +52,7 @@ Tout écart doit être corrigé ici d'abord. Notation des DTO : pseudo-TypeScrip
 | `StatutAO` | `PUBLIE`, `CLOTURE`, `ATTRIBUE` |
 | `CritereEvaluation` | `PRIX`, `DELAI`, `QUALITE_TECHNIQUE`, `GARANTIE`, `SAV`, `REFERENCES` |
 | `StatutApprobation` | `EN_ATTENTE`, `APPROUVEE`, `REFUSEE` |
-| `StatutContrat` | `BROUILLON`, `SIGNE`, `ENGAGEMENT_VALIDE`, `EN_LIVRAISON`, `LIVRE`, `CLOTURE` |
+| `StatutContrat` | `BROUILLON`, `EN_ATTENTE_SIGNATURE`, `SIGNE`, `ENGAGEMENT_VALIDE`, `EN_LIVRAISON`, `LIVRE`, `CLOTURE` |
 | `StatutJalon` | `A_VENIR`, `ATTEINT`, `EN_RETARD` |
 | `StatutFacture` | `RECUE`, `MANDATEE`, `PAYEE`, `REJETEE` |
 | `NiveauNotification` | `INFO`, `SUCCES`, `ALERTE`, `CRITIQUE` |
@@ -218,7 +218,9 @@ Contrat { id, numero /* CTR-2026-001 */, appelOffreId, appelOffreReference, offr
   dateSignature?, delaiLivraisonJours, dateLivraisonPrevue?, dateLivraisonReelle?, numeroBonLivraison?,
   clauses: { garantieMois?, conditionsMaintenance?, conditionsLivraison?, penaliteRetardPctParJour? },
   engagement?: { statut: StatutApprobation, montant, parNom?, dateDemande, dateDecision?, commentaire? },
-  jalons: { id, libelle, datePrevue, dateReelle?, statut: StatutJalon }[], penalitesRetard, version }
+  jalons: { id, libelle, datePrevue, dateReelle?, statut: StatutJalon }[], penalitesRetard,
+  signatureCse?: { parNom, date }, signatureFournisseur?: { parNom, date }, motifRefusSignature?,
+  dateExpedition?, commentaireExpedition?, version }
 Engagement { contratId, contratNumero, fournisseurNom, chantierNom?, objet, montant, statut: StatutApprobation, dateDemande, dateDecision?, parNom? }
 Facture { id, numero, contratId, contratNumero, fournisseurId, fournisseurNom, montantHt, tva, montantTtc,
   dateEmission, dateEcheance, statut: StatutFacture, referenceMandat?, dateMandatement?, datePaiement?,
@@ -249,10 +251,10 @@ SyntheseFinance { montantEngage, montantEngagementsEnAttente, montantFacture, mo
 | GET | `/api/contrats/{id}` | idem | → `Contrat` |
 | POST | `/api/contrats` | RA | `{appelOffreId}` → 201 (si absent ; R03) |
 | PUT | `/api/contrats/{id}/clauses` | RA | `{garantieMois?,conditionsMaintenance?,conditionsLivraison?,penaliteRetardPctParJour?,delaiLivraisonJours,jalons:{libelle,datePrevue}[]}` (BROUILLON) |
-| POST | `/api/contrats/{id}/signer` | RA | → `SIGNE` + engagement `EN_ATTENTE` |
+| POST | `/api/contrats/{id}/signer` | RA | signature CSE : `BROUILLON → EN_ATTENTE_SIGNATURE` (clauses figées, `CONTRAT_ENVOYE_SIGNATURE`) ; le contrat passe `SIGNE` + engagement `EN_ATTENTE` quand le fournisseur signe sur le portail (§13) |
 | GET | `/api/engagements` | DAF, RA, DG | `?statut&page&size` → `Page<Engagement>` |
 | POST | `/api/engagements/{contratId}/valider` | DAF | `{approuve, commentaire?}` → `Contrat` (R06) |
-| POST | `/api/contrats/{id}/livraison/demarrer` | RA | exige `ENGAGEMENT_VALIDE` (R06, 422 `ENGAGEMENT_NON_VALIDE`) → `EN_LIVRAISON` |
+| POST | `/api/contrats/{id}/livraison/demarrer` | RA | exige `ENGAGEMENT_VALIDE` (R06, 422 `ENGAGEMENT_NON_VALIDE`) → `EN_LIVRAISON` ; secours « hors portail », le cas nominal est l'expédition déclarée par le fournisseur (§13) |
 | PATCH | `/api/contrats/{id}/jalons/{jalonId}` | RA | `{dateReelle}` → `Contrat` |
 | POST | `/api/contrats/{id}/livraison/confirmer` | RA | `{dateLivraisonReelle, numeroBonLivraison, observations?}` → `LIVRE` (+ `LIVRAISON_EFFECTUEE`) |
 | POST | `/api/contrats/{id}/cloturer` | RA | → `CLOTURE` |
@@ -262,7 +264,7 @@ SyntheseFinance { montantEngage, montantEngagementsEnAttente, montantFacture, mo
 | POST | `/api/factures/{id}/payer` | DAF | → `PAYEE` |
 | POST | `/api/factures/{id}/rejeter` | DAF | `{motif}` → `REJETEE` |
 | GET | `/api/finance/synthese` | DAF, DG | → `SyntheseFinance` |
-| - | `/api/portail/**` | FOURN | portail externe (hors périmètre du front interne) : `GET appels-offres`, `POST appels-offres/{id}/offres`, `GET offres/mes-offres`, `GET attributions`, `GET|POST factures` filtrés par `fournisseur_id` |
+| - | `/api/portail/**` | FOURN | portail fournisseur, voir §13 |
 
 ## 6. ms-reporting (port 8086) : CQRS alimenté par Kafka
 
@@ -378,7 +380,7 @@ Payloads « instantané » (un record par agrégat, le `type` distingue l'évén
 | `FournisseurPayload {fournisseurId, raisonSociale, email, specialites[], statut, scorePerformance, motif?}` | `FOURNISSEUR_INSCRIT`, `FOURNISSEUR_VALIDE`, `FOURNISSEUR_SUSPENDU`, `FOURNISSEUR_REACTIVE`, `FOURNISSEUR_BLACKLISTAGE_DEMANDE`, `FOURNISSEUR_BLACKLISTE`, `FOURNISSEUR_BLACKLISTAGE_REFUSE`, `FOURNISSEUR_MODIFIE`, `SCORE_RECALCULE` (motif « ALERTE : … » si score < seuil), `DOCUMENT_EXPIRE` | ms-fournisseurs | achats (statut, R14), reporting, notification |
 | `LitigePayload {litigeId, reference, fournisseurId, raisonSociale, contratId?, objet, gravite, statut}` | `LITIGE_OUVERT`, `LITIGE_RESOLU` | ms-fournisseurs | reporting, notification |
 | `AppelOffrePayload {appelOffreId, reference, objet, type, besoinId?, chantierId?, categorie, quantite, dateLimite, statut, nombreOffres, fournisseurIdsInvites[], offreRetenueId?, fournisseurRetenuId?, montantAttribue?, approbationDgRequise}` | `AO_PUBLIE`, `OFFRE_DEPOSEE`, `AO_CLOTURE`, `ATTRIBUTION_PROPOSEE`, `ATTRIBUTION_REFUSEE`, `MARCHE_ATTRIBUE` | ms-achats | reporting, notification |
-| `ContratPayload {contratId, numero, appelOffreId, besoinId?, chantierId?, chantierNom?, fournisseurId, fournisseurNom, designation, categorie, quantite, montant, statut, dateSignature?, dateLivraisonPrevue?, dateLivraisonReelle?, tarifJournalierEstime?}` | `CONTRAT_GENERE`, `CONTRAT_SIGNE`, `ENGAGEMENT_DEMANDE`, `ENGAGEMENT_VALIDE`, `ENGAGEMENT_REJETE`, `LIVRAISON_DEMARREE`, `LIVRAISON_EFFECTUEE`, `ALERTE_RETARD_LIVRAISON`, `CONTRAT_CLOTURE` | ms-achats | suivi (LIVRAISON_EFFECTUEE), fournisseurs, reporting, notification |
+| `ContratPayload {contratId, numero, appelOffreId, besoinId?, chantierId?, chantierNom?, fournisseurId, fournisseurNom, designation, categorie, quantite, montant, statut, dateSignature?, dateLivraisonPrevue?, dateLivraisonReelle?, tarifJournalierEstime?}` | `CONTRAT_GENERE`, `CONTRAT_ENVOYE_SIGNATURE`, `CONTRAT_SIGNATURE_REFUSEE`, `CONTRAT_SIGNE`, `ENGAGEMENT_DEMANDE`, `ENGAGEMENT_VALIDE`, `ENGAGEMENT_REJETE`, `LIVRAISON_DEMARREE`, `LIVRAISON_EFFECTUEE`, `ALERTE_RETARD_LIVRAISON`, `CONTRAT_CLOTURE` | ms-achats | suivi (LIVRAISON_EFFECTUEE), fournisseurs, reporting, notification |
 | `FacturePayload {factureId, numero, contratId, fournisseurId, montantTtc, statut, dateEmission, dateEcheance, dateMandatement?, datePaiement?}` | `FACTURE_RECUE`, `FACTURE_MANDATEE`, `FACTURE_PAYEE`, `FACTURE_REJETEE` | ms-achats | reporting, notification |
 | `UtilisateurPayload {utilisateurId, email, prenom, nom, role, actif, chantierIds[]}` | `UTILISATEUR_CREE`, `UTILISATEUR_MODIFIE`, `UTILISATEUR_SYNCHRONISE` | ms-auth | notification (annuaire e-mails) |
 | `AuditPayload {service, action, entite, entiteId, resume?}` | `AUDIT` | tous (via outbox) | ms-audit |
@@ -412,3 +414,53 @@ Fournisseurs (`ms-fournisseurs`), UUID `f0000000-0000-0000-0000-00000000000N` (n
 7 Baobab Logistique (EN_ATTENTE_VALIDATION).
 
 Chaque service seed ses propres agrégats avec des dates réparties sur les 9 derniers mois (séries de reporting non vides).
+
+## 13. Portail fournisseur (`apps/portail-fournisseur`, port 5174, client Keycloak `cse-portail-fournisseur`)
+
+Toutes les routes sont filtrées par le claim `fournisseur_id` du jeton : une ressource d'un autre fournisseur
+renvoie **404** (jamais 403, pour ne pas révéler son existence). Rôle requis `FOURNISSEUR`, sauf l'inscription.
+
+```ts
+AppelOffrePortail { id, reference, objet, description?, type, categorie, quantite, specifications?,
+  datePublication, dateLimite, statut, criteres: CriterePondere[], chantierNom?, invite: boolean,
+  offreDeposee: boolean, monOffreId? }
+OffrePortail { id, appelOffreId, appelOffreReference, appelOffreObjet, montantPropose, delaiLivraisonJours,
+  garantieMois?, description?, dateDepot, statutAppelOffre: StatutAO,
+  resultat: 'EN_COURS' | 'RETENUE' | 'NON_RETENUE' /* RETENUE/NON_RETENUE une fois l'AO ATTRIBUE */ }
+Inscription { raisonSociale, ninea, rccm?, adresse?, ville?, pays, telephone?, email, contactNom,
+  contactFonction?, specialites: CategorieMateriel[] }
+ProfilFournisseur = Fournisseur (§4, sans coordonnées bancaires d'un autre) + documents: DocumentAdministratif[]
+```
+
+| Méthode | Route | Service | Détail |
+|---|---|---|---|
+| POST | `/api/portail/inscription` | fournisseurs | **public** (sans jeton, limité par IP à la passerelle) ; `Inscription` → 201 `{id, raisonSociale, statut: 'EN_ATTENTE_VALIDATION'}` ; NINEA ou e-mail déjà connu → 409 `FOURNISSEUR_EXISTANT` ; publie `FOURNISSEUR_INSCRIT` |
+| GET | `/api/portail/profil` | fournisseurs | → `ProfilFournisseur` |
+| PUT | `/api/portail/profil` | fournisseurs | coordonnées modifiables par le fournisseur (existant) |
+| GET / PUT | `/api/portail/catalogue` | fournisseurs | catalogue du fournisseur (existant) |
+| GET | `/api/portail/appels-offres` | achats | `?page&size&sort` → `Page<AppelOffrePortail>` (publiés, date limite non atteinte, procédure ouverte ou fournisseur invité) |
+| GET | `/api/portail/appels-offres/{id}` | achats | → `AppelOffrePortail` (même filtre, sinon 404) |
+| POST | `/api/portail/appels-offres/{id}/offres` | achats | `{montantPropose,delaiLivraisonJours,garantieMois?,description?}` → 201 `OffrePortail` (R02, R14, une offre par AO → 409) |
+| GET | `/api/portail/offres/mes-offres` | achats | → `Page<OffrePortail>` |
+| GET | `/api/portail/contrats` | achats | `?statut&page&size` → `Page<Contrat>` (§5, ceux du fournisseur) |
+| GET | `/api/portail/contrats/{id}` | achats | → `Contrat` |
+| POST | `/api/portail/contrats/{id}/signer` | achats | `EN_ATTENTE_SIGNATURE → SIGNE` + engagement `EN_ATTENTE` (DAF) ; publie `CONTRAT_SIGNE` puis `ENGAGEMENT_DEMANDE` ; autre statut → 409 `TRANSITION_INVALIDE` |
+| POST | `/api/portail/contrats/{id}/refuser` | achats | `{motif}` (obligatoire) : `EN_ATTENTE_SIGNATURE → BROUILLON`, signature CSE annulée ; publie `CONTRAT_SIGNATURE_REFUSEE` |
+| POST | `/api/portail/contrats/{id}/expedier` | achats | `{dateExpedition, commentaire?}` : exige `ENGAGEMENT_VALIDE` (R06, sinon 422 `ENGAGEMENT_NON_VALIDE`) → `EN_LIVRAISON` ; publie `LIVRAISON_DEMARREE` |
+| PATCH | `/api/portail/contrats/{id}/jalons/{jalonId}` | achats | `{dateReelle}` (contrat `EN_LIVRAISON`) → `Contrat` |
+| GET | `/api/portail/attributions` | achats | conservé (marchés attribués) |
+| GET | `/api/portail/factures` | achats | → `Page<Facture>` |
+| POST | `/api/portail/factures` | achats | `{contratId,numero,montantHt,tva,dateEmission,dateEcheance}` → 201 ; contrat `LIVRE` ou `CLOTURE` du fournisseur requis (sinon 422 `CONTRAT_NON_LIVRE`) |
+
+Circuit complet (démonstration) :
+1. **Inscription** publique → `EN_ATTENTE_VALIDATION` ; le RA valide (`PATCH /api/fournisseurs/{id}/valider-inscription`)
+   → `FOURNISSEUR_VALIDE` ; ms-auth crée le compte Keycloak (identifiant = e-mail, rôle `FOURNISSEUR`, attribut
+   `fournisseur_id`) et Keycloak envoie l'e-mail « définir votre mot de passe » (visible dans MailHog).
+2. Le RA publie un appel d'offres en invitant le fournisseur ; le fournisseur **dépose son offre** sur le portail.
+3. Clôture, évaluation, attribution, co-validation RM (et DG au-delà du seuil) → contrat `BROUILLON`.
+4. Le RA renseigne les clauses puis **signe** → `EN_ATTENTE_SIGNATURE` ; le fournisseur **signe** → `SIGNE`
+   (ou refuse avec un motif → `BROUILLON`).
+5. La DAF valide l'engagement → `ENGAGEMENT_VALIDE` ; le fournisseur **déclare l'expédition** → `EN_LIVRAISON`
+   et renseigne ses jalons.
+6. Le RA confirme la livraison (bon de livraison) → `LIVRE` ; le fournisseur **dépose sa facture**.
+7. La DAF mandate puis paie ; le fournisseur suit le statut ; le RA clôture le contrat et évalue le fournisseur.

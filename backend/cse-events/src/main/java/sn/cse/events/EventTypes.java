@@ -50,6 +50,8 @@ public final class EventTypes {
   public static final String ATTRIBUTION_REFUSEE = "ATTRIBUTION_REFUSEE";
   public static final String MARCHE_ATTRIBUE = "MARCHE_ATTRIBUE";
   public static final String CONTRAT_GENERE = "CONTRAT_GENERE";
+  public static final String CONTRAT_ENVOYE_SIGNATURE = "CONTRAT_ENVOYE_SIGNATURE";
+  public static final String CONTRAT_SIGNATURE_REFUSEE = "CONTRAT_SIGNATURE_REFUSEE";
   public static final String CONTRAT_SIGNE = "CONTRAT_SIGNE";
   public static final String ENGAGEMENT_DEMANDE = "ENGAGEMENT_DEMANDE";
   public static final String ENGAGEMENT_VALIDE = "ENGAGEMENT_VALIDE";
