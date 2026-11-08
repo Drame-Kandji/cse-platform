@@ -269,10 +269,9 @@ scripts/cse.sh reset --yes    # sans confirmation
 Développement uniquement. Le script arrête les services, **supprime et recrée les 9 schémas** métier
 (`DROP SCHEMA … CASCADE; CREATE SCHEMA … AUTHORIZATION ms_<service>`), supprime les topics `cse.*` et les
 groupes de consommateurs Kafka, puis relance les services : Flyway recrée les tables, les `DevDataSeeder`
-(profil `dev`) régénèrent un jeu cohérent (chantiers, 36 matériels, 40 besoins, 7 fournisseurs, 12 AO,
-8 contrats, 12 factures…) **via le domaine et l'outbox**, de sorte que reporting, notifications et audit
-sont réalimentés par de vrais événements. Les comptes Keycloak (base `keycloak`) sont conservés. Compter
-2 à 3 minutes avant que les tableaux de bord soient complets.
+(profil `dev`) régénèrent le jeu de départ (6 chantiers, 15 matériels dont 6 affectés, 5 fournisseurs actifs, sans besoin,
+appel d'offres, contrat ni facture) **via le domaine et l'outbox**, de sorte que reporting, notifications et
+audit sont réalimentés par de vrais événements. Les comptes Keycloak (base `keycloak`) sont conservés.
 
 ## 11. Mise en production : liste de contrôle
 

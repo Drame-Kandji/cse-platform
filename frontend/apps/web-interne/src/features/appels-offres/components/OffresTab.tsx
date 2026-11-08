@@ -79,7 +79,7 @@ export function OffresTab({ ao }: { ao: AppelOffre }) {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <p className="flex flex-1 items-center gap-2 text-sm text-muted-foreground">
             <EyeOff className="size-4 shrink-0" aria-hidden />
-            Offres anonymisées jusqu&apos;à la clôture (R10)
+            Offres anonymisées jusqu&apos;à la clôture
           </p>
           <Can roles={access.achatsGestion}>
             <div className="grid gap-1 sm:justify-items-end">

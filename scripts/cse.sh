@@ -82,7 +82,8 @@ reset() {
 }
 
 front() { cd "$RACINE/frontend" && pnpm --filter @cse/web-interne dev; }
-portail() { cd "$RACINE/frontend" && pnpm --filter @cse/portail-fournisseur dev; }
+# Le .env racine exporte le client de web-interne : le portail impose le sien.
+portail() { cd "$RACINE/frontend" && VITE_KEYCLOAK_CLIENT_ID=cse-portail-fournisseur pnpm --filter @cse/portail-fournisseur dev; }
 
 case "${1:-}" in
   infra) infra ;;

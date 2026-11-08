@@ -5,13 +5,17 @@ import static sn.cse.e2e.support.Api.anonyme;
 import static sn.cse.e2e.support.Api.attendu;
 import static sn.cse.e2e.support.Api.en;
 import static sn.cse.e2e.support.Donnees.FOURNISSEUR_SAHEL;
+import static sn.cse.e2e.support.Donnees.FOURNISSEUR_TERANGA;
 import static sn.cse.e2e.support.Donnees.suffixe;
 import static sn.cse.e2e.support.ProblemDetailAssert.problemDetail;
 
 import io.restassured.path.json.JsonPath;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import sn.cse.e2e.support.Compte;
@@ -24,44 +28,67 @@ import sn.cse.e2e.support.Compte;
 class PortailFournisseurE2EIT {
 
   @Test
-  @DisplayName("Le fournisseur ne voit que ses contrats : celui d'un autre fournisseur renvoie 404")
-  void contrats_cloisonnesParFournisseur() {
+  @DisplayName(
+      "Cloisonnement : la demande de prix d'un autre fournisseur et un contrat inconnu renvoient 404")
+  void ressources_cloisonneesParFournisseur() {
+    // Données créées par le test : la base de démonstration démarre sans appel d'offres ni contrat.
+    String sfx = suffixe();
+    String pourSahel = demandeDePrix("Sahel " + sfx, FOURNISSEUR_SAHEL);
+    String pourTeranga = demandeDePrix("Teranga " + sfx, FOURNISSEUR_TERANGA);
+
+    assertThat(
+            attendu(en(Compte.FOURNISSEUR).get("/api/portail/appels-offres/{id}", pourSahel), 200)
+                .<Boolean>path("invite"))
+        .isTrue();
+    problemDetail(
+        en(Compte.FOURNISSEUR).get("/api/portail/appels-offres/{id}", pourTeranga),
+        404,
+        "APPELOFFRE_INTROUVABLE");
+    // Déposer une offre sur la ressource d'un autre fournisseur ne révèle pas non plus son existence.
+    assertThat(
+            en(Compte.FOURNISSEUR)
+                .body(Map.of("montantPropose", 10_000_000, "delaiLivraisonJours", 10))
+                .post("/api/portail/appels-offres/{id}/offres", pourTeranga)
+                .statusCode())
+        .isEqualTo(404);
+
+    // Les contrats listés sont tous ceux du fournisseur ; un contrat inconnu renvoie 404.
     JsonPath mesContrats =
         attendu(en(Compte.FOURNISSEUR).queryParam("size", 50).get("/api/portail/contrats"), 200)
             .jsonPath();
     assertThat(mesContrats.<String>getList("content.fournisseurId"))
-        .isNotEmpty()
-        .containsOnly(FOURNISSEUR_SAHEL);
-    String monContrat = mesContrats.getString("content[0].id");
-    assertThat(
-            attendu(en(Compte.FOURNISSEUR).get("/api/portail/contrats/{id}", monContrat), 200)
-                .<String>path("fournisseurId"))
-        .isEqualTo(FOURNISSEUR_SAHEL);
-
-    // Contrat d'un autre fournisseur (jeu de démonstration, vu par le RA).
-    List<Map<String, Object>> tous =
-        attendu(en(Compte.RA).queryParam("size", 50).get("/api/contrats"), 200)
-            .jsonPath()
-            .getList("content");
-    String autreContrat =
-        tous.stream()
-            .filter(c -> !FOURNISSEUR_SAHEL.equals(c.get("fournisseurId")))
-            .map(c -> (String) c.get("id"))
-            .findFirst()
-            .orElseThrow(() -> new AssertionError("aucun contrat d'un autre fournisseur"));
+        .allMatch(FOURNISSEUR_SAHEL::equals);
     problemDetail(
-        en(Compte.FOURNISSEUR).get("/api/portail/contrats/{id}", autreContrat),
+        en(Compte.FOURNISSEUR).get("/api/portail/contrats/{id}", UUID.randomUUID()),
         404,
         "CONTRAT_INTROUVABLE");
-    // Une action sur la ressource d'un autre fournisseur ne révèle pas non plus son existence.
-    assertThat(
-            en(Compte.FOURNISSEUR)
-                .post("/api/portail/contrats/{id}/signer", autreContrat)
-                .statusCode())
-        .isEqualTo(404);
 
     // Les routes internes restent fermées au rôle FOURNISSEUR.
     problemDetail(en(Compte.FOURNISSEUR).get("/api/contrats"), 403, "ACCES_REFUSE");
+  }
+
+  private static String demandeDePrix(String objet, String fournisseurInvite) {
+    return attendu(
+            en(Compte.RA)
+                .body(
+                    Map.of(
+                        "objet",
+                        "Demande de prix E2E " + objet,
+                        "type",
+                        "DEMANDE_PRIX",
+                        "categorie",
+                        "MATERIEL_ROULANT",
+                        "quantite",
+                        1,
+                        "dateLimite",
+                        Instant.now().plus(Duration.ofDays(2)).toString(),
+                        "criteres",
+                        List.of(Map.of("code", "PRIX", "poids", 100)),
+                        "fournisseurIdsInvites",
+                        List.of(fournisseurInvite)))
+                .post("/api/appels-offres"),
+            201)
+        .path("id");
   }
 
   @Test

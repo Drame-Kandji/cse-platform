@@ -70,44 +70,56 @@ class SuiviIntegrationTest extends IntegrationTestSupport {
 
   @Test
   void should_seed_shared_reference_data_when_dev_profile_active() throws Exception {
-    mvc.perform(get("/api/chantiers").param("q", "CH-MBR-01").with(rm()))
+    mvc.perform(get("/api/chantiers").param("q", "CH-DKR-01").with(rm()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.content[0].statut").value("TERMINE"))
-        .andExpect(jsonPath("$.content[0].id").value("c0000000-0000-0000-0000-000000000007"));
+        .andExpect(jsonPath("$.content[0].statut").value("EN_COURS"))
+        .andExpect(jsonPath("$.content[0].id").value("c0000000-0000-0000-0000-000000000001"))
+        .andExpect(
+            jsonPath("$.content[0].dateDebut")
+                .value(LocalDate.now(clock).withDayOfMonth(1).toString()));
     mvc.perform(get("/api/chantiers").with(CseJwt.chef(CHEF, CHANTIER_1, CHANTIER_2)))
         .andExpect(jsonPath("$.totalElements").value(2));
     mvc.perform(get("/api/materiels").param("q", "PEL-CAT320-01").with(rm()))
-        .andExpect(jsonPath("$.content[0].etat").value("AFFECTE"))
-        .andExpect(
-            jsonPath("$.content[0].chantierActuelNom").value("Extension autoroute Dakar-AIBD"))
+        .andExpect(jsonPath("$.content[0].etat").value("DISPONIBLE"))
         .andExpect(jsonPath("$.content[0].typeEnginLibelle").value("Pelle hydraulique"));
     mvc.perform(get("/api/materiels/{id}", "a1000000-0000-0000-0000-000000000001").with(rm()))
         .andExpect(jsonPath("$.code").value("PEL-CAT320-01"));
-    mvc.perform(get("/api/materiels/{id}", "a1000000-0000-0000-0000-000000000036").with(rm()))
-        .andExpect(jsonPath("$.code").value("CSM-COF-01"));
+    mvc.perform(get("/api/materiels/{id}", "a1000000-0000-0000-0000-000000000012").with(rm()))
+        .andExpect(jsonPath("$.code").value("INF-TAB-01"));
     mvc.perform(get("/api/referentiels/types-engins").with(rm()))
         .andExpect(jsonPath("$.length()").value(14));
     mvc.perform(get("/api/materiels/carte").with(rm()))
         .andExpect(jsonPath("$.type").value("FeatureCollection"))
-        .andExpect(jsonPath("$.features[0].geometry.type").value("Point"))
-        .andExpect(
-            jsonPath(
-                    "$.features[?(@.properties.kind=='MATERIEL' && @.properties.etat=='AFFECTE')]"
-                        + ".properties.chantierId")
-                .isNotEmpty());
+        .andExpect(jsonPath("$.features[0].geometry.type").value("Point"));
 
     assertThat(
             compter(
                 "SELECT count(*) FROM materiels WHERE created_by = 'systeme' AND contrat_id IS NULL"))
-        .isEqualTo(36);
-    assertThat(compter("SELECT count(*) FROM maintenances WHERE statut = 'CLOTUREE' AND cout > 0"))
-        .isGreaterThan(40);
-    assertThat(compter("SELECT count(*) FROM affectations WHERE statut = 'TERMINEE'"))
-        .isGreaterThan(60);
+        .isEqualTo(15);
+    assertThat(
+            compter(
+                "SELECT count(*) FROM materiels WHERE id::text LIKE 'a1000000-%'"
+                    + " AND date_acquisition <> DATE '"
+                    + LocalDate.now(clock).withDayOfMonth(1)
+                    + "'"))
+        .isZero();
+    assertThat(
+            compter(
+                "SELECT count(*) FROM materiels WHERE id::text LIKE 'a1000000-%'"
+                    + " AND etat = 'DISPONIBLE'"))
+        .isEqualTo(9);
+    // 6 engins affectés depuis le 1er du mois, réception confirmée (3 sur les chantiers du chef).
+    assertThat(
+            compter(
+                "SELECT count(*) FROM affectations a JOIN materiels m ON m.id = a.materiel_id"
+                    + " WHERE m.id::text LIKE 'a1000000-%' AND m.etat = 'AFFECTE'"
+                    + " AND a.statut = 'EN_COURS' AND a.chantier_id = m.chantier_actuel_id"))
+        .isEqualTo(6);
+    mvc.perform(get("/api/materiels").param("q", "PEL-CAT320-02").with(rm()))
+        .andExpect(jsonPath("$.content[0].etat").value("AFFECTE"))
+        .andExpect(jsonPath("$.content[0].chantierActuelId").value(CHANTIER_1.toString()));
     assertThat(compter("SELECT count(*) FROM outbox_event WHERE event_type = 'CHANTIER_CREE'"))
-        .isGreaterThanOrEqualTo(7);
-    assertThat(compter("SELECT count(*) FROM outbox_event WHERE topic = 'cse.audit.events'"))
-        .isGreaterThan(100);
+        .isGreaterThanOrEqualTo(6);
   }
 
   @Test
@@ -326,7 +338,19 @@ class SuiviIntegrationTest extends IntegrationTestSupport {
   }
 
   @Test
-  void should_raise_each_alert_only_once() {
+  void should_raise_each_alert_only_once() throws Exception {
+    // Données propres au test : le jeu de démonstration ne contient ni affectation ni maintenance
+    // due.
+    LocalDate aujourdhui = LocalDate.now(clock);
+    String finProche = creerMateriel();
+    mvc.perform(affecter(finProche, CHANTIER_1.toString(), aujourdhui, aujourdhui.plusDays(1)))
+        .andExpect(status().isCreated());
+    String usage = creerMateriel();
+    mvc.perform(
+            json(post("/api/materiels/{id}/heures", usage), Map.of("heuresFonctionnement", 1800))
+                .with(rm()))
+        .andExpect(status().is2xxSuccessful());
+
     assertThat(alertes.alerterFinsAffectation()).isGreaterThanOrEqualTo(1);
     assertThat(alertes.alerterFinsAffectation()).isZero();
     assertThat(alertes.alerterMaintenancesPreventives()).isGreaterThanOrEqualTo(1);

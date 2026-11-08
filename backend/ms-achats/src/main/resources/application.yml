@@ -89,6 +89,3 @@ springdoc:
 logging:
   pattern:
     level: "%5p [${spring.application.name},%X{correlationId:-}]"
----
-spring.config.activate.on-profile: dev
-cse.seed.enabled: true

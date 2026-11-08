@@ -48,13 +48,9 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
-import org.springframework.transaction.support.TransactionOperations;
 import sn.cse.besoins.application.port.out.BesoinRepository;
-import sn.cse.besoins.application.port.out.GenerateurReference;
-import sn.cse.besoins.domain.validation.ChaineValidation;
 import sn.cse.besoins.infrastructure.client.SuiviRestAdapter;
 import sn.cse.besoins.infrastructure.messaging.SuiviEventsListener;
-import sn.cse.besoins.infrastructure.seed.DevDataSeeder;
 import sn.cse.common.security.Roles;
 import sn.cse.common.test.CseJwt;
 import sn.cse.common.test.PostgresTestConfiguration;
@@ -93,9 +89,6 @@ class BesoinsIntegrationTest {
   @Autowired SuiviEventsListener listener;
   @Autowired CircuitBreakerRegistry disjoncteurs;
   @Autowired BesoinRepository repository;
-  @Autowired ChaineValidation chaine;
-  @Autowired GenerateurReference references;
-  @Autowired TransactionOperations transactions;
   @Autowired Clock clock;
 
   @Value("${spring.application.name}")
@@ -302,77 +295,6 @@ class BesoinsIntegrationTest {
     mvc.perform(get("/api/besoins/{id}", UUID.randomUUID()).with(rm()))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.code").value("BESOIN_INTROUVABLE"));
-  }
-
-  // ---------------------------------------------------------------- données de démonstration
-
-  @Test
-  void should_generer_un_jeu_de_demonstration_idempotent_et_coherent() throws Exception {
-    DevDataSeeder seeder =
-        new DevDataSeeder(
-            repository, chaine, references, transactions, jdbc, mapper, clock, service);
-    seeder.run(null);
-    seeder.run(null);
-
-    String seeds = "FROM besoins_materiels WHERE id::text LIKE 'b0000000-%'";
-    assertThat(jdbc.queryForObject("SELECT count(*) " + seeds, Integer.class)).isEqualTo(40);
-    List<String> statuts = jdbc.queryForList("SELECT DISTINCT statut::text " + seeds, String.class);
-    assertThat(statuts)
-        .containsExactlyInAnyOrder("EN_ATTENTE", "VALIDE", "REJETE", "AFFECTE_DIRECT", "EN_ACHAT");
-    assertThat(jdbc.queryForList("SELECT DISTINCT priorite::text " + seeds, String.class))
-        .hasSize(3);
-    Instant plusAncien = jdbc.queryForObject("SELECT min(created_at) " + seeds, Instant.class);
-    assertThat(plusAncien).isBefore(Instant.now(clock).minus(240, ChronoUnit.DAYS));
-    assertThat(plusAncien).isAfter(Instant.now(clock).minus(275, ChronoUnit.DAYS));
-    // Événements datés de l'action simulée, attribués au Responsable Matériel pour les décisions.
-    Instant evenementAncien =
-        jdbc.queryForObject(
-            "SELECT min(created_at) FROM outbox_event WHERE message_key LIKE 'b0000000-%'",
-            Instant.class);
-    assertThat(evenementAncien).isBefore(Instant.now(clock).minus(240, ChronoUnit.DAYS));
-    assertThat(
-            jdbc.queryForObject(
-                "SELECT count(*) FROM outbox_event WHERE message_key LIKE 'b0000000-%'"
-                    + " AND event_type = 'BESOIN_REJETE' AND payload LIKE ?",
-                Integer.class, "%" + RM + "%"))
-        .isEqualTo(6);
-    // Historique cohérent : tout besoin rejeté a un motif, tout besoin satisfait a ses matériels.
-    assertThat(
-            jdbc.queryForObject(
-                "SELECT count(*) " + seeds + " AND statut = 'REJETE' AND motif_rejet IS NULL",
-                Integer.class))
-        .isZero();
-    assertThat(
-            jdbc.queryForObject(
-                "SELECT count(*) "
-                    + seeds
-                    + " AND statut = 'AFFECTE_DIRECT' AND quantite <>"
-                    + " (SELECT count(*) FROM besoins_materiels_affectes a WHERE a.besoin_id = besoins_materiels.id)",
-                Integer.class))
-        .isZero();
-
-    UUID bes1 = UUID.fromString("b0000000-0000-0000-0000-000000000001");
-    mvc.perform(get("/api/besoins/{id}/historique", bes1).with(rm()))
-        .andExpect(jsonPath("$.length()").value(3))
-        .andExpect(jsonPath("$[1].auteurNom").value("Ibrahima Fall"));
-
-    mvc.perform(get("/api/besoins/consolidation").param("statut", "EN_ATTENTE").with(rm()))
-        .andExpect(status().isOk())
-        .andExpect(
-            jsonPath("$[?(@.designation =~ /B.tonni.re 350 L/i && @.doublonPotentiel == true)]")
-                .exists())
-        .andExpect(
-            jsonPath("$[?(@.designation == 'Pelle hydraulique 20 t' && @.nombreDemandes >= 2)]")
-                .exists());
-
-    mvc.perform(get("/api/besoins/statistiques").with(rm()))
-        .andExpect(status().isOk())
-        .andExpect(
-            jsonPath("$.parStatut.EN_ACHAT").value(org.hamcrest.Matchers.greaterThanOrEqualTo(11)))
-        .andExpect(jsonPath("$.delaiMoyenValidationHeures").isNumber());
-    mvc.perform(get("/api/besoins/statistiques").with(CseJwt.chef(CHEF, CHANTIER_1)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.total").value(org.hamcrest.Matchers.lessThan(40)));
   }
 
   // ---------------------------------------------------------------- contrat OpenAPI

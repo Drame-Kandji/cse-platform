@@ -83,9 +83,10 @@ http://localhost:5174.
 
 Ouvrir http://localhost:5173 et se connecter avec un compte ci-dessous (portail : `fournisseur@cse.sn`).
 Les deux applications partagent la session Keycloak : pour être à la fois agent CSE et fournisseur, utiliser
-deux navigateurs ou une fenêtre privée. Les services génèrent leur jeu de
-démonstration au premier démarrage (chantiers, parc, besoins, fournisseurs, appels d'offres, contrats,
-factures sur 9 mois) ; compter 2 à 3 minutes pour que les tableaux de bord soient complets.
+deux navigateurs ou une fenêtre privée. Les services génèrent au premier démarrage un jeu de
+démonstration volontairement réduit, daté du 1er du mois courant : 6 chantiers, 15 matériels (6 affectés aux
+chantiers, 9 disponibles au parc) et 5 fournisseurs actifs. Aucun besoin, appel d'offres, contrat ni facture : la démonstration
+([docs/DEMO.md](docs/DEMO.md)) les crée elle-même, et les tableaux de bord se remplissent au fil des étapes.
 
 Plateforme entièrement conteneurisée avec frontal HTTPS (https://localhost:8443) : `make up`, voir
 [docs/OPERATIONS.md](docs/OPERATIONS.md).

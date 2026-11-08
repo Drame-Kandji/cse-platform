@@ -108,11 +108,12 @@ amplitude du planning, ratio du tarif journalier par défaut, préfixes de numé
 
 ## Données de démonstration (profil `dev`)
 
-`DevDataSeeder` (idempotent) crée via le domaine et l'outbox : les 7 chantiers du contrat §12 (UUID et
-coordonnées fixes, `CH-MBR-01` terminé), 14 types d'engins (`e0000000-0000-0000-0000-0000000000NN`),
-36 matériels (pelles Caterpillar, bulldozers Komatsu, camions Volvo, niveleuses, compacteurs, grues,
-malaxeurs, chargeuses, groupes électrogènes, informatique de chantier, consommables) dans tous les états,
-et un historique daté sur 9 mois : affectations, réceptions, pannes, ordres de travail chiffrés, mouvements.
+`DevDataSeeder` (idempotent) crée via le domaine et l'outbox : les 6 chantiers en cours du contrat §12
+(UUID et coordonnées fixes, ouverts le 1er du mois courant), 14 types d'engins
+(`e0000000-0000-0000-0000-0000000000NN`) et 15 matériels (`a1000000-0000-0000-0000-0000000000NN`),
+entrés dans le parc le 1er du mois : 6 affectés à un chantier depuis ce jour (réception confirmée), 9
+`DISPONIBLE` au parc central. Aucune panne ni maintenance.
+
 
 ## Build et tests
 

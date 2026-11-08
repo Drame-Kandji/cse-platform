@@ -101,29 +101,10 @@ et budgets chiffrés au repos (sommes calculées en Java, jamais en SQL).
 
 ## Données de démonstration (profil `dev`)
 
-`DevDataSeeder` (idempotent, via agrégats + outbox, dates relatives à l'horloge sur 9 mois) : 13 AO
-(PUBLIE/CLOTURE/ATTRIBUE, dont un en attente DG et un en attente de co-validation RM), 9 contrats couvrant
-tous les statuts (signature en deux temps CSE puis fournisseur, un refus de signature, expéditions déclarées
-sur le portail ou démarrées hors portail, livraisons à l'heure, en retard avec pénalités, retard en cours
-alerté), 11 factures (RECUE/MANDATEE/PAYEE/REJETEE, 2 en retard), fournisseurs et chantiers §12.
+Aucun seeder : le service démarre sans appel d'offres, contrat ni facture. Les fournisseurs et les besoins en
+achat arrivent par leurs événements (projections `FournisseurProjection` et `BesoinAAcheter`) ; la
+démonstration ([docs/DEMO.md](../../docs/DEMO.md)) crée le reste en direct.
 
-Portail du fournisseur 1 (Sahel Engins SA, compte `fournisseur@cse.sn`), numéros obtenus sur une base vide :
-
-| Élément | Statut | Pour la démonstration |
-|---|---|---|
-| `AO-2026-012` porte-char 50 t | `PUBLIE`, invité, date limite à J+17, aucune offre de F1 | déposer une offre |
-| `CTR-2026-007` camions malaxeurs | `EN_ATTENTE_SIGNATURE` (refusé une fois : pénalités, clause revue puis re-signée par le RA) | signer ou refuser |
-| `CTR-2026-005` finisseur d'enrobés | `ENGAGEMENT_VALIDE` (facture d'avance `FA-SE-2026-176` rejetée) | déclarer l'expédition, puis les jalons |
-| `CTR-2026-009` chargeuses sur pneus (`AO-2026-013`) | `LIVRE`, aucune facture | déposer une facture |
-| `CTR-2026-002` barge de travaux | `LIVRE` : `FA-SE-2026-079` `PAYEE`, `FA-SE-2026-102` `MANDATEE`, `FA-SE-2026-133` `RECUE` | suivre les factures |
-| `CTR-2026-001` grue mobile | `CLOTURE` : `FA-SE-2026-041` et `FA-SE-2026-057` `PAYEE` | historique |
-
-Cohérence inter-services : les 11 projections `BesoinAAcheter` sont les besoins **EN_ACHAT 13 à 23** du seed
-de ms-besoins (mêmes identifiants, désignation, catégorie, quantité, priorité, chantier, spécifications ; la
-référence `BES-AAAA-NNNN` est recalculée selon l'ordre de soumission de ms-besoins). 9 AO en sont issus
-(catégorie, quantité et spécifications reprises du besoin, désignation du contrat = celle du besoin) ;
-3 AO d'outillage/topographie n'ont pas de besoin. Le `BESOIN_EN_ACHAT` publié ensuite par ms-besoins pour ces
-besoins est absorbé sans doublon et conserve le lien `appelOffreId`.
 
 ## Build et tests
 

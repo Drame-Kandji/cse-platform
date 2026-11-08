@@ -79,13 +79,9 @@ de soumission ; tri autorisé : `createdAt` (défaut, desc), `updatedAt`, `dateB
 
 ## Données de démonstration (profil `dev`)
 
-`DevDataSeeder` crée 40 besoins (identifiants fixes `b0000000-0000-0000-0000-0000000000NN`) sur les
-9 derniers mois, chantiers 1 à 6 du référentiel partagé : demandeurs Mamadou Diop (chantiers 1-2),
-Awa Ndiaye (3-4) et Ibrahima Fall, RM (5-6, sans chef) ; décisions par le RM ; tous statuts et priorités ;
-6 rejets motivés ; achats majoritairement `MATERIEL_ROULANT` ; doublon potentiel (bétonnières du
-chantier 1) et regroupement multi-chantiers (pelles 20 t). Les événements passent par l'agrégat et
-l'outbox, datés de l'action simulée et attribués à leur auteur. ms-suivi n'est jamais appelé : les
-matériels affectés utilisent la convention d'identifiants `a1000000-…`. Idempotent.
+Aucun seeder : le service démarre sans besoin. Les besoins de la démonstration sont saisis en direct par
+le chef de chantier (voir [docs/DEMO.md](../../docs/DEMO.md)).
+
 
 ## Développement
 

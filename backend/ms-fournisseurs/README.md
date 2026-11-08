@@ -92,11 +92,10 @@ sn.cse.fournisseurs
 
 ## Données de démonstration (profil `dev`)
 
-`DevDataSeeder` (idempotent, passe par le domaine et l'outbox) : les 7 fournisseurs du contrat §12
-(UUID `f0000000-…-00000000000N`, noms fictifs), documents dont 4 expirés, évaluations sur 9 mois,
-livraisons, catalogues avec historique (pelles, camions-bennes, groupes électrogènes, outillage,
-informatique, ciment/bitume), 5 litiges (OUVERT, EN_COURS, RESOLU, CLASSE) et une demande de
-blacklistage en attente sur le fournisseur 6 (SUSPENDU).
+`DevDataSeeder` (idempotent, passe par le domaine et l'outbox) : les 5 fournisseurs actifs du contrat §12
+(UUID `f0000000-…-00000000000N`, noms fictifs), inscrits le 1er du mois courant, avec NINEA, RCCM, quitus
+fiscal et assurance valides. Aucune évaluation, aucun catalogue ni litige.
+
 
 ## Lancer / tester
 

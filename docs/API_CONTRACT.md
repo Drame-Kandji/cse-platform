@@ -409,15 +409,25 @@ Utilisateurs Keycloak (mot de passe dev `Cse@2026`, voir `infra/keycloak/realm-c
 Chantiers (`ms-suivi`), UUID `c0000000-0000-0000-0000-00000000000N` :
 1 `CH-DKR-01` Extension autoroute Dakar-AIBD, Dakar (14.7167, -17.4677) · 2 `CH-THS-01` Contournement de Thiès RN2 (14.7910, -16.9256) ·
 3 `CH-STL-01` Pont de la lagune, Saint-Louis (16.0326, -16.4818) · 4 `CH-KLK-01` Réhabilitation route Kaolack-Fatick (14.1652, -16.0758) ·
-5 `CH-ZIG-01` Bâtiment administratif, Ziguinchor (12.5681, -16.2719) · 6 `CH-TBA-01` Aménagement hydraulique, Touba (14.8500, -15.8833) ·
-7 `CH-MBR-01` Station d'épuration, Mbour (14.4199, -16.9658), `TERMINE`.
+5 `CH-ZIG-01` Bâtiment administratif, Ziguinchor (12.5681, -16.2719) · 6 `CH-TBA-01` Aménagement hydraulique, Touba (14.8500, -15.8833).
+Tous `EN_COURS`, ouverts le 1er du mois courant.
+
+Matériels (`ms-suivi`), UUID `a1000000-0000-0000-0000-0000000000NN` (NN = 01 à 15), entrés dans le parc
+le 1er du mois : 2 pelles hydrauliques 20 t, 1 bulldozer, 2 camions bennes 25 t, 1 niveleuse,
+1 compacteur à pneus 24 t, 1 chargeuse, 1 groupe électrogène, 1 plaque vibrante, 1 ordinateur portable,
+1 tablette, 1 grue mobile 50 t, 1 camion malaxeur, 1 station totale. 6 sont `AFFECTE` depuis le 1er du mois
+pour 3 mois, réception confirmée : PEL-CAT320-02 et CAM-VOL-02 sur CH-DKR-01, BUL-KOM-01 sur CH-THS-01,
+GRU-LIE-01 sur CH-STL-01, NIV-CAT-01 et MAL-MER-01 sur CH-KLK-01. Les 9 autres sont `DISPONIBLE` au parc
+central de Rufisque. Aucun « compacteur vibrant » : le besoin du scénario de démonstration part aux achats.
 
 Fournisseurs (`ms-fournisseurs`), UUID `f0000000-0000-0000-0000-00000000000N` (noms fictifs) :
 1 Sahel Engins SA (MATERIEL_ROULANT) · 2 Teranga Équipements BTP (MATERIEL_ROULANT, OUTILLAGE) · 3 Dakar Outillage Pro (OUTILLAGE) ·
-4 Cap-Vert Informatique (EQUIPEMENT_INFORMATIQUE) · 5 Atlantique Consommables SARL (CONSOMMABLE) · 6 Ndiambour Matériaux (SUSPENDU) ·
-7 Baobab Logistique (EN_ATTENTE_VALIDATION).
+4 Cap-Vert Informatique (EQUIPEMENT_INFORMATIQUE) · 5 Atlantique Consommables SARL (CONSOMMABLE). Tous `ACTIF`,
+inscrits le 1er du mois courant, documents administratifs valides, sans évaluation ni litige.
 
-Chaque service seed ses propres agrégats avec des dates réparties sur les 9 derniers mois (séries de reporting non vides).
+Le jeu est volontairement réduit au référentiel : aucun besoin, appel d'offres, contrat, facture, affectation
+ni maintenance. ms-besoins et ms-achats n'ont pas de seeder ; la démonstration (`docs/DEMO.md`) crée ces
+données en direct.
 
 ## 13. Portail fournisseur (`apps/portail-fournisseur`, port 5174, client Keycloak `cse-portail-fournisseur`)
 
